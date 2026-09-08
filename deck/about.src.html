@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Akylbek Maxutov</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>{{CSS}}
+.pubs{display:grid;margin:0;padding:0;list-style:none;counter-reset:pb;border-top:1px solid var(--rule)}
+.pubs li{
+  counter-increment:pb;display:grid;grid-template-columns:34px 1fr;gap:14px;
+  padding:14px 0;border-bottom:1px solid var(--rule-soft);
+}
+.pubs li::before{
+  content:counter(pb,decimal-leading-zero);font-family:var(--mono);font-size:11px;
+  color:var(--meta);padding-top:3px;font-variant-numeric:tabular-nums;
+}
+.pubs .au{font-size:13px;color:var(--ink-2);line-height:1.5;display:block}
+.pubs .ti{font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.4;display:block;margin:3px 0 4px}
+.pubs .vn{font-family:var(--mono);font-size:11px;color:var(--accent);display:block}
+.pubs .me{color:var(--navy);font-weight:600}
+.yr{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--meta);border:1px solid var(--rule);padding:2px 7px;margin-left:8px;
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+{{LOGO}}
+</defs></svg>
+
+<header class="band band--top">
+  <div class="band__in">
+    <a class="brand" href="index.html">
+      <svg class="logo logo--head" role="img" aria-label="ISSAI — Institute of Smart Systems and Artificial Intelligence"><use href="#issai"></use></svg>
+      <span class="brand__txt"><b>math-eval-harness</b>AI-Math Conference · Workshop</span>
+    </a>
+    <nav class="navbtns" aria-label="Sections">
+      <a class="navbtn" href="index.html">Start</a>
+      <a class="navbtn" href="about.html" aria-current="page">About</a>
+      <a class="navbtn" href="workshop.html">Workshop</a>
+    </nav>
+  </div>
+</header>
+
+<div class="doc">
+  <section class="part" style="padding-top:clamp(26px,3.6vw,44px)">
+    <p class="eyebrow">About the instructor</p>
+    <div class="bio">
+      <figure class="portrait" style="margin:0">
+        <svg class="logo" role="img" aria-label="ISSAI"><use href="#issai"></use></svg>
+        <span>Institute of Smart<br>Systems and<br>Artificial Intelligence<br><br>Nazarbayev University<br>Astana, Kazakhstan</span>
+      </figure>
+      <div>
+        <h1 class="bio__name">Akylbek Maxutov</h1>
+        <p class="bio__role">Senior Data Scientist · ISSAI, Nazarbayev University, Astana</p>
+        <p class="lede">I build and evaluate language models, mostly for Kazakh and other lower-resourced languages &mdash; and I have spent enough time inside evaluation results to distrust any single number that arrives without the apparatus that produced it.</p>
+        <p style="font-size:14.5px;color:var(--ink-2)">My work runs across three connected threads: <strong>evaluation methodology</strong> &mdash; how model rankings are actually decided, and how much of a ranking is a property of the evaluator rather than the models; <strong>Kazakh-centric language models</strong> &mdash; small models, retrieval, and the cost-aware choices that make them practical; and <strong>multimodal understanding</strong> &mdash; extending vision&ndash;language models to a language with little of the data those models normally assume.</p>
+        <ul class="creds">
+          <li><b>Role</b><span>Senior Data Scientist, ISSAI &mdash; the Institute of Smart Systems and Artificial Intelligence at Nazarbayev University.</span></li>
+          <li><b>Research</b><span>LLM evaluation and LLM-as-a-judge reliability · Kazakh-centric small language models · cross-lingual retrieval · vision&ndash;language and audio&ndash;vision&ndash;language models.</span></li>
+          <li><b>Teaching here</b><span>Two sessions on harness engineering and the correct use of a judge, built on a working evaluation harness written for this workshop.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="part part--rule">
+    <p class="eyebrow">Selected publications</p>
+    <h2 style="margin-bottom:18px">Recent work</h2>
+    <ol class="pubs">
+      <li><span>
+        <span class="au"><span class="me">Maxutov, A.</span>, Myrzakhmet, A., &amp; Braslavski, P.<span class="yr">2024</span></span>
+        <span class="ti">Do LLMs Speak Kazakh? A Pilot Evaluation of Seven Models</span>
+        <span class="vn">Proceedings of the First Workshop on Natural Language Processing for Turkic Languages</span>
+      </span></li>
+      <li><span>
+        <span class="au">Arystanbekov, B., Nurimanov, A., <span class="me">Maxutov, A.</span>, Albrekht, V., Kuzdeuov, A., et al.<span class="yr">2026</span></span>
+        <span class="ti">Qolda: A Small Vision&ndash;Language Model for the Kazakh Language</span>
+        <span class="vn">IEEE Access, 14, 46392&ndash;46414</span>
+      </span></li>
+      <li><span>
+        <span class="au"><span class="me">Maxutov, A.</span>, Arystanbekov, B., Makhataeva, Z., Yergen, A., Taizhanov, N., et al.<span class="yr">2026</span></span>
+        <span class="ti">Introducing Cultural Knowledge in Language Models: KazCulture Dataset for Kazakh Culture</span>
+        <span class="vn">IEEE Access</span>
+      </span></li>
+      <li><span>
+        <span class="au"><span class="me">Maxutov, A.</span>, Medeu, N., &amp; Varol, H. A.<span class="yr">2026</span></span>
+        <span class="ti">Web Search-Enhanced Small Language Models: A Case Study for a Kazakh-Centric Language Model</span>
+        <span class="vn">Machine Learning and Knowledge Extraction, 8(5), 128</span>
+      </span></li>
+      <li><span>
+        <span class="au"><span class="me">Maxutov, A.</span>, Medeu, N., Albrekht, V., Danenov, D., &amp; Varol, H. A.<span class="yr">2026</span></span>
+        <span class="ti">Translate, Search, or Answer: Cost-Aware Cross-Lingual Retrieval for Kazakh Small Language Models</span>
+        <span class="vn">Big Data and Cognitive Computing, 10(8), 278</span>
+      </span></li>
+      <li><span>
+        <span class="au">Arystanbekov, B., <span class="me">Maxutov, A.</span>, Nurimanov, A., &amp; Varol, H. A.<span class="yr">2026</span></span>
+        <span class="ti">Extending a Vision&ndash;Language Model with Audio Understanding: Introducing Qolda-AVL for the Kazakh Language</span>
+        <span class="vn">Big Data and Cognitive Computing, 10(6), 192</span>
+      </span></li>
+    </ol>
+  </section>
+</div>
+
+<footer class="band band--bot">
+  <div class="band__in">
+    <svg class="logo logo--foot" role="img" aria-label="ISSAI"><use href="#issai"></use></svg>
+    <div class="foot__cols">
+      <div class="fcol"><b>Instructor</b><span>Akylbek Maxutov · Senior Data Scientist</span></div>
+      <div class="fcol"><b>Institute</b><span>ISSAI, Nazarbayev University, Astana</span></div>
+      <div class="fcol"><b>Workshop</b><span>AI-Math Conference · two sessions × 40 min</span></div>
+      <div class="fcol"><b>Licence</b><span>Code MIT · Materials CC BY 4.0</span></div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

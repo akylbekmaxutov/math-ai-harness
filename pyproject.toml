@@ -1,0 +1,17 @@
+[project]
+name = "math-eval-harness"
+version = "1.0.0"
+description = "A model-agnostic evaluation harness for tool-using agents, instantiated on competition mathematics."
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+# The harness core runs on the standard library alone, so a laptop with no
+# network can still rehearse the whole demo. Everything below is needed only
+# to talk to a real provider or to pull the real dataset.
+providers = ["openai>=1.40", "google-genai>=0.3"]
+data = ["datasets>=2.19", "pyyaml>=6"]
+symbolic = ["sympy>=1.12"]
+
+[tool.uv]
+package = false

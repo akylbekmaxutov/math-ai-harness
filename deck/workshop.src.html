@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Measuring a Math Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>{{CSS}}</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+{{LOGO}}
+</defs></svg>
+
+<header class="band band--top">
+  <div class="band__in">
+    <a class="brand" href="index.html">
+      <svg class="logo logo--head" role="img" aria-label="ISSAI — Institute of Smart Systems and Artificial Intelligence"><use href="#issai"></use></svg>
+      <span class="brand__txt"><b>math-eval-harness</b>AI-Math Conference · Workshop</span>
+    </a>
+    <nav class="navbtns" aria-label="Sections">
+      <a class="navbtn" href="index.html">Start</a>
+      <a class="navbtn" href="about.html">About</a>
+      <a class="navbtn" href="workshop.html" aria-current="page">Workshop</a>
+    </nav>
+  </div>
+</header>
+
+<nav class="secnav" aria-label="Contents"><div class="doc"><div class="secnav__in">
+  <a href="#p00">00 · The news</a>
+  <a href="#p01">01 · How would you know?</a>
+  <a href="#p02">02 · What we cannot see</a>
+  <a href="#p03">03 · What a harness is</a>
+  <a href="#p04">04 · The dataset</a>
+  <a href="#p05">05 · The models &amp; effort</a>
+  <a href="#p06">06 · Contracts</a>
+  <a href="#p07">07 · The trace store</a>
+  <a href="#p08">08 · Pinning</a>
+  <a href="#p09">09 · The loop</a>
+  <a href="#p10">10 · Tools &amp; sandbox</a>
+  <a href="#p11">11 · Budget</a>
+  <a href="#p12">12 · Outcomes</a>
+  <a href="#p13">13 · Orchestration</a>
+  <a href="#p14">14 · Metrics</a>
+  <a href="#p15">15 · What we can answer</a>
+  <a href="#p16">16 · What we cannot</a>
+  <a href="#p17">17 · Reasoning traces</a>
+  <a href="#p18">18 · Where a judge belongs</a>
+  <a href="#p19">19 · The judge prompt</a>
+  <a href="#p20">20 · Blinding</a>
+  <a href="#p21">21 · The rubric</a>
+  <a href="#p22">22 · The rotation</a>
+  <a href="#p23">23 · Judge metrics</a>
+  <a href="#p24">24 · Examples</a>
+  <a href="#p25">25 · Run it</a>
+  <a href="#p26">26 · References</a>
+  <a href="#p27">27 · Full source</a>
+</div></div></nav>
+
+<div class="doc">
+
+<!-- ==================== 00 ==================== -->
+<section class="part" id="p00">
+  <p class="partno"><b>00</b> Where this starts</p>
+  <h1>In 2026, AI started solving problems mathematicians could not.</h1>
+  <p class="lede" style="margin:18px 0 24px">Not competition exercises with known answers &mdash; open problems, some of them decades old. The claims arrived faster than the profession could check them, which is the part this workshop is actually about.</p>
+
+  <div class="newsrow">
+    <div class="news">
+      <span class="news__d">August 2026</span>
+      <span class="news__h">Ten open problems, about $2,000 of compute</span>
+      <p class="news__b">OpenAI reported that its Astra model produced solutions to ten problems across mathematics and theoretical computer science, each open for a decade or more &mdash; including a bound on high-dimensional sphere packing that had not moved since 1978.</p>
+      <span class="news__s"><a href="https://qz.com/openai-astra-model-math-problems-lean-proofs-080326">qz.com</a></span>
+    </div>
+    <div class="news">
+      <span class="news__d">August 2026</span>
+      <span class="news__h">Erdős problems are falling</span>
+      <p class="news__b">Quanta on why a catalogue of problems Paul Erdős left behind has become the proving ground for AI systems &mdash; and what it means that several have now gone.</p>
+      <span class="news__s"><a href="https://www.quantamagazine.org/why-the-legendary-erdos-problems-are-falling-to-ai-20260803/">Quanta Magazine</a></span>
+    </div>
+    <div class="news">
+      <span class="news__d">July 2026</span>
+      <span class="news__h">&ldquo;Very rapid and very unsettling change&rdquo;</span>
+      <p class="news__b">Fortune, reporting mathematicians' reactions as another century-old problem fell. The quoted discomfort is not about whether the result is right. It is about not being able to tell.</p>
+      <span class="news__s"><a href="https://fortune.com/2026/07/21/ai-solves-jacobian-conjecture-levant-alpoge-claude-fable-5/">Fortune</a></span>
+    </div>
+  </div>
+  <p class="note"><strong>Check these before you present.</strong> They are press reports of fast-moving claims, cited here as the state of the conversation rather than as settled results &mdash; which is itself the point of the next section.</p>
+</section>
+
+<!-- ==================== 01 ==================== -->
+<section class="part part--rule" id="p01">
+  <p class="partno"><b>01</b> The question underneath the headlines</p>
+  <h2>&ldquo;An AI solved it.&rdquo; How would you know?</h2>
+  <p class="lede" style="margin:16px 0 22px">The same year produced a second, quieter story: the people whose job is to check these results saying, in public, that checking them is getting hard.</p>
+
+  <div class="grid g3">
+    <div class="card"><span class="card__k">Formal verification is not a guarantee</span><p>A demonstration this year showed a bug in the verification method could be exploited to accept a false, AI-generated proof. Passing the checker is evidence, not proof of proof.</p><p class="mono" style="font-size:11px;margin-top:8px"><a href="https://www.sciencenews.org/article/math-disrupted-by-ai-verify-proofs">Science News</a></p></div>
+    <div class="card"><span class="card__k">The checker may not check what you meant</span><p>Kevin Buzzard's objection: Lean can report that AI-generated code is correct while the statement it proved is not the theorem the mathematician had in mind. The formalisation is itself a translation nobody audited.</p><p class="mono" style="font-size:11px;margin-top:8px"><a href="https://spectrum.ieee.org/axiom-math-246-theorem-formalization">IEEE Spectrum</a></p></div>
+    <div class="card"><span class="card__k">So people built a harness</span><p>Eleven mathematicians assembled <em>First Proof</em>, a benchmark of unpublished research-level problems, precisely because the existing evidence would not settle the argument. Their preliminary answer: not yet.</p><p class="mono" style="font-size:11px;margin-top:8px"><a href="https://c3.unu.edu/blog/mathematicians-create-new-ai-math-test-with-unpublished-problems">UNU C3</a></p></div>
+  </div>
+
+  <blockquote class="quote" style="margin-top:26px">Every one of these stories is the same story. A system produced an answer, and the interesting difficulty was not producing it &mdash; it was <strong>establishing what had actually happened</strong>.</blockquote>
+  <p style="font-size:14.5px;color:var(--ink-2)">That is a measurement problem, and measurement problems have known solutions. This workshop builds one, from nothing, in front of you. By the end you will have an apparatus that can say what an agent did, how reliably it does it, what it cost, and &mdash; the hard part &mdash; whether its reasoning actually supported its answer.</p>
+</section>
+
+<!-- ==================== 02 ==================== -->
+<section class="part part--rule" id="p02">
+  <p class="partno"><b>02</b> The motivation</p>
+  <h2>You cannot check what you did not record.</h2>
+  <p class="lede" style="margin:16px 0 22px">Scoring the answer works for a model that emits one string. The moment there are tool calls and multiple turns, the thing you are evaluating is not a string &mdash; it is a <em>trajectory</em>, and almost all of it is invisible if you only keep the last box.</p>
+
+  <div class="traj">
+    <div class="traj__row">
+      <span class="traj__k"><b>What you score</b>one string</span>
+      <span class="traj__b">
+        <span class="node">problem</span><span class="arr">&#8594;</span>
+        <span class="node node--m">model</span><span class="arr">&#8594;</span>
+        <span class="node node--f">answer</span>
+        <span style="font-size:11.5px;color:var(--meta);margin-left:10px">one comparison grades this completely</span>
+      </span>
+    </div>
+    <div class="traj__row">
+      <span class="traj__k"><b>What happened</b>a trajectory</span>
+      <span class="traj__b">
+        <span class="node">problem</span><span class="arr">&#8594;</span>
+        <span class="node node--m">model</span><span class="arr">&#8594;</span>
+        <span class="node node--t">tool_call</span><span class="arr">&#8594;</span>
+        <span class="node node--t">tool_result</span><span class="arr">&#8594;</span>
+        <span class="node node--m">model</span><span class="arr">&#8594;</span>
+        <span class="node node--t">tool_call</span><span class="arr">&#8594;</span>
+        <span class="node node--t">tool_result</span><span class="arr">&#8594;</span>
+        <span class="node node--m">model</span><span class="arr">&#8594;</span>
+        <span class="node node--f">submit</span>
+      </span>
+      <p class="traj__note">Was the answer computed, or asserted? Did the tool agree with the narration? How many attempts did it take? What did it cost? None of this survives a boolean.</p>
+    </div>
+  </div>
+
+  <h3 style="margin:26px 0 12px">One reported number, four separate questions</h3>
+  <div class="axes">
+    <div class="axis"><span class="axis__n">Axis 01</span><h3>Outcome</h3><p>Did it reach the right answer? The only axis most reports answer.</p></div>
+    <div class="axis"><span class="axis__n">Axis 02</span><h3>Process</h3><p>Does the reasoning support the conclusion? No answer key exists for this.</p></div>
+    <div class="axis"><span class="axis__n">Axis 03</span><h3>Cost</h3><p>What did it spend? Per <em>successful</em> solve, not per run.</p></div>
+    <div class="axis"><span class="axis__n">Axis 04</span><h3>Reliability</h3><p>Would it do it again? One run is not a measurement.</p></div>
+  </div>
+  <p class="note">The headlines in part 00 report axis 1. The disquiet in part 01 is about axis 2. The next twelve parts build the apparatus that can answer all four &mdash; and it turns out you have to build them in that order, because axis 2 depends on having recorded enough to ask.</p>
+</section>
+
+<!-- ==================== 03 ==================== -->
+<section class="part part--rule" id="p03">
+  <p class="partno partno--navy"><b>03</b> Session 1 begins &middot; harness engineering</p>
+  <h2>A harness is a measurement apparatus.</h2>
+  <p class="lede" style="margin:16px 0 22px">It is everything that is <em>not</em> the model: task loading, the agent interface, the tool registry, sandboxed execution, the turn loop and its stop conditions, trace recording, config pinning, fault handling, rollout orchestration, verification, aggregation, reporting.</p>
+  <blockquote class="quote">A harness is a measurement apparatus. A judge is one instrument inside it. Harness engineering is what makes the measurement reproducible; judge hygiene is what makes that instrument trustworthy. <strong>Neither produces a meaningful number alone.</strong></blockquote>
+
+  <h3 style="margin:24px 0 12px">The one commitment everything else follows from</h3>
+  <p style="font-size:14.5px;color:var(--ink-2);margin-bottom:18px">Everything downstream of execution is a pure function of an append-only event log. Execution and grading are separated by the trace &mdash; and that single seam is what makes new verifiers applicable to old runs at no cost, makes the demo network-independent, and turns reproducibility from a claim into something you can do.</p>
+  <div class="scroll flowwrap">
+    <div class="flow">
+      <div class="flow__box"><span class="flow__t">scripts/run.py</span><span class="flow__d">Executes rollouts. The <em>only</em> stage that calls a model.</span></div>
+      <div class="flow__arrow">&#8594;</div>
+      <div class="flow__box flow__box--log"><span class="flow__t">traces/*.jsonl</span><span class="flow__d">Append-only event log under a pinned config header.</span></div>
+      <div class="seam" aria-hidden="true"><span class="seam__l">the seam</span></div>
+      <div class="flow__box"><span class="flow__t">scripts/grade.py</span><span class="flow__d">The verifier stack over stored traces. <strong>Offline. Zero model calls.</strong></span></div>
+      <div class="flow__arrow">&#8594;</div>
+      <div class="flow__box"><span class="flow__t">verdicts/*.jsonl</span><span class="flow__d">One append-only file per verifier.</span></div>
+      <div class="flow__arrow">&#8594;</div>
+      <div class="flow__box"><span class="flow__t">scripts/report.py</span><span class="flow__d">Every number, from one command.</span></div>
+    </div>
+  </div>
+  <p class="note"><strong>The structural proof.</strong> <span class="mono">grade.py</span> existing as a separate entry point from <span class="mono">run.py</span> is what makes the architecture trace-first. If you have to re-run to re-grade, the architecture is wrong &mdash; and you will find out the first time you want to ask a new question of an old corpus.</p>
+</section>
+
+<!-- ==================== 04 ==================== -->
+<section class="part part--rule" id="p04">
+  <p class="partno partno--navy"><b>04</b> The dataset</p>
+  <h2>AIME 2026, via MathArena.</h2>
+  <div class="pair">
+    <div>
+      <div class="why"><h3>Why a recurring competition</h3><p>The problems have to postdate the training data of every model under test. A recurring competition supplies a stream of naturally uncontaminated problems; evaluating on a classic set measures memorisation as much as reasoning.</p></div>
+      <div class="why"><h3>Why competition maths specifically</h3><p>Because an answer key exists. That makes it the cleanest possible case for teaching <em>where a judge belongs</em> &mdash; here you can demonstrate that a judge on answer correctness is the wrong tool, rather than argue about it.</p></div>
+      <div class="why"><h3>What the agent is given</h3><p>The problem statement and nothing else. The key is loaded by a separate function that only verifiers call, so the agent code path cannot reach it.</p></div>
+      <div class="runcmd">python3 tasks/math/loader.py --sync<br><span style="color:var(--meta)"># one network call, ever. Everything after reads the cache.</span></div>
+    </div>
+    <div>
+      <div class="spec">
+        <div class="spec__row"><span class="spec__k">Source</span><span class="spec__v mono" style="font-size:12px">MathArena/aime_2026 &middot; Hugging Face</span></div>
+        <div class="spec__row"><span class="spec__k">Split</span><span class="spec__v">train &middot; 30 problems</span></div>
+        <div class="spec__row"><span class="spec__k">Fields</span><span class="spec__v mono" style="font-size:12px">problem_idx &middot; problem &middot; answer</span></div>
+        <div class="spec__row"><span class="spec__k">Answers</span><span class="spec__v">Integers, 0&ndash;999. Which is why the deterministic check is an integer comparison and not a judge.</span></div>
+        <div class="spec__row"><span class="spec__k">Licence</span><span class="spec__v">CC BY-NC-SA 4.0 &mdash; cite Balunović et al. (2025) and Dekoninck et al. (2026)</span></div>
+        <div class="spec__row"><span class="spec__k">Used here</span><span class="spec__v">8 problems &times; 10 rollouts &times; 3 solvers = 240 traces</span></div>
+      </div>
+      <div class="todo">
+        <b>Shipped placeholder</b>
+        <p>Until <span class="mono">--sync</span> is run, <span class="mono">tasks/math/problems.jsonl</span> holds eight brute-force-verified placeholder problems so the whole pipeline runs offline. They are marked <span class="mono">synthetic: true</span> and the standing check reports it. Nothing built on them is a measurement of anything.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 05 ==================== -->
+<section class="part part--rule" id="p05">
+  <p class="partno partno--navy"><b>05</b> The models, and reasoning effort</p>
+  <h2>Three models, each solving once and judging twice.</h2>
+  <div class="scroll">
+    <table class="mx">
+      <thead><tr><th></th><th>gpt-5.6-terra</th><th>gemini-3.7-flash</th><th>grok-4.6</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">S1</th>
+          <td class="cellS"><span class="cellname">Solver</span><span class="cellsub">10 &times; 8 problems</span></td>
+          <td class="cellJ"><span class="cellname">Judge</span><span class="cellsub">blinded process</span></td>
+          <td class="cellJ"><span class="cellname">Judge</span><span class="cellsub">blinded process</span></td></tr>
+        <tr><th scope="row">S2</th>
+          <td class="cellJ"><span class="cellname">Judge</span><span class="cellsub">blinded process</span></td>
+          <td class="cellS"><span class="cellname">Solver</span><span class="cellsub">10 &times; 8 problems</span></td>
+          <td class="cellJ"><span class="cellname">Judge</span><span class="cellsub">blinded process</span></td></tr>
+        <tr><th scope="row">S3</th>
+          <td class="cellJ"><span class="cellname">Judge</span><span class="cellsub">blinded process</span></td>
+          <td class="cellJ"><span class="cellname">Judge</span><span class="cellsub">blinded process</span></td>
+          <td class="cellS"><span class="cellname">Solver</span><span class="cellsub">10 &times; 8 problems</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-bottom:26px">The diagonal is the design: no model ever judges itself, so self-preference is eliminated by construction. Stated openly on stage: because nothing judges itself, self-preference is therefore <em>excluded</em> from this design rather than measured by it.</p>
+
+  <h3 style="margin:0 0 10px">Reasoning models, and what &ldquo;effort&rdquo; changes</h3>
+  <p style="font-size:14.5px;color:var(--ink-2);margin-bottom:16px">All three solvers are reasoning models: before answering, they produce an internal chain of thought whose length is controlled by an <em>effort</em> setting. More effort means more tokens spent thinking, more latency, and a larger bill. It does <strong>not</strong> reliably mean a better answer &mdash; Kapoor et al. (2025) found higher effort <em>reduced</em> accuracy in most of their runs. That is exactly the kind of fact that is invisible unless effort is pinned and recorded with every trace.</p>
+  <div class="efforts">
+    <div class="eff"><b>none</b><span>No extended reasoning. The cheapest arm, and the baseline the others have to beat.</span><code>--effort none</code></div>
+    <div class="eff"><b>low</b><span>Brief deliberation. Often enough for problems the model recognises.</span><code>--effort low</code></div>
+    <div class="eff"><b>medium</b><span>The default in <span class="mono">configs/models.yaml</span>, and what the 240-trace corpus uses.</span><code>--effort medium</code></div>
+    <div class="eff"><b>high</b><span>Longest chain, highest cost. Whether it is also the most accurate is a question, not an assumption.</span><code>--effort high</code></div>
+  </div>
+  <div class="runcmd" style="margin-top:16px">python3 scripts/run.py --config S1 --task aime2026-07 --n 10 --sweep-effort<br><span style="color:var(--meta)"># one model, one problem, all four arms — each with its own config hash and its own trace file</span></div>
+  <p class="note">Effort is part of the <strong>pinned apparatus</strong>. Each arm is recorded as its own configuration &mdash; <span class="mono">S1@none</span>, <span class="mono">S1@low</span>, <span class="mono">S1@medium</span>, <span class="mono">S1@high</span> &mdash; so resumption does not collide, and so the report can never average two efforts together and call it one number.</p>
+</section>
+
+<!-- ==================== 06 ==================== -->
+<section class="part part--rule" id="p06">
+  <p class="partno partno--navy"><b>06</b> Build step 1 &middot; the contracts</p>
+  <h2>Decide what a run <em>is</em> before you can run one.</h2>
+  <div class="step">
+    <div class="step__top">
+      <p style="font-size:14.5px;color:var(--ink-2)">Nothing here refers to mathematics. An <strong>Event</strong> is one thing that happened; a <strong>Rollout</strong> is one complete attempt; a <strong>Task</strong> is what the agent is allowed to see; a <strong>Verdict</strong> is one verifier's opinion. Get these four right and the rest of the harness is plumbing. Get them wrong &mdash; put the answer key on the Task, say &mdash; and no amount of care downstream recovers it.</p>
+      <div class="traj" style="margin-top:14px">
+        <div class="traj__row">
+          <span class="traj__k"><b>Task</b>what goes in</span>
+          <span class="traj__b"><span class="node">task_id</span><span class="node">problem</span><span class="node node--x" style="text-decoration:line-through">answer</span><span style="font-size:11.5px;color:var(--fail);margin-left:8px">structurally absent, not merely unused</span></span>
+        </div>
+        <div class="traj__row">
+          <span class="traj__k"><b>Rollout</b>what comes out</span>
+          <span class="traj__b"><span class="node node--m">key</span><span class="node node--m">config_hash</span><span class="node node--t">events[]</span><span class="node node--t">final</span><span class="node">outcome</span><span class="node">usage</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="step__code">
+      {{CODE|core/contracts.py|Task|what the agent sees}}
+      {{CODE|core/contracts.py|Event|one thing that happened}}
+      {{CODE|core/contracts.py|Rollout|one complete attempt}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 07 ==================== -->
+<section class="part part--rule" id="p07">
+  <p class="partno partno--navy"><b>07</b> Build step 2 &middot; the trace store</p>
+  <h2>Build the log before you build the agent.</h2>
+  <div class="step">
+    <div class="step__top">
+      <p style="font-size:14.5px;color:var(--ink-2)">This will feel premature and it is not. The store is the seam the whole architecture rests on: one append-only file per <span class="mono">(config, task)</span>, a pinned header written once on creation, and every rollout appended and flushed to disk. Nothing is ever rewritten in place, because a corpus you <em>can</em> rewrite is one you eventually will.</p>
+      <div class="traj" style="margin-top:14px">
+        <div class="traj__row">
+          <span class="traj__k"><b>Line 0</b>the header</span>
+          <span class="traj__b"><span class="node node--m">model</span><span class="node node--m">temperature</span><span class="node node--m">reasoning_effort</span><span class="node node--m">prompt_sha</span><span class="node node--m">tools</span><span class="node node--m">config_hash</span></span>
+        </div>
+        <div class="traj__row">
+          <span class="traj__k"><b>Lines 1..n</b>the rollouts</span>
+          <span class="traj__b"><span class="node node--t">rollout 0</span><span class="node node--t">rollout 1</span><span class="node node--t">rollout 2</span><span class="node node--dim">&hellip;</span><span style="font-size:11.5px;color:var(--meta);margin-left:8px">append only &mdash; restart appends, never overwrites</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="step__code">
+      {{CODE|core/trace.py|append_rollout|append-only, header written once}}
+      {{CODE|core/trace.py|completed_keys|resumption is one read of the store}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 08 ==================== -->
+<section class="part part--rule" id="p08">
+  <p class="partno partno--navy"><b>08</b> Build step 3 &middot; pinning the apparatus</p>
+  <h2>A number without a pinned apparatus is not a measurement.</h2>
+  <div class="step">
+    <div class="step__top">
+      <p style="font-size:14.5px;color:var(--ink-2)">Five things decide what a run <em>means</em>: the model string, the temperature, the reasoning effort, the prompt, and the tool set. Change any one and every downstream figure describes a different experiment &mdash; so it had better be a different hash. The hash is printed at the top of every run, so the room sees the apparatus was pinned rather than being told it was.</p>
+      <div class="hashfig" style="margin-top:14px">
+        <div class="hashfig__in">
+          <span class="node node--m">model string</span>
+          <span class="node node--m">temperature</span>
+          <span class="node node--m">reasoning effort</span>
+          <span class="node node--m">prompt (hashed)</span>
+          <span class="node node--m">tool set (sorted)</span>
+        </div>
+        <div class="hashfig__op">sha-256</div>
+        <div class="hashfig__out">
+          <span class="hashfig__hash">4bc5a5a2d923</span>
+          <span class="hashfig__cap">Two numbers carrying the same hash came from the same apparatus. Two carrying different hashes are not comparable, whatever the table puts them next to.</span>
+        </div>
+      </div>
+    </div>
+    <div class="step__code">
+      {{CODE|core/config.py|EFFORTS|effort is pinned, not tuned}}
+      {{CODE|core/config.py|RunConfig.config_hash|sensitive to all five}}
+      {{CODE|core/config.py|validate_env|fail fast, name the variable}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 09 ==================== -->
+<section class="part part--rule" id="p09">
+  <p class="partno partno--navy"><b>09</b> Build step 4 &middot; the turn loop</p>
+  <h2>Write the loop by hand, once.</h2>
+  <div class="step">
+    <div class="step__top">
+      <p style="font-size:14.5px;color:var(--ink-2)">A message list, a dict of Python functions, schemas generated from their signatures, and a <span class="mono">while</span> loop that calls the model, runs whatever it asked for, appends the results, and repeats until something stops it. Writing it is what makes it possible to say what a framework would have bought &mdash; retries, schema plumbing, a history abstraction &mdash; and why none of it was needed here.</p>
+      <div class="loopfig" style="margin-top:14px">
+        <div class="loopfig__row">
+          <span class="node node--m">call model</span><span class="arr">&#8594;</span>
+          <span class="node">tool calls?</span><span class="arr">&#8594;</span>
+          <span class="node node--t">run each tool</span><span class="arr">&#8594;</span>
+          <span class="node">append results</span>
+        </div>
+        <p class="loopfig__back">&#8630; and around again, until one of these fires</p>
+        <div class="stops">
+          <div class="stop stop--agent"><b>submit_answer</b><span>The only clean exit. Arrives as an exception because it is control flow, not an error.</span></div>
+          <div class="stop stop--stop"><b>turn / spend cap</b><span>A crude stop condition standing in for a real one &mdash; and visible as such.</span></div>
+          <div class="stop stop--harness"><b>provider fault</b><span>Recorded, never retried away. It becomes an outcome.</span></div>
+        </div>
+      </div>
+      <p class="note" style="margin-bottom:0"><strong>Note what the loop cannot do:</strong> decide whether the answer was right. It has no key and no way to get one. That is not an oversight &mdash; it is the isolation that makes the grade a separate, later, cheaper step.</p>
+    </div>
+    <div class="step__code">
+      {{CODE|agent/loop.py|run_rollout|the whole loop, and it never grades}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 10 ==================== -->
+<section class="part part--rule" id="p10">
+  <p class="partno partno--navy"><b>10</b> Build step 5 &middot; tools and the sandbox</p>
+  <h2>Two tools, and a place to run code that cannot hurt you.</h2>
+  <div class="step">
+    <div class="step__top">
+      <p style="font-size:14.5px;color:var(--ink-2)"><span class="mono">python_exec</span> computes; <span class="mono">submit_answer</span> ends the run. Submission is a tool rather than a parse of the last message for one reason that matters later: it records what the model <em>claims</em> its reasoning was, separately from the trace of what it actually did. The gap between those two is the entire second half of this workshop.</p>
+      <div class="traj" style="margin-top:14px">
+        <div class="traj__row">
+          <span class="traj__k"><b>python_exec</b>sandboxed</span>
+          <span class="traj__b"><span class="node node--t">fresh interpreter</span><span class="node node--t">no network</span><span class="node node--t">cpu + file caps</span><span class="node node--t">wall-clock timeout</span><span class="node node--f">stdout recorded</span></span>
+        </div>
+        <div class="traj__row">
+          <span class="traj__k"><b>submit_answer</b>ends the run</span>
+          <span class="traj__b"><span class="node node--m">value</span><span class="node node--m">reasoning</span><span style="font-size:11.5px;color:var(--meta);margin-left:8px">the claim, stored beside the evidence</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="step__code">
+      {{CODE|agent/tools.py|Tool.schema|schemas from signatures, so they cannot drift}}
+      {{CODE|agent/sandbox.py|run_python|isolated, capped, and it never raises on user error}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 11 ==================== -->
+<section class="part part--rule" id="p11">
+  <p class="partno partno--navy"><b>11</b> Build step 6 &middot; the budget</p>
+  <h2>Instructions do not constrain spend. Boundaries do.</h2>
+  <div class="step">
+    <div class="step__top">
+      <p style="font-size:14.5px;color:var(--ink-2)">The first cap in this build was written into the system prompt, and it was exceeded. That is not a surprising failure &mdash; a sentence in a prompt is a <em>request</em>. Refusing the next tool call is a limit. The check moved one layer down, to the tool boundary, and has held since.</p>
+      <div class="traj" style="margin-top:14px">
+        <div class="traj__row">
+          <span class="traj__k"><b>A request</b>in the prompt</span>
+          <span class="traj__b"><span class="node node--dim">&ldquo;keep it under $0.50&rdquo;</span><span class="arr">&#8594;</span><span class="node node--dim">model</span><span class="arr">&#8594;</span><span class="node node--x">spends $0.91</span></span>
+        </div>
+        <div class="traj__row">
+          <span class="traj__k"><b>A limit</b>at the boundary</span>
+          <span class="traj__b"><span class="node node--m">model asks for a tool</span><span class="arr">&#8594;</span><span class="node node--t">budget.check()</span><span class="arr">&#8594;</span><span class="node node--x">refused</span><span style="font-size:11.5px;color:var(--meta);margin-left:8px">outcome: budget_exceeded</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="step__code">
+      {{CODE|core/budget.py|Budget.check|two caps, and the trip kind matters}}
+      {{CODE|agent/tools.py|python_exec|the enforcement point}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 12 ==================== -->
+<section class="part part--rule" id="p12">
+  <p class="partno partno--navy"><b>12</b> Build step 7 &middot; the outcome taxonomy</p>
+  <h2>Seven outcomes, not two.</h2>
+  <div class="step">
+    <div class="step__top">
+      <div class="wrongway" style="margin-bottom:16px">
+        <span class="tag tag--fail">Done wrong</span>
+        <span class="mono" style="font-size:13px">outcome = (answer == key)&nbsp; &#8594; &nbsp;<span style="color:var(--fail)">a provider timeout is recorded as a wrong answer</span></span>
+      </div>
+      <p style="font-size:14.5px;color:var(--ink-2)">Counting <span class="mono">error</span> and <span class="mono">timeout</span> as <span class="mono">incorrect</span> deflates accuracy by however unreliable the provider was that afternoon. Silently retrying inflates it. Both are reward-design errors, not agent behaviour &mdash; and the mirror image of τ-bench counting empty responses as successes.</p>
+      <div class="tax" style="margin-top:12px">
+        <div class="tax__row"><span class="tax__lab"><b>Agent outcome</b>the agent did something</span>
+          <span class="chips"><span class="chip chip--pass">correct</span><span class="chip">incorrect</span><span class="chip">refused</span></span></div>
+        <div class="tax__row"><span class="tax__lab"><b>Harness stop</b>a boundary we set</span>
+          <span class="chips"><span class="chip chip--stop">max_turns</span><span class="chip chip--stop">budget_exceeded</span></span></div>
+        <div class="tax__row"><span class="tax__lab"><b>Harness failure</b>the apparatus failed</span>
+          <span class="chips"><span class="chip chip--fail">error</span><span class="chip chip--fail">timeout</span></span></div>
+      </div>
+      <div class="stops" style="margin-top:16px">
+        <div class="stop stop--agent"><b>the verifier decides</b><span>correct · incorrect &mdash; needs the answer key, so it can only happen after the run.</span></div>
+        <div class="stop stop--stop"><b>the loop decides</b><span>refused · max_turns · budget_exceeded &mdash; observable from the trajectory alone.</span></div>
+        <div class="stop stop--harness"><b>the apparatus reports</b><span>error · timeout &mdash; nothing about the agent was learned. Say so.</span></div>
+      </div>
+    </div>
+    <div class="step__code">
+      {{CODE|runner/outcomes.py|classify|correctness is assigned downstream, from the trace}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 13 ==================== -->
+<section class="part part--rule" id="p13">
+  <p class="partno partno--navy"><b>13</b> Build step 8 &middot; orchestration</p>
+  <h2>Resumption, and the retry you must <em>not</em> write.</h2>
+  <div class="step">
+    <div class="step__top">
+      <p style="font-size:14.5px;color:var(--ink-2)">A batch killed half way through and restarted must not duplicate work and must not lose it. Because the store is append-only and keyed, resumption is a read &mdash; no bookkeeping table that can drift out of step with the data. And the tempting bug: retrying a rollout that errored until it succeeds. Do that and the error rate is zero, accuracy is up, and both numbers are fiction.</p>
+      <div class="traj" style="margin-top:14px">
+        <div class="traj__row">
+          <span class="traj__k"><b>First run</b>killed at 4</span>
+          <span class="traj__b"><span class="node node--f">0</span><span class="node node--f">1</span><span class="node node--f">2</span><span class="node node--f">3</span><span class="node node--dim">4</span><span class="node node--dim">5</span><span style="font-size:11.5px;color:var(--fail);margin-left:8px">&#10007; interrupted</span></span>
+        </div>
+        <div class="traj__row">
+          <span class="traj__k"><b>Restart</b>reads the log</span>
+          <span class="traj__b"><span class="node node--dim">0</span><span class="node node--dim">1</span><span class="node node--dim">2</span><span class="node node--dim">3</span><span class="node node--t">4</span><span class="node node--t">5</span><span style="font-size:11.5px;color:var(--meta);margin-left:8px">4 skipped, 2 run</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="step__code">
+      {{CODE|runner/rollouts.py|run_batch|n runs, bounded concurrency, resumed from disk}}
+      {{CODE|runner/rollouts.py|_with_backoff|what is deliberately not retried}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 14 ==================== -->
+<section class="part part--rule" id="p14">
+  <p class="partno partno--navy"><b>14</b> Build step 9 &middot; the metrics</p>
+  <h2>One run tells you what an agent <em>can</em> do. Ten tell you what it <em>will</em> do.</h2>
+  <div class="step">
+    <div class="step__top">
+      <p style="font-size:14.5px;color:var(--ink-2)"><span class="mono" style="color:var(--navy)">pass@k</span> is the probability that at least one of k attempts succeeds &mdash; it rises with k and flatters everything. <span class="mono" style="color:var(--accent)">pass^k</span> is the probability that <em>all</em> k succeed. The gap between the two curves is the whole reliability story, and reporting the first without the second is the most common way an agent evaluation overstates what it measured.</p>
+      <div class="chart" style="margin-top:14px">
+        <svg viewBox="0 0 660 300" role="img" aria-label="pass@k rises toward 1.00 while pass^k decays toward 0.03 as k increases from 1 to 10, at per-rollout success 0.70.">
+          <g stroke="var(--rule-soft)" stroke-width="1">
+            <line x1="60" y1="30" x2="600" y2="30"></line><line x1="60" y1="85" x2="600" y2="85"></line>
+            <line x1="60" y1="140" x2="600" y2="140"></line><line x1="60" y1="195" x2="600" y2="195"></line>
+          </g>
+          <line x1="60" y1="250" x2="600" y2="250" stroke="var(--rule)" stroke-width="1"></line>
+          <line x1="60" y1="30" x2="60" y2="250" stroke="var(--rule)" stroke-width="1"></line>
+          <g fill="var(--meta)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="end">
+            <text x="52" y="34">1.00</text><text x="52" y="89">0.75</text><text x="52" y="144">0.50</text>
+            <text x="52" y="199">0.25</text><text x="52" y="254">0.00</text>
+          </g>
+          <g fill="var(--meta)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">
+            <text x="60" y="268">1</text><text x="120" y="268">2</text><text x="180" y="268">3</text>
+            <text x="240" y="268">4</text><text x="300" y="268">5</text><text x="360" y="268">6</text>
+            <text x="420" y="268">7</text><text x="480" y="268">8</text><text x="540" y="268">9</text>
+            <text x="600" y="268">10</text>
+            <text x="330" y="288" font-size="10" letter-spacing="1.1">k &#8212; number of rollouts</text>
+          </g>
+          <line x1="480" y1="30" x2="480" y2="237" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" opacity=".7"></line>
+          <polyline fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-linejoin="round"
+            points="60,96 120,50 180,36 240,32 300,31 360,30 420,30 480,30 540,30 600,30"></polyline>
+          <polyline fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"
+            points="60,96 120,142 180,175 240,197 300,213 360,224 420,232 480,237 540,241 600,244"></polyline>
+          <g fill="var(--navy)"><circle cx="60" cy="96" r="3.5"></circle><circle cx="480" cy="30" r="3.5"></circle></g>
+          <g fill="var(--accent)"><circle cx="480" cy="237" r="3.5"></circle></g>
+          <text x="470" y="24" fill="var(--navy)" font-family="IBM Plex Mono, monospace" font-size="10.5" text-anchor="end">pass@8 &#8776; 1.00</text>
+          <text x="470" y="250" fill="var(--accent)" font-family="IBM Plex Mono, monospace" font-size="10.5" text-anchor="end">pass^8 &#8776; 0.06</text>
+          <text x="74" y="120" fill="var(--meta)" font-family="IBM Plex Mono, monospace" font-size="10.5">both curves start at p = 0.70</text>
+        </svg>
+        <div class="legend">
+          <span class="l1"><i></i>pass@k &nbsp;&middot;&nbsp; at least one of k succeeds</span>
+          <span class="l2"><i></i>pass^k &nbsp;&middot;&nbsp; all k succeed</span>
+        </div>
+      </div>
+      <p class="note" style="margin-bottom:0"><strong>Schematic</strong> &mdash; exact algebra for a single task at p = 0.70, so shape rather than result. τ-bench put published pass^8 below 25% in retail for the best agent of 2024.</p>
+    </div>
+    <div class="step__code">
+      {{CODE|metrics/aggregate.py|pass_at_k|"can it"}}
+      {{CODE|metrics/aggregate.py|pass_hat_k|"will it" — the reliability number}}
+      {{CODE|metrics/aggregate.py|bootstrap_ci|resample the task, not the rollout}}
+      {{CODE|metrics/cost.py|summarise|per successful solve, not per run}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 15 ==================== -->
+<section class="part part--rule" id="p15">
+  <p class="partno partno--navy"><b>15</b> The harness is finished</p>
+  <h2>Three of the four questions, from one command.</h2>
+  <p class="lede" style="margin:16px 0 20px">Nine steps and the apparatus exists. It runs an agent repeatedly, records everything, grades offline, and reports outcome, cost and reliability with intervals attached.</p>
+  {{TERM|deck/term/report.txt|python3 scripts/report.py|1-40}}
+  <div class="grid g3" style="margin-top:22px">
+    <div class="good"><span class="lbl">Answered &mdash; outcome</span><p>Seven outcomes per solver, with the error rate beside the accuracy and the denominator stated in the output.</p></div>
+    <div class="good"><span class="lbl">Answered &mdash; reliability</span><p>pass@k, pass^k, majority@k, bootstrap intervals clustered on the task.</p></div>
+    <div class="good"><span class="lbl">Answered &mdash; cost</span><p>Total, per run, and per <em>successful</em> solve, per configuration and per effort arm.</p></div>
+  </div>
+</section>
+
+<!-- ==================== 16 ==================== -->
+<section class="part part--rule" id="p16">
+  <p class="partno"><b>16</b> The transition</p>
+  <h2>And the fourth question is still completely open.</h2>
+  <div class="pair">
+    <div>
+      <p class="lede">A run got the right answer. <strong>Was the reasoning correct?</strong> Nothing built so far can tell us &mdash; and nothing built the same way ever will, because there is no answer key for that question.</p>
+      <div class="bad"><span class="lbl">What a right answer does not prove</span><p>The tool computed it and the narration took credit. The chain contained an error that cancelled. It guessed and got lucky. All three look identical from outside, and all three are in the corpus.</p></div>
+      <div class="good"><span class="lbl">What we do have</span><p>A complete trace of what actually happened, for all 240 runs, already on disk. Everything from here is a new question asked of an old corpus &mdash; at no cost, which is the payoff for the last nine parts.</p></div>
+    </div>
+    <div>
+      <div class="traj">
+        <div class="traj__row">
+          <span class="traj__k"><b>Answer key exists</b>use code</span>
+          <span class="traj__b"><span class="node node--f">answer equivalence</span><span class="node node--f">tool replay</span><span style="font-size:11.5px;color:var(--pass);margin-left:8px">exact, free, reproducible</span></span>
+        </div>
+        <div class="traj__row">
+          <span class="traj__k"><b>No answer key</b>use a judge</span>
+          <span class="traj__b"><span class="node node--t">does the reasoning support the conclusion?</span></span>
+          <p class="traj__note">This is the only question in the whole stack where a language model is the right tool &mdash; and the rest of the workshop is about using it correctly.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 17 ==================== -->
+<section class="part part--rule" id="p17">
+  <p class="partno"><b>17</b> Session 2 begins &middot; what we are about to judge</p>
+  <h2>A reasoning trace is not a proof. It is a record of an attempt.</h2>
+  <div class="pair">
+    <div>
+      <p style="font-size:14.5px;color:var(--ink-2)">What the judge will read is the interleaving the harness recorded: what the model said, what code it ran, what that code printed, and what it said next. Not a polished write-up &mdash; the actual sequence, including the steps that went nowhere.</p>
+      <div class="why"><h3>Reasoning effort changes what there is to judge</h3><p>At <span class="mono">none</span> there is barely a chain to assess; at <span class="mono">high</span> there is a long one, most of which may be irrelevant to the conclusion. A judge that rewards length will rank the arms by effort rather than by soundness &mdash; which is one of the reasons the rubric below has discrete anchors and demands a quoted span.</p></div>
+      <div class="why"><h3>The claim, stored beside the evidence</h3><p><span class="mono">submit_answer(value, reasoning)</span> records what the model says it did. The event log records what it did. When those two disagree, you have found something &mdash; and you can only find it because both were kept.</p></div>
+    </div>
+    <div>
+      <div class="traj">
+        <div class="traj__row">
+          <span class="traj__k"><b>Narration</b>turn 1</span>
+          <span class="traj__b"><span class="node node--m">&ldquo;Let me compute this directly&hellip;&rdquo;</span></span>
+        </div>
+        <div class="traj__row">
+          <span class="traj__k"><b>Tool code</b>what it ran</span>
+          <span class="traj__b"><span class="node node--t">print(sum(n for n in range(1,500) if n%7==3)%1000)</span></span>
+        </div>
+        <div class="traj__row">
+          <span class="traj__k"><b>Tool stdout</b>what came back</span>
+          <span class="traj__b"><span class="node node--f">608</span></span>
+        </div>
+        <div class="traj__row">
+          <span class="traj__k"><b>Narration</b>turn 2</span>
+          <span class="traj__b"><span class="node node--x">&ldquo;The computation gives 615&hellip;&rdquo;</span><span style="font-size:11.5px;color:var(--fail);margin-left:8px">the tool and the story disagree</span></span>
+        </div>
+      </div>
+      <p class="note">This is the shape of a right-answer-wrong-reasoning case. The submitted value is correct; the reasoning offered for it cites a number the tool never produced. An outcome-only report scores this as a success.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 18 ==================== -->
+<section class="part part--rule" id="p18">
+  <p class="partno"><b>18</b> Where a judge belongs</p>
+  <h2>Deterministic where you can. Judged where you must.</h2>
+  <p class="lede" style="margin:16px 0 20px">The most common misuse of a judge is deploying one where code would do &mdash; and answer correctness in competition mathematics is exactly that case. Judges belong on the process question, one layer up.</p>
+  <div class="stack">
+    <div class="layer"><span class="layer__bar"></span><span class="layer__k">Deterministic</span><div class="layer__b"><h3>Answer equivalence</h3><p>Normalise to an integer and compare to the key. Exact, free, reproducible. A judge here is demonstrably the wrong tool.</p></div></div>
+    <div class="layer"><span class="layer__bar"></span><span class="layer__k">Deterministic</span><div class="layer__b"><h3>Tool replay</h3><p>Re-execute every logged call and diff. Catches hallucinated tool results, and tools that produced the answer the narration takes credit for.</p></div></div>
+    <div class="layer layer--judged"><span class="layer__bar"></span><span class="layer__k">Judged &times; 2</span><div class="layer__b"><h3>Process judge</h3><p>Does the reasoning support the conclusion? No answer key exists for this question. <strong>The only layer where a judge is the right tool.</strong></p></div></div>
+    <div class="layer layer--quasi"><span class="layer__bar"></span><span class="layer__k">Quasi-mechanical</span><div class="layer__b"><h3>Masked continuation</h3><p>Strip the answer, continue from the reasoning, compare the landing point. Asks for a consequence, not an opinion &mdash; so it is a control on the judges rather than a third one.</p></div></div>
+  </div>
+
+  <h3 style="margin:24px 0 10px">Report the escape rate</h3>
+  <div class="pair">
+    <div>
+      <p style="font-size:14.5px;color:var(--ink-2)">Every time the deterministic check cannot decide and you fall through to something fuzzier, that is an <strong>escape</strong>. The rate bounds and discloses exactly how much of the headline number was not decided by code.</p>
+      <div class="funnel" style="margin-top:12px">
+        <div class="fstep fstep--1"><div class="fstep__b"><b>exact</b><span>Normalised to an integer and compared.</span></div><div class="fstep__n">210</div></div>
+        <div class="fstep fstep--2"><div class="fstep__b"><b>symbolic</b><span>sympy fallback. Still deterministic.</span></div><div class="fstep__n">0</div></div>
+        <div class="fstep fstep--3"><div class="fstep__b"><b>escaped</b><span>Nothing deterministic could decide it.</span></div><div class="fstep__n">30</div></div>
+      </div>
+    </div>
+    <div class="step__code" style="border:1px solid var(--rule)">
+      {{CODE|verifiers/answer_match.py|normalise|exact, free, reproducible}}
+      {{CODE|verifiers/tool_replay.py|verify|re-execute and diff — no model involved}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 19 ==================== -->
+<section class="part part--rule" id="p19">
+  <p class="partno"><b>19</b> The judge prompt, in full</p>
+  <h2>What the judge is actually shown.</h2>
+  <p class="lede" style="margin:16px 0 20px">Nothing is paraphrased here. This is the prompt the harness renders, assembled from the event log, and the rubric it is asked to answer on.</p>
+
+  <div class="step" style="margin-bottom:20px">
+    <div class="step__top">
+      <h3 style="margin-bottom:8px">The system prompt</h3>
+      <p style="font-size:13.8px;color:var(--ink-2);margin:0">Three sentences. The second and third exist because a model handed a maths problem will otherwise solve it and then grade its own answer.</p>
+    </div>
+    <div class="step__code">{{CODE|verifiers/process_judge.py|SYSTEM|three sentences, all load-bearing}}</div>
+  </div>
+
+  <div class="diff" style="margin-bottom:6px">
+    <div class="diff__h"><span>the rendered prompt &mdash; a real trace from the corpus</span></div>
+    <pre><span class="same">PROBLEM:
+Let $S$ be the sum of all positive integers $n &lt; 500$ with $n \equiv 3 \pmod 7$.
+Find the remainder when $S$ is divided by $1000$.
+
+NARRATION:
+Let me compute this directly rather than reason about it in my head.
+
+TOOL CODE:
+print(sum(n for n in range(1,500) if n%7==3)%1000)
+
+TOOL STDOUT:
+608
+
+NARRATION:
+The computation gives 615, and since each candidate is counted exactly once,
+that is the required total.
+
+TASK:
+Choose exactly one verdict:
+  ESTABLISHES     the reasoning is sufficient to determine the conclusion
+  INCOMPLETE      no error, but gaps remain before a conclusion follows
+  ERROR           the reasoning contains a specific mistake
+  INDETERMINATE   the reasoning supports no determinate conclusion
+
+Quote the single span of the reasoning that is the basis for your verdict.
+Give one sentence of justification.
+
+OUTPUT strict JSON: {"verdict": ..., "span": ..., "justification": ...}</span>
+<span class="add">+ FINAL ANSWER: 608          &lt;- only in the UNBLINDED arm
++ OUTCOME: correct           &lt;- only in the UNBLINDED arm</span>
+<span class="cap">Two added lines. That is the entire blinding experiment.</span></pre>
+  </div>
+  <p class="note" style="margin-bottom:20px">Note what is absent from the blinded form: the submitted value, the answer key, the outcome, every model identifier, the config hash, seeds, timestamps, usage and provider error strings. Note also what is present: the number the reasoning argues its way to. The judge can see <em>what</em> was concluded; it cannot see <em>whether</em> that was right.</p>
+
+  <div class="step">
+    <div class="step__top"><h3 style="margin-bottom:8px">The function that builds it</h3>
+      <p style="font-size:13.8px;color:var(--ink-2);margin:0">The unblinded arm is the same function with a flag. That is deliberate: if the two conditions were built by different code, any difference between them could be a difference in the code.</p></div>
+    <div class="step__code">{{CODE|verifiers/process_judge.py|render|the blinding function}}</div>
+  </div>
+</section>
+
+<!-- ==================== 20 ==================== -->
+<section class="part part--rule" id="p20">
+  <p class="partno"><b>20</b> Blinding</p>
+  <h2>Blind the judge to the outcome.</h2>
+  <div class="pair">
+    <div>
+      <p style="font-size:14.5px;color:var(--ink-2);margin-bottom:16px">A process judge that can see the answer was correct will rationalise flawed reasoning as sound. This is the largest and least-known failure in the setup, and it is demonstrated on the same traces rather than asserted.</p>
+      <div class="blind">
+        <div class="blind__col">
+          <p class="blind__h">Goes into the prompt</p>
+          <ul><li>problem statement</li><li>the reasoning</li><li>tool code</li><li>tool output</li></ul>
+        </div>
+        <div class="blind__col blind__col--out">
+          <p class="blind__h">Stripped, and asserted absent</p>
+          <ul><li>the submitted value</li><li>the answer key</li><li>the outcome</li><li>model identifiers</li><li>config, seeds, timestamps</li><li>usage and error strings</li></ul>
+        </div>
+      </div>
+      <div class="bad" style="margin-top:16px"><span class="lbl">A bug we found in our own blinding</span><p>The first version replaced the submitted value in the narration with <span class="mono">[REDACTED]</span>. But that only fires when the narrated value <em>matches</em> the submission &mdash; which is exactly when the narration is faithful. The marker appeared on sound traces and never on flawed ones: a judge could read the verdict off a placeholder. Blinding that introduces a tell is worse than none, because it looks careful.</p></div>
+    </div>
+    <div class="step__code" style="border:1px solid var(--rule)">
+      {{CODE|verifiers/process_judge.py|_audit|hard failures, and the one honest soft flag}}
+    </div>
+  </div>
+  <div class="grid g3" style="margin-top:18px">
+    <div class="card"><span class="card__k">Outcome leakage</span><p>Removed by stripping the answer and the verdict. Measured by the ablation, not assumed away by the redaction.</p></div>
+    <div class="card"><span class="card__k">Provenance leakage</span><p>Model names and system identifiers removed. Judges favour text that looks like their own, and preference leakage inflates verdicts across a whole family.</p></div>
+    <div class="card"><span class="card__k">Position bias</span><p>In any pairwise comparison, randomise position and average over both orderings. Systematic, varies by judge &mdash; large, and free to remove.</p></div>
+  </div>
+</section>
+
+<!-- ==================== 21 ==================== -->
+<section class="part part--rule" id="p21">
+  <p class="partno"><b>21</b> The rubric</p>
+  <h2>Discrete anchors. A mandatory span. Rejected at parse time.</h2>
+  <div class="step">
+    <div class="step__top">
+      <div class="bad"><span class="lbl">Done wrong</span><p>&ldquo;Rate the reasoning from 1 to 10.&rdquo; Models do not use the middle of numeric scales consistently, so a 7 from one judge is not a 7 from another and scores stop being comparable across items.</p></div>
+      <div class="anchors" style="margin:14px 0">
+        <div class="anch"><b>ESTABLISHES</b><span>The reasoning is sufficient to determine the conclusion.</span></div>
+        <div class="anch"><b>INCOMPLETE</b><span>No error, but gaps remain before a conclusion follows.</span></div>
+        <div class="anch"><b>ERROR</b><span>A specific, locatable mistake.</span></div>
+        <div class="anch"><b>INDETERMINATE</b><span>Supports no determinate conclusion at all.</span></div>
+      </div>
+      <p style="font-size:14.5px;color:var(--ink-2);margin:0">And a quoted span, always. It is the cure for hallucinated criticism: a judge that cannot point at the step it objects to has not found one. &ldquo;No verdict&rdquo; has to mean rejected, not quietly coerced into a default &mdash; a rejected verdict is visible in the counts, a defaulted one becomes data.</p>
+    </div>
+    <div class="step__code">
+      {{CODE|verifiers/process_judge.py|parse_verdict|no span, no verdict}}
+      {{CODE|verifiers/process_judge.py|judge|renders, calls, parses, pins}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 22 ==================== -->
+<section class="part part--rule" id="p22">
+  <p class="partno"><b>22</b> The rotation</p>
+  <h2>Two judges, from different families, never itself.</h2>
+  <div class="step">
+    <div class="step__top">
+      <div class="grid g3">
+        <div class="good"><span class="lbl">No self-judging</span><p>Self-preference is eliminated by construction rather than corrected afterwards. Judges favour text that looks like their own, and rubric anchors do not fix that.</p></div>
+        <div class="good"><span class="lbl">Severity is comparable</span><p>Each model judges in exactly two roles, over two independent solver populations, so a consistently harsh model shows up in both.</p></div>
+        <div class="card" style="border-color:var(--accent)"><span class="card__k" style="color:var(--accent)">The limitation, said first</span><p>Because nothing judges itself, self-preference cannot be <em>measured</em> here. It is excluded, not quantified. Say it on stage rather than let it be raised in Q&amp;A.</p></div>
+      </div>
+    </div>
+    <div class="step__code">{{CODE|configs/rotation.yaml||two judges is a config list, not new code}}</div>
+  </div>
+</section>
+
+<!-- ==================== 23 ==================== -->
+<section class="part part--rule" id="p23">
+  <p class="partno"><b>23</b> Judging the judges</p>
+  <h2>An unvalidated instrument is not a measurement.</h2>
+  <div class="pair">
+    <div>
+      <div class="why"><h3>Inter-judge agreement &mdash; as a headline</h3><p>Raw agreement <em>and</em> Cohen's kappa, because raw agreement on a skewed label distribution flatters every judge. Presenting a process score while the instrument disagrees with itself is the failure this prevents.</p></div>
+      <div class="why"><h3>Judge severity</h3><p>Each model's rate of not saying ESTABLISHES, across both of its judging roles.</p></div>
+      <div class="why"><h3>Blinding effect</h3><p>The same traces judged both ways. Showing the judge that the answer was right made it measurably more forgiving of the reasoning.</p></div>
+      <div class="why"><h3>Judge&ndash;human agreement</h3><p>Forty traces, sampled stratified across the three solver configurations <em>and</em> across correct and incorrect outcomes, labelled by hand on the same rubric with the same span requirement. Reported per judge, never averaged, with n attached.</p></div>
+      <div class="card" style="border-color:var(--accent)"><span class="card__k" style="color:var(--accent)">Declared on stage</span><p>Forty traces labelled by one person is <strong>single-annotator calibration, not an annotation study</strong>. Until the labels exist, <span class="mono">report.py</span> prints that every process figure above it is an assertion rather than a result.</p></div>
+    </div>
+    <div class="step__code" style="border:1px solid var(--rule)">
+      {{CODE|metrics/judges.py|inter_judge_agreement|raw agreement, and what survives it}}
+      {{CODE|metrics/judges.py|blinding_effect|the direct measurement of outcome leakage}}
+      {{CODE|scripts/label.py|stratified|the sample cannot be accidentally all-easy}}
+      {{CODE|metrics/judges.py|human_agreement|what makes the rest quotable}}
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 24 ==================== -->
+<section class="part part--rule" id="p24">
+  <p class="partno"><b>24</b> Worked examples</p>
+  <h2>To be filled from the real run.</h2>
+  <p class="lede" style="margin:16px 0 20px">These four slots hold specific traces and verdicts, chosen after the corpus exists. They are left empty on purpose: picking the examples before running would mean choosing the story first.</p>
+  <div class="grid g2">
+    <div class="todo"><b>Slot 1 &mdash; one solution per model</b><p>The same problem solved by each of the three solvers, side by side: the narration, the tool calls, the submitted answer. Shows that &ldquo;correct&rdquo; hides three quite different trajectories.</p></div>
+    <div class="todo"><b>Slot 2 &mdash; the effort sweep</b><p>One model, one problem, four reasoning-effort arms. Accuracy, tokens and cost per arm &mdash; and whether more effort actually bought anything.</p></div>
+    <div class="todo"><b>Slot 3 &mdash; two judges, one trace</b><p>The same blinded prompt, two verdicts from different families, disagreeing. With both quoted spans, so the room can see what each judge was looking at.</p></div>
+    <div class="todo"><b>Slot 4 &mdash; blinded vs unblinded</b><p>One trace, one judge, two conditions. The verdict that changed, and the justification the unblinded judge gave for changing it.</p></div>
+  </div>
+  <p class="note"><strong>How to fill them.</strong> Run the pipeline in part 25, then pull the trace with <span class="mono">display/replay.py</span> and the verdicts from <span class="mono">verdicts/process_judge.jsonl</span>. Every number quoted in these slots must come from <span class="mono">report.py</span>, not be read off a screen.</p>
+</section>
+
+<!-- ==================== 25 ==================== -->
+<section class="part part--rule" id="p25">
+  <p class="partno"><b>25</b> Running it</p>
+  <h2>Every command, in order.</h2>
+  <div class="todo" style="margin-bottom:22px">
+    <b>One line runs the whole study</b>
+    <p><span class="mono">scripts/pipeline.py</span> runs the standing check, the rotation corpus, the reasoning-effort sweep, offline grading and the report &mdash; in that order, stopping at the first failure. Each stage is literally the command you would have typed, run as a subprocess, so there is no second implementation that can drift from the real one.</p>
+  </div>
+
+  <div class="pair pair--even">
+    <div>
+      <h3 style="margin-bottom:10px">Rehearse it offline &mdash; no keys, no network</h3>
+      <div class="runcmd" style="line-height:1.95"><b>python3 scripts/pipeline.py --mock</b></div>
+      <p class="note" style="margin-top:0">720 solver rollouts and about 1,500 judge calls in roughly twenty seconds. Traces produced this way are marked <span class="mono">simulated: true</span>, carry their own config hash, and every report built from them prints a banner.</p>
+
+      <h3 style="margin:20px 0 10px">Measure one rollout before spending</h3>
+      <div class="runcmd" style="line-height:1.95"><b>python3 scripts/pipeline.py --smoke</b></div>
+      <p class="note" style="margin-top:0">One rollout per model at <span class="mono">high</span> effort. Read the USD column, multiply by the rollout count the next command prints, and decide. A reasoning model at high effort can emit an order of magnitude more output tokens than a cheap arm, so this is the only honest way to estimate the bill.</p>
+
+      <h3 style="margin:20px 0 10px">The real study</h3>
+      <div class="runcmd" style="line-height:1.95"><b>python3 scripts/pipeline.py</b><br><span style="color:var(--meta)"># prints the plan, then waits for you to type 'run'</span></div>
+      <p class="note" style="margin-top:0">Stages: standing check &rarr; rotation corpus (3 configs &times; 8 tasks &times; 10) &rarr; effort sweep (3 &times; 4 efforts &times; 8 &times; 5) &rarr; grading &rarr; report. Dial it with <span class="mono">--n</span>, <span class="mono">--sweep-n</span>, <span class="mono">--task</span>, or drop the arms with <span class="mono">--no-sweep</span>.</p>
+    </div>
+    <div>
+      <h3 style="margin-bottom:10px">What one line does not do</h3>
+      <div class="runcmd" style="line-height:1.95">python3 scripts/label.py --n 40<br>python3 scripts/report.py --json</div>
+      <p class="note" style="margin-top:0">The 40-trace calibration needs a human, so the pipeline stops short of it and says so. A pipeline that automated this would emit judge&ndash;human agreement numbers with nothing behind them. Until the labels exist, <span class="mono">report.py</span> prints that every process figure is an assertion rather than a calibrated result.</p>
+
+      <h3 style="margin:20px 0 10px">Environment</h3>
+      <div class="runcmd" style="line-height:1.95">uv sync --extra providers --extra data<br>cp .env.example .env<br>python3 tasks/math/loader.py --sync</div>
+      <p class="note" style="margin-top:0">The canonical variables are <span class="mono">OPENAI_API_KEY</span>, <span class="mono">GEMINI_API_KEY</span> and <span class="mono">XAI_API_KEY</span>. Common alternatives &mdash; <span class="mono">OPENAI_TOKEN</span>, <span class="mono">GEMINI_TOKEN</span>, <span class="mono">GROK_TOKEN</span>, <span class="mono">GOOGLE_API_KEY</span> &mdash; are accepted and copied across at startup, with a line printed saying which was used. Forgiving about the name, never silent about the substitution.</p>
+
+      <h3 style="margin:20px 0 10px">Presenting</h3>
+      <div class="runcmd" style="line-height:1.95">python3 display/replay.py \<br>&nbsp;&nbsp;--trace traces/S1/aime2026-07.jsonl --speed 8</div>
+      <p class="note" style="margin-top:0">Replay uses the <em>same renderer</em> as the live run. If the network dies, the fallback does not look like a fallback.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 26 ==================== -->
+<section class="part part--rule" id="p26">
+  <p class="partno"><b>26</b> References</p>
+  <h2>Where the claims come from.</h2>
+  <h3 style="margin:0 0 10px">The news in part 00</h3>
+  <ol class="refs" style="margin-bottom:22px">
+    <li><span><b>OpenAI's Astra solves ten open problems for roughly $2,000 of compute</b><span class="rwhy">Reported August 2026. Includes a sphere-packing bound unmoved since 1978 and several problems from the Erdős catalogue.</span><span class="id"><a href="https://qz.com/openai-astra-model-math-problems-lean-proofs-080326">qz.com/openai-astra-model-math-problems-lean-proofs-080326</a></span></span></li>
+    <li><span><b>Why the Legendary Erdős Problems Are Falling to AI</b><span class="rwhy">Quanta Magazine, August 2026. The best single overview of what has actually fallen and what has not.</span><span class="id"><a href="https://www.quantamagazine.org/why-the-legendary-erdos-problems-are-falling-to-ai-20260803/">quantamagazine.org</a></span></span></li>
+    <li><span><b>Mathematicians grapple with a &ldquo;very rapid and very unsettling change&rdquo;</b><span class="rwhy">Fortune, July 2026, on another century-old problem falling &mdash; and on the discomfort of not being able to check.</span><span class="id"><a href="https://fortune.com/2026/07/21/ai-solves-jacobian-conjecture-levant-alpoge-claude-fable-5/">fortune.com</a></span></span></li>
+    <li><span><b>AI could radically change how math proofs are verified</b><span class="rwhy">Science News. Includes the demonstration that a bug in the verification method could be exploited to accept a false AI-generated proof.</span><span class="id"><a href="https://www.sciencenews.org/article/math-disrupted-by-ai-verify-proofs">sciencenews.org</a></span></span></li>
+    <li><span><b>Axiom Math formalises the 246 theorem</b><span class="rwhy">IEEE Spectrum. Also carries Kevin Buzzard's objection: Lean can certify code that does not state the theorem the mathematician meant.</span><span class="id"><a href="https://spectrum.ieee.org/axiom-math-246-theorem-formalization">spectrum.ieee.org</a></span></span></li>
+    <li><span><b>First Proof: a benchmark of unpublished research-level problems</b><span class="rwhy">Eleven mathematicians built an evaluation because the existing evidence would not settle the argument. Their preliminary answer: not yet.</span><span class="id"><a href="https://c3.unu.edu/blog/mathematicians-create-new-ai-math-test-with-unpublished-problems">c3.unu.edu</a></span></span></li>
+  </ol>
+  <p class="note" style="margin-top:0;margin-bottom:24px"><strong>Verify these before presenting.</strong> They are press reports of fast-moving claims from 2026, cited as the state of the conversation rather than as settled results.</p>
+
+  <h3 style="margin:0 0 10px">The methods this harness implements</h3>
+  <ol class="refs">
+    <li><span><b>Kapoor et al. (2025) &mdash; Holistic Agent Leaderboard</b><span class="rwhy">A standardised harness with central cost tracking; 21,730 rollouts for about $40,000. Their log analysis caught data leakage in a τ-bench scaffold, and higher reasoning effort <em>reduced</em> accuracy in most runs &mdash; the finding behind part 05.</span><span class="id">arXiv:2510.11977 · ICLR 2026</span></span></li>
+    <li><span><b>Zhu et al. (2025) &mdash; Best Practices for Rigorous Agentic Benchmarks</b><span class="rwhy">The Agentic Benchmark Checklist. Documents reward-design flaws mis-estimating performance by up to 100% relative &mdash; the argument behind part 12.</span><span class="id">arXiv:2507.02825 · NeurIPS 2025 D&amp;B</span></span></li>
+    <li><span><b>Kirgis et al. (2026) &mdash; Log analysis is necessary for credible evaluation</b><span class="rwhy">Parts 02 and 03, stated by someone else. On τ-bench Airline, log analysis showed pass^5 was under-elicited by nearly 50%.</span><span class="id">arXiv:2605.08545</span></span></li>
+    <li><span><b>Yao et al. (2024) &mdash; τ-bench</b><span class="rwhy">Origin of pass^k with unbiased estimators from n trials and c successes. Implemented verbatim in <span class="mono">metrics/aggregate.py</span>.</span><span class="id">arXiv:2406.12045 · ICLR 2025</span></span></li>
+    <li><span><b>Miller (2024) &mdash; Adding Error Bars to Evals</b><span class="rwhy">Clustered standard errors for correlated items &mdash; why the bootstrap in part 14 resamples tasks and not rollouts.</span><span class="id">arXiv:2411.00640</span></span></li>
+    <li><span><b>Gu et al. (2025) &mdash; A Survey on LLM-as-a-Judge</b><span class="rwhy">Organised around how to build a <em>reliable</em> judge. The single reference for someone who wants the map.</span><span class="id">arXiv:2411.15594 (v6)</span></span></li>
+    <li><span><b>Sohn, Lee et al. (2026) &mdash; How to Correctly Report LLM-as-a-Judge Evaluations</b><span class="rwhy">Why a raw judge-accuracy number is a biased estimator, and how a calibration set corrects it. The statistical reason part 23 exists.</span><span class="id">arXiv:2511.21140 · ICML 2026</span></span></li>
+    <li><span><b>Zheng et al. (2025) &mdash; Curse of Knowledge</b><span class="rwhy">Giving judges reference answers improves accuracy on average but introduces its own biases. The closest published relative of the outcome leakage measured in part 20.</span><span class="id">arXiv:2509.03419</span></span></li>
+    <li><span><b>Zheng et al. (2025) &mdash; ProcessBench</b><span class="rwhy">Locating the earliest erroneous step in mathematical reasoning. Why the rubric in part 21 demands a quoted span.</span><span class="id">arXiv:2412.06559 · ACL 2025</span></span></li>
+    <li><span><b>Balunović et al. (2025) &mdash; MathArena</b><span class="rwhy">Recurring competitions as a source of uncontaminated problems. The citation for part 04.</span><span class="id">arXiv:2505.23281 · NeurIPS 2025 D&amp;B</span></span></li>
+  </ol>
+  <p class="note">Also load-bearing and cited inline in part 27: Kapoor et al. (2024) <em>AI Agents That Matter</em> · Shi et al. (2025) position bias · Wataoka et al. (2024) and Pombal et al. (2026) self-preference · Li et al. (2025) preference leakage · Verga et al. (2024) juries · Tan et al. (2025) JudgeBench · Han et al. (2025) judge&ndash;human agreement. Verify every arXiv identifier before the slides.</p>
+</section>
+
+<!-- ==================== 27 ==================== -->
+<section class="part part--rule" id="p27">
+  <p class="partno"><b>27</b> Appendix</p>
+  <h2>The complete source.</h2>
+  <p class="lede" style="margin:16px 0 20px">Every file, in full &mdash; not excerpts. Each is split into its components, and every component carries an explanation of what it does and why it is shaped that way. Where a component implements something that comes from the literature, the citation sits beside the code. Click a file to open it.</p>
+  <div class="grid g4" style="margin-bottom:20px">
+    <div class="tile"><div class="tile__n">28</div><div class="tile__l">Files<br>shown complete</div></div>
+    <div class="tile"><div class="tile__n">211</div><div class="tile__l">Components<br>each one explained</div></div>
+    <div class="tile"><div class="tile__n">3,311</div><div class="tile__l">Lines<br>100% of the source</div></div>
+    <div class="tile"><div class="tile__n">45</div><div class="tile__l">Inline citations<br>to the reading list</div></div>
+  </div>
+  <p class="note" style="margin-top:0"><strong>Checked, not claimed.</strong> <span class="mono">deck/components.py</span> asserts that the components it emits tile each file exactly, so every line appears here once. <span class="mono">deck/build.py</span> refuses to build if any component has no explanation. If either fails, there is no page.</p>
+  <h3 style="margin:22px 0 10px">core/ <span style="font-family:var(--mono);font-size:11.5px;color:var(--meta);font-weight:400">&mdash; Contracts, the trace store, config pinning, the budget.</span></h3><details class="file"><summary>core/budget.py<b>4 components &middot; 49 lines</b></summary>{{FULL|core/budget.py}}</details><details class="file"><summary>core/config.py<b>13 components &middot; 213 lines</b></summary>{{FULL|core/config.py}}</details><details class="file"><summary>core/contracts.py<b>9 components &middot; 142 lines</b></summary>{{FULL|core/contracts.py}}</details><details class="file"><summary>core/miniyaml.py<b>8 components &middot; 117 lines</b></summary>{{FULL|core/miniyaml.py}}</details><details class="file"><summary>core/trace.py<b>11 components &middot; 141 lines</b></summary>{{FULL|core/trace.py}}</details><h3 style="margin:22px 0 10px">agent/ <span style="font-family:var(--mono);font-size:11.5px;color:var(--meta);font-weight:400">&mdash; The hand-written loop, the tools, the sandbox, the providers.</span></h3><details class="file"><summary>agent/loop.py<b>5 components &middot; 99 lines</b></summary>{{FULL|agent/loop.py}}</details><details class="file"><summary>agent/providers.py<b>20 components &middot; 378 lines</b></summary>{{FULL|agent/providers.py}}</details><details class="file"><summary>agent/sandbox.py<b>6 components &middot; 90 lines</b></summary>{{FULL|agent/sandbox.py}}</details><details class="file"><summary>agent/tools.py<b>10 components &middot; 91 lines</b></summary>{{FULL|agent/tools.py}}</details><h3 style="margin:22px 0 10px">runner/ <span style="font-family:var(--mono);font-size:11.5px;color:var(--meta);font-weight:400">&mdash; Rollout orchestration and the seven-way outcome classifier.</span></h3><details class="file"><summary>runner/outcomes.py<b>8 components &middot; 68 lines</b></summary>{{FULL|runner/outcomes.py}}</details><details class="file"><summary>runner/rollouts.py<b>5 components &middot; 88 lines</b></summary>{{FULL|runner/rollouts.py}}</details><h3 style="margin:22px 0 10px">verifiers/ <span style="font-family:var(--mono);font-size:11.5px;color:var(--meta);font-weight:400">&mdash; The grading stack, deterministic first, judged where it must be.</span></h3><details class="file"><summary>verifiers/answer_match.py<b>7 components &middot; 105 lines</b></summary>{{FULL|verifiers/answer_match.py}}</details><details class="file"><summary>verifiers/masked_cont.py<b>5 components &middot; 63 lines</b></summary>{{FULL|verifiers/masked_cont.py}}</details><details class="file"><summary>verifiers/process_judge.py<b>11 components &middot; 209 lines</b></summary>{{FULL|verifiers/process_judge.py}}</details><details class="file"><summary>verifiers/tool_replay.py<b>5 components &middot; 54 lines</b></summary>{{FULL|verifiers/tool_replay.py}}</details><h3 style="margin:22px 0 10px">metrics/ <span style="font-family:var(--mono);font-size:11.5px;color:var(--meta);font-weight:400">&mdash; Reliability, judge quality, and cost.</span></h3><details class="file"><summary>metrics/aggregate.py<b>8 components &middot; 101 lines</b></summary>{{FULL|metrics/aggregate.py}}</details><details class="file"><summary>metrics/cost.py<b>3 components &middot; 30 lines</b></summary>{{FULL|metrics/cost.py}}</details><details class="file"><summary>metrics/judges.py<b>11 components &middot; 146 lines</b></summary>{{FULL|metrics/judges.py}}</details><h3 style="margin:22px 0 10px">tasks/math/ <span style="font-family:var(--mono);font-size:11.5px;color:var(--meta);font-weight:400">&mdash; The mathematics plugin: loader and answer key.</span></h3><details class="file"><summary>tasks/math/loader.py<b>12 components &middot; 87 lines</b></summary>{{FULL|tasks/math/loader.py}}</details><h3 style="margin:22px 0 10px">display/ <span style="font-family:var(--mono);font-size:11.5px;color:var(--meta);font-weight:400">&mdash; One renderer, used live and on replay.</span></h3><details class="file"><summary>display/live.py<b>6 components &middot; 62 lines</b></summary>{{FULL|display/live.py}}</details><details class="file"><summary>display/replay.py<b>6 components &middot; 54 lines</b></summary>{{FULL|display/replay.py}}</details><h3 style="margin:22px 0 10px">scripts/ <span style="font-family:var(--mono);font-size:11.5px;color:var(--meta);font-weight:400">&mdash; The five entry points.</span></h3><details class="file"><summary>scripts/grade.py<b>7 components &middot; 156 lines</b></summary>{{FULL|scripts/grade.py}}</details><details class="file"><summary>scripts/initial_check.py<b>7 components &middot; 285 lines</b></summary>{{FULL|scripts/initial_check.py}}</details><details class="file"><summary>scripts/label.py<b>8 components &middot; 121 lines</b></summary>{{FULL|scripts/label.py}}</details><details class="file"><summary>scripts/report.py<b>8 components &middot; 220 lines</b></summary>{{FULL|scripts/report.py}}</details><details class="file"><summary>scripts/run.py<b>6 components &middot; 95 lines</b></summary>{{FULL|scripts/run.py}}</details><h3 style="margin:22px 0 10px">configs/ <span style="font-family:var(--mono);font-size:11.5px;color:var(--meta);font-weight:400">&mdash; The pinned apparatus, in YAML.</span></h3><details class="file"><summary>configs/models.yaml<b>1 components &middot; 30 lines</b></summary>{{FULL|configs/models.yaml}}</details><details class="file"><summary>configs/rotation.yaml<b>1 components &middot; 17 lines</b></summary>{{FULL|configs/rotation.yaml}}</details>
+</section>
+
+</div><!-- /doc -->
+
+<footer class="band band--bot">
+  <div class="band__in">
+    <svg class="logo logo--foot" role="img" aria-label="ISSAI"><use href="#issai"></use></svg>
+    <div class="foot__cols">
+      <div class="fcol"><b>Instructor</b><span>Akylbek Maxutov · Senior Data Scientist</span></div>
+      <div class="fcol"><b>Institute</b><span>ISSAI, Nazarbayev University, Astana</span></div>
+      <div class="fcol"><b>Workshop</b><span>AI-Math Conference · two sessions × 40 min</span></div>
+      <div class="fcol"><b>Licence</b><span>Code MIT · Materials CC BY 4.0 · problems CC BY-NC-SA 4.0</span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Highlight the section the reader is actually in.
+  var links = Array.prototype.slice.call(document.querySelectorAll('.secnav a'));
+  var parts = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+  var nav = document.querySelector('.secnav');
+  function sync() {
+    var y = window.scrollY + 160, cur = 0;
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i] && parts[i].offsetTop <= y) cur = i;
+    }
+    links.forEach(function (a, i) { a.classList.toggle('on', i === cur); });
+    var on = links[cur];
+    if (on && nav) {
+      var l = on.offsetLeft, r = l + on.offsetWidth;
+      if (l < nav.scrollLeft || r > nav.scrollLeft + nav.clientWidth) {
+        nav.scrollLeft = l - 24;
+      }
+    }
+  }
+  var tick = false;
+  window.addEventListener('scroll', function () {
+    if (tick) return;
+    tick = true;
+    window.requestAnimationFrame(function () { sync(); tick = false; });
+  }, { passive: true });
+  sync();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+
+config S1   model mock-solver-S1   temp 0.7   prompt 67249a8c03d1
+config_hash ef8a47c167a0   tools python_exec,submit_answer   max_turns 8   cap $0.5
+*** SIMULATED CORPUS — no provider was called ***
+--------------------------------------------------------------
+RUN    TURNS   TOOLS   ANSWER    OUTCOME           USD        
+0      2       1       108       submitted         0.0059     
+1      2       1       108       submitted         0.0059     
+2      0       0       -         error             0.0000     
+3      2       1       608       submitted         0.0059     
+4      2       1       608       submitted         0.0059     
+5      2       1       608       submitted         0.0059     
+6      2       1       608       submitted         0.0059     
+7      2       1       608       submitted         0.0059     
+8      2       1       608       submitted         0.0059     
+9      2       1       608       submitted         0.0059     
+--------------------------------------------------------------
+10 rollouts   submitted 9   error 1   $0.0533
+
