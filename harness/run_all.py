@@ -34,6 +34,8 @@ def main(argv=None) -> int:
     ap.add_argument("--mock", action="store_true", help="offline simulator")
     ap.add_argument("--force", action="store_true", help="re-run cells that already exist")
     ap.add_argument("--dry-run", action="store_true", help="print the plan and stop")
+    ap.add_argument("--max-tokens", type=int, default=None,
+                    help="override the solver output cap (default 16384)")
     ap.add_argument("--problem", action="append", help="restrict to these problem ids")
     ap.add_argument("--model", action="append", help="restrict to these models")
     a = ap.parse_args(argv)
@@ -68,7 +70,8 @@ def main(argv=None) -> int:
             print(f"  skip  {pid:14s} {mkey:17s} {mode:7s} (exists)")
             continue
         cfg = ExperimentConfig(model_key=mkey, reasoning_mode=ReasoningMode.parse(mode),
-                               mock=a.mock)
+                               mock=a.mock,
+                               **({"max_output_tokens": a.max_tokens} if a.max_tokens else {}))
         rec, _ = run_and_store(probs[pid], cfg)
         counts[rec["status"]] = counts.get(rec["status"], 0) + 1
         mark = {"ok": "OK ", "unsupported": "-- ", "error": "ERR",

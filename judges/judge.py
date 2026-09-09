@@ -28,6 +28,53 @@ from providers.base import ProviderError, ProviderTimeout
 
 FENCE = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL)
 
+# A backslash that begins a GENUINE JSON escape. Everything else a judge writes
+# after a backslash is, in this domain, LaTeX.
+_ANY_BACKSLASH = re.compile(r'\\(["\\/]|u[0-9a-fA-F]{4})|\\')
+# Control characters that only ever appear here because \frac or \binom was
+# read as a real escape. Their presence means a "successful" parse is corrupt.
+_CORRUPT = ("\x0c", "\x08")
+
+
+def _has_corrupt_control(blob) -> bool:
+    """True if a parsed value contains a control character that can only have
+    come from a LaTeX command being read as a JSON escape.
+
+    Checked against the parsed VALUES, not their re-serialisation: json.dumps
+    turns a formfeed back into the six characters \\u000c, so looking for the
+    control character in the dumped text never finds it.
+    """
+    if isinstance(blob, str):
+        return any(ch in blob for ch in _CORRUPT)
+    if isinstance(blob, dict):
+        return any(_has_corrupt_control(v) for v in blob.values())
+    if isinstance(blob, list):
+        return any(_has_corrupt_control(v) for v in blob)
+    return False
+
+
+def repair_latex_escapes(text: str) -> str:
+    r"""Escape the backslashes a judge wrote as LaTeX, not as JSON.
+
+    This is the single most common way a mathematical verdict fails to parse,
+    and it fails in two different ways:
+
+        "\(x\)"        invalid escape -> json.loads raises
+        "5 \times 7"   VALID escape   -> parses, and silently becomes a TAB
+
+    The second is worse, because nothing complains: `\frac` becomes a formfeed
+    followed by "rac", and the explanation is quietly mangled in a verdict that
+    reported success.
+
+    So the rule is narrow and domain-specific: keep \", \\, \/ and \uXXXX,
+    which are the escapes a model actually means, and double every other
+    backslash, which is LaTeX.
+
+    Applied only after a strict parse has failed or has produced a control
+    character, and the fact that it was applied is recorded on the verdict.
+    """
+    return _ANY_BACKSLASH.sub(lambda m: m.group(0) if m.group(1) else "\\\\", text)
+
 
 class VerdictParseError(ValueError):
     """The judge's reply was not a usable verdict."""
@@ -37,7 +84,12 @@ class VerdictParseError(ValueError):
 class JudgeConfig:
     judge_key: str
     reasoning_mode: ReasoningMode
-    max_output_tokens: int = 1024
+    # Reasoning tokens are charged against this cap. At high effort a judge can
+    # spend well over a thousand of them thinking, so a 1024 cap leaves nothing
+    # for the JSON and the verdict comes back truncated mid-object: six were
+    # lost that way on the first real run, and 18 of 96 replies ran right up to
+    # the limit. Sized to clear the largest reply observed by a wide margin.
+    max_output_tokens: int = 8192
     max_attempts: int = 2
     mock: bool = False
 
@@ -62,12 +114,29 @@ def parse_verdict(text: str) -> dict:
     brace = re.search(r"\{.*\}", text, re.DOTALL)
     if brace:
         candidates.append(brace.group(0))
+    repaired = False
     for c in candidates:
+        c = c.strip()
         try:
-            blob = json.loads(c.strip())
-            break
+            cand = json.loads(c)
         except (json.JSONDecodeError, TypeError):
-            continue
+            # Strict parse failed. Try once more with LaTeX backslashes escaped.
+            try:
+                cand = json.loads(repair_latex_escapes(c))
+                repaired = True
+            except (json.JSONDecodeError, TypeError):
+                continue
+        else:
+            # Strict parse SUCCEEDED but produced a control character, which
+            # means \frac or \binom was silently eaten. Redo it repaired.
+            if _has_corrupt_control(cand):
+                try:
+                    cand = json.loads(repair_latex_escapes(c))
+                    repaired = True
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        blob = cand
+        break
     if not isinstance(blob, dict):
         raise VerdictParseError("no JSON object found in the judge's reply")
 
@@ -92,6 +161,7 @@ def parse_verdict(text: str) -> dict:
         raise VerdictParseError(f"verdict={verdict!r} is not one of {prompts.VERDICTS}")
 
     return {
+        "latex_repaired": repaired,
         "scores": scores,
         "error_severity": sev,
         "verdict": verdict,
@@ -135,6 +205,10 @@ def judge_one(candidate: dict, config: JudgeConfig) -> dict:
             "reasoning_mode": config.reasoning_mode.value,
             "reasoning_request": {},
             "prompt_sha": prompt_sha(prompts.SYSTEM + prompt),
+            # Part of the apparatus: a cap that truncates a verdict changes what
+            # was measured, so it is recorded with the verdict rather than
+            # living only in a default.
+            "max_output_tokens": config.max_output_tokens,
             "rubric_criteria": list(prompts.CRITERIA),
         },
         "status": "error", "error": None, "attempts": 0,
@@ -178,12 +252,21 @@ def judge_one(candidate: dict, config: JudgeConfig) -> dict:
     record["raw_text"] = response.text
     record["reasoning_exposure"] = response.reasoning_exposure
 
+    # Truncation and malformed output need different fixes — raise the cap
+    # versus fix the parser — so they are different statuses, not one bucket.
+    truncated = response.output_tokens >= config.max_output_tokens - 4
+
     try:
         parsed = parse_verdict(response.text)
     except VerdictParseError as e:
-        # Kept, counted, and visible on the website. Not silently dropped.
-        record["status"] = "parse_failed"
-        record["error"] = {"type": "VerdictParseError", "message": str(e)}
+        record["status"] = "truncated" if truncated else "parse_failed"
+        record["error"] = {
+            "type": "Truncated" if truncated else "VerdictParseError",
+            "message": (f"reply hit the {config.max_output_tokens}-token cap "
+                        f"({response.output_tokens} used, {response.reasoning_tokens} of them "
+                        f"reasoning) and stopped mid-verdict"
+                        if truncated else str(e)),
+        }
         return record
 
     record.update(parsed)

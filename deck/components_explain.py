@@ -35,8 +35,8 @@ C = {
     "<code>python3 -m harness.run</code> behaves the same from anywhere in the tree.",
 
 "harness/problems.py::dataset_info":
-    "The problem set's own description of itself &mdash; origin, selection criteria, how the "
-    "answers were verified, licence. Kept beside the problems rather than written into prose on "
+    "The problem set's own description of itself &mdash; origin, selection criteria and how the "
+    "answers were verified. Kept beside the problems rather than written into prose on "
     "a slide, so the page and the file cannot disagree about what the dataset is or where it came "
     "from. The Dataset section of this page is rendered entirely from what this returns.",
 
@@ -196,7 +196,11 @@ C = {
     "the experiment.",
 
 "harness/runner.py::SYSTEM_PROMPT · DEFAULTS":
-    "The solver prompt as a module constant with a hash, not an f-string assembled at the call site. "
+    "<code>max_output_tokens</code> must cover the thinking AND the written solution, since "
+    "reasoning tokens are charged against it. On the first real study the largest run used 3182 "
+    "output tokens with 2930 of them reasoning &mdash; 78% of what was then a 4096 cap, so a harder "
+    "problem would have truncated. A cap costs nothing unless the tokens are generated, so it is "
+    "sized with real headroom. The solver prompt is a module constant with a hash, not an f-string assembled at the call site. "
     "It asks for an explicit <code>FINAL ANSWER</code> marker and for exact form, which is what lets "
     "the answer checker stay narrow and reproducible.",
 
@@ -435,16 +439,38 @@ C = {
     "is reading the expensive high-effort run from the famous model is not scoring the same thing as "
     "one that does not.",
 
-"judges/judge.py::FENCE":
-    "Matches a fenced code block. Models wrap JSON in fences constantly; that is packaging, not "
-    "judgement, so the parser unwraps it rather than rejecting the verdict.",
+"judges/judge.py::FENCE · _ANY_BACKSLASH · _CORRUPT":
+    "Three patterns for the three ways a judge's JSON arrives broken. <code>FENCE</code> unwraps a "
+    "fenced block &mdash; packaging, not judgement. <code>_ANY_BACKSLASH</code> separates a genuine "
+    "JSON escape from a LaTeX command. <code>_CORRUPT</code> lists the control characters that can "
+    "only be there because <code>\\frac</code> or <code>\\binom</code> was read as an escape, which "
+    "is how a parse can succeed and still be wrong.",
+
+"judges/judge.py::_has_corrupt_control":
+    "Walks the PARSED values looking for those control characters. Checked against the values rather "
+    "than their re-serialisation, because <code>json.dumps</code> turns a formfeed back into the six "
+    "characters <code>\\u000c</code> and the search would never find it.",
+
+"judges/judge.py::repair_latex_escapes":
+    "The repair. A mathematical verdict fails to parse in two ways: <code>\\(x\\)</code> is an invalid "
+    "escape and raises, while <code>5 \\times 7</code> is a VALID escape that parses and silently "
+    "becomes a tab. The second is worse because nothing complains. So the rule is narrow and "
+    "domain-specific &mdash; keep the escapes a model actually means, double every other backslash "
+    "&mdash; and it is applied only after a strict parse has failed or produced a control character, "
+    "with the fact recorded on the verdict. This recovered 19 of 25 lost verdicts on the first real "
+    "run, at no cost, because the raw replies had been kept.",
 
 "judges/judge.py::VerdictParseError":
     "Its own exception type, so a formatting failure is caught and recorded separately from a "
     "provider failure. The two have different causes and different fixes.",
 
 "judges/judge.py::JudgeConfig":
-    "The judge's counterpart to <code>ExperimentConfig</code>. Deliberately the same shape, because "
+    "The judge's counterpart to <code>ExperimentConfig</code>. <code>max_output_tokens</code> is the "
+    "field to look at: reasoning tokens are charged against it, so a cap that seems generous for a "
+    "JSON object is not generous at all once a high-effort judge has spent a thousand tokens "
+    "thinking. Set to 1024 on the first real run, it truncated six verdicts mid-object and pushed "
+    "18 of 96 replies right up to the limit. It is recorded with every verdict, because a cap that "
+    "truncates changes what was measured. Deliberately the same shape as the solver config, because "
     "a judge run is a model run &mdash; and treating it as one is what gets it timed, priced and "
     "stored with the same rigour as the thing it is judging.",
 

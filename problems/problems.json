@@ -60,7 +60,6 @@
     ],
     "verification": "Every answer was verified by brute force in Python before anything was built on it. Two of the three answers were WRONG in the first draft and the brute-force check caught both. That check is reproduced on this page.",
     "answer_format": "Each problem declares an exact expected answer plus the alternative spellings that mean the same value. The grader normalises presentation (LaTeX, $, thousands separators) and compares exact rationals — it never accepts a decimal approximation of a fraction.",
-    "licence": "CC BY 4.0, with the rest of the workshop materials.",
     "swapping_it_out": "Replace problems/problems.json with the same shape and everything downstream follows: the loader, the matrix, the judge rotation and the website all read problem ids from that one file."
   }
 }

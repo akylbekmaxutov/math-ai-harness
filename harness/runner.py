@@ -42,7 +42,12 @@ SYSTEM_PROMPT = (
     "Give the answer in exact form (a fraction rather than a decimal where applicable)."
 )
 
-DEFAULTS = {"max_output_tokens": 4096, "max_attempts": 2}
+# Reasoning tokens are charged against this cap, so it has to cover the thinking
+# AND the written solution. Measured on the first real study: the largest run was
+# Grok at high effort, 3182 output tokens of which 2930 were reasoning — 78% of a
+# 4096 cap. A harder problem would have truncated. Sized with real headroom
+# instead: a cap costs nothing unless the tokens are actually generated.
+DEFAULTS = {"max_output_tokens": 16384, "max_attempts": 2}
 
 
 def prompt_sha(text: str) -> str:

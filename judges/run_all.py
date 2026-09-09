@@ -49,7 +49,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="judges.run_all", description=__doc__.splitlines()[0])
     ap.add_argument("--mock", action="store_true", help="offline simulator")
     ap.add_argument("--force", action="store_true", help="re-judge verdicts that already exist")
+    ap.add_argument("--retry-failed", action="store_true",
+                    help="re-run ONLY verdicts whose stored status is not ok")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--max-tokens", type=int, default=None,
+                    help="override the judge output cap (default 8192)")
     ap.add_argument("--judge-mode", action="append", choices=[m.value for m in ReasoningMode],
                     help=f"repeatable; default {' '.join(DEFAULT_JUDGE_MODES)}")
     a = ap.parse_args(argv)
@@ -83,10 +87,20 @@ def main(argv=None) -> int:
                 path = storage.judge_path(c["problem"]["problem_id"], s["model_key"],
                                           s["reasoning_mode"], jkey, jmode)
                 if path.exists() and not a.force:
-                    counts["skipped"] += 1
-                    continue
+                    # --retry-failed re-runs the broken cells and nothing else,
+                    # so fixing six truncated verdicts costs six calls.
+                    stored_ok = True
+                    if a.retry_failed:
+                        try:
+                            stored_ok = storage.read_record(path).get("status") == "ok"
+                        except (OSError, ValueError):
+                            stored_ok = False
+                    if stored_ok:
+                        counts["skipped"] += 1
+                        continue
                 cfg = JudgeConfig(judge_key=jkey, reasoning_mode=ReasoningMode.parse(jmode),
-                                  mock=a.mock)
+                                  mock=a.mock,
+                                  **({"max_output_tokens": a.max_tokens} if a.max_tokens else {}))
                 rec, _ = judge_and_store(c, cfg)
                 counts[rec["status"]] += 1
                 detail = ""

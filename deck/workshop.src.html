@@ -1385,7 +1385,9 @@ XAI_API_KEY=</pre>
       <tr><td>Missing usage statistics</td><td>Preserved as <span class="mono">null</span>, never defaulted to zero</td><td class="mono">reasoning_tokens: null</td></tr>
       <tr><td>Rate limit</td><td>Surfaces as a provider error; re-running the same command resumes from disk</td><td class="mono">status: error</td></tr>
       <tr><td>Unavailable model</td><td>Named in the error message, with the variable or model string at fault</td><td class="mono">status: error</td></tr>
-      <tr><td>Judge JSON will not parse</td><td>Raw text kept, verdict discarded, and the count reported on this page</td><td class="mono">status: parse_failed</td></tr>
+      <tr><td>Judge JSON will not parse</td><td>Raw text kept, so a better parser can be applied later with <span class="mono">judges.reparse</span> and no new API calls</td><td class="mono">status: parse_failed</td></tr>
+      <tr><td>Judge reply hits the token cap</td><td>Counted separately — reasoning tokens are charged against the cap, so the fix is a bigger cap, not a better parser</td><td class="mono">status: truncated</td></tr>
+      <tr><td>LaTeX inside the judge&rsquo;s JSON</td><td>Repaired and flagged. <span class="mono">\(</span> and <span class="mono">\frac</span> are not valid JSON escapes; one raises, the other silently becomes a control character</td><td class="mono">latex_repaired: true</td></tr>
       <tr><td>Unknown model price</td><td>Raises immediately — a run reported as free is worse than a crash</td><td class="mono">KeyError at build</td></tr>
     </tbody>
   </table>
@@ -1476,7 +1478,6 @@ XAI_API_KEY=</pre>
       <div class="fcol"><b>Conference</b><span>1st International Conference and Workshop on Mathematics and Artificial Intelligence</span></div>
       <div class="fcol"><b>Dates</b><span>September 9–11, 2026</span></div>
       <div class="fcol"><b>Instructor</b><span>Akylbek Maxutov · ISSAI, Nazarbayev University, Astana</span></div>
-      <div class="fcol"><b>Licence</b><span>Code MIT · Workshop materials CC BY 4.0</span></div>
     </div>
   </div>
 </footer>
@@ -1665,7 +1666,9 @@ $("#headline").innerHTML = [
   ['<div class="tile__n">' + C.solver_ok + "<span style=\"font-size:.5em;color:var(--meta)\"> / " + C.solver_cells + "</span></div>",
    "Solver runs executed<br>" + C.solver_unsupported + " unsupported · " + C.solver_error + " errored"],
   ['<div class="tile__n">' + C.verdicts_ok + "</div>",
-   "Judge verdicts parsed<br>" + C.verdicts_parse_failed + " failed to parse"],
+   "Judge verdicts usable<br>" +
+   (C.verdicts_parse_failed || 0) + " malformed · " + (C.verdicts_truncated || 0) + " truncated" +
+   (C.verdicts_latex_repaired ? "<br>" + C.verdicts_latex_repaired + " recovered by the LaTeX-escape repair" : "")],
   ['<div class="tile__n">' + usd(COST.total_usd).replace("$", "$") + "</div>",
    "Total cost<br>solver " + usd(COST.solver_usd) + " · judges " + usd(COST.judge_usd)],
   ['<div class="tile__n">' + pct(COST.judge_share) + "</div>",

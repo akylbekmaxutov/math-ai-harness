@@ -271,6 +271,10 @@ def summarise(runs: list[dict], judge_runs: list[dict]) -> dict:
             "verdicts": len(judge_runs),
             "verdicts_ok": len(ok_v),
             "verdicts_parse_failed": sum(1 for v in judge_runs if v["status"] == "parse_failed"),
+            # Truncated and malformed need different fixes — raise the cap versus
+            # fix the parser — so they are counted apart.
+            "verdicts_truncated": sum(1 for v in judge_runs if v["status"] == "truncated"),
+            "verdicts_latex_repaired": sum(1 for v in judge_runs if v.get("latex_repaired")),
         },
         "cost": {
             # The number people forget: evaluating cost money too, and with two

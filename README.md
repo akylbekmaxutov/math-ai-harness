@@ -76,6 +76,23 @@ Both `run_all` commands skip a cell whose file already exists, so a study interr
 rate limit is finished by re-running the same command. Pass `--force` to redo everything,
 `--dry-run` to see the plan without spending.
 
+### When a verdict does not parse
+
+Every judge reply is stored raw, so a better parser can be applied to a corpus you have
+already paid for — no new API calls:
+
+```bash
+python3 -m judges.reparse            # report what would change
+python3 -m judges.reparse --apply    # rewrite the parsed fields in place
+```
+
+If a verdict was *truncated* rather than malformed, no parser can recover it — the text was
+never generated. Re-run only the broken ones:
+
+```bash
+python3 -m judges.run_all --retry-failed
+```
+
 ### One cell
 
 ```bash
