@@ -64,6 +64,12 @@ class XAIAdapter(BaseAdapter):
         u = r.usage
         details = getattr(u, "completion_tokens_details", None)
         rtok = getattr(details, "reasoning_tokens", None) if details else None
+        # xAI reports reasoning tokens SEPARATELY from completion_tokens, unlike
+        # the OpenAI dialect it otherwise speaks. Measured on a real call:
+        # completion_tokens=313 with reasoning_tokens=2520 — impossible if they
+        # were included. So they are added here, matching the Gemini adapter and
+        # the convention the rest of the harness depends on.
+        completion = int(u.completion_tokens) + int(rtok or 0)
         # Some xAI reasoning models return the trace on the message; when the
         # field is absent we say `token_count_only` rather than inventing one.
         summary = getattr(msg, "reasoning_content", None) or None
@@ -73,7 +79,7 @@ class XAIAdapter(BaseAdapter):
             reasoning_exposure="summary" if summary else
                                ("token_count_only" if rtok else "none"),
             input_tokens=int(u.prompt_tokens),
-            output_tokens=int(u.completion_tokens),
+            output_tokens=completion,      # reasoning included, per the convention
             reasoning_tokens=int(rtok) if rtok is not None else None,
             reasoning_request=req,
             raw_meta={"response_id": getattr(r, "id", None), "api": "chat_completions"},

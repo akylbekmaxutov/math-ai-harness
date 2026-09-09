@@ -294,6 +294,15 @@ em{font-style:italic}
 }
 .mono{font-family:var(--mono);font-size:.94em}
 .scroll{overflow-x:auto}
+/* A long table that must stay clickable: capped in height and scrolled in place,
+   so a detail panel rendered below it is still on screen after the click that
+   asked for it. A 96-row table pushes its own detail off the bottom otherwise. */
+.tallscroll{overflow:auto;max-height:min(58vh,520px);border:1px solid var(--rule-soft);background:var(--surface)}
+.tallscroll table{margin:0}
+.tallscroll thead th{position:sticky;top:0;background:var(--sunk);z-index:1;padding:9px 12px 9px 0}
+.tallscroll thead th:first-child{padding-left:12px}
+.tallscroll td:first-child{padding-left:12px}
+.tallscroll tbody tr:hover{background:var(--blue-soft)}
 .kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--rule);
   border-bottom-width:2px;padding:1px 5px;color:var(--ink-2);background:var(--surface)}
 
@@ -361,11 +370,15 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-ali
 .explain__lead{font-size:13.4px;line-height:1.55;color:var(--ink);margin:0 0 11px;max-width:none}
 .explain__lead b{color:var(--blue);font-weight:600}
 .explain__pts{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.explain__pts li{display:grid;grid-template-columns:minmax(96px,auto) 1fr;gap:12px;align-items:start;font-size:12.7px;line-height:1.5}
+.explain__pts li{display:grid;grid-template-columns:minmax(88px,24%) 1fr;gap:12px;align-items:start;font-size:12.7px;line-height:1.5}
 @media(max-width:560px){.explain__pts li{grid-template-columns:1fr;gap:2px}}
+/* Column 1 is CAPPED. Left to size on its content, a long token like
+   `{"effort": ..., "summary": "auto"}` takes most of the row and squeezes the
+   explanation into a column so narrow it wraps one word per line. */
 .explain__pts code{
   font-family:var(--mono);font-size:11px;color:var(--blue);background:var(--sunk);
-  border:1px solid var(--rule-soft);padding:2px 6px;white-space:nowrap;justify-self:start;
+  border:1px solid var(--rule-soft);padding:2px 6px;justify-self:start;
+  white-space:normal;overflow-wrap:anywhere;min-width:0;
 }
 .explain__pts span{color:var(--ink-2)}
 .explain__pts b{color:var(--ink);font-weight:600}
@@ -659,8 +672,21 @@ details.more .inner>.explain:last-child{margin-bottom:0}
 .twocol__c--bad li::before{content:"−";color:var(--fail)}
 
 .cl{display:grid;counter-reset:cl;margin:0;padding:0}
-.cl li{list-style:none;counter-increment:cl;display:grid;grid-template-columns:26px 1fr;gap:11px;padding:9px 0;border-bottom:1px solid var(--rule-soft);font-size:13px;line-height:1.5}
-.cl li::before{content:counter(cl,decimal-leading-zero);font-family:var(--mono);font-size:10px;color:var(--meta);padding-top:3px;font-variant-numeric:tabular-nums}
+/* The number is positioned, NOT a grid column. A grid row here splits an item
+   like `<b>Lead.</b> body text` into separate grid items — the bold becomes one,
+   the text becomes another, and the text lands back in the 26px counter column
+   and wraps one word per line. Absolute positioning keeps the item's content a
+   single normal flow, so any mix of inline markup wraps correctly. */
+.cl li{
+  list-style:none;counter-increment:cl;position:relative;
+  padding:9px 0 9px 38px;border-bottom:1px solid var(--rule-soft);
+  font-size:13.2px;line-height:1.62;max-width:74ch;
+}
+.cl li::before{
+  content:counter(cl,decimal-leading-zero);position:absolute;left:0;top:11px;
+  font-family:var(--mono);font-size:10px;color:var(--meta);font-variant-numeric:tabular-nums;
+}
+.cl li b{color:var(--ink)}
 .cl--judge li::before{color:var(--amber)}
 .cl b{color:var(--ink)}
 

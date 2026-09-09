@@ -12,6 +12,10 @@ from __future__ import annotations
 OUTLINE = [
     ("introduction", "Introduction", []),
     ("question", "The Experimental Question", []),
+    ("dataset", "The Dataset", [
+        ("problem-set", "The Three Problems"),
+        ("prompt-sample", "What the Model Receives"),
+    ]),
     ("harness", "Part I · Harness Engineering", [
         ("what-is-a-harness", "What is a Harness?"),
         ("harness-architecture", "Harness Architecture"),
@@ -46,6 +50,8 @@ OUTLINE = [
     ("results", "Results", [
         ("explorer", "Run Explorer"),
         ("judge-compare", "Judge Comparison"),
+        ("all-runs", "Every Run & Trace"),
+        ("all-verdicts", "Every Judge Verdict"),
         ("dashboard", "Model Comparison"),
         ("dimensions", "What We Are Measuring"),
     ]),

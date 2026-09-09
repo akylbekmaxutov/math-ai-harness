@@ -34,6 +34,12 @@ C = {
     "The problem file is located relative to this module, not to the working directory, so "
     "<code>python3 -m harness.run</code> behaves the same from anywhere in the tree.",
 
+"harness/problems.py::dataset_info":
+    "The problem set's own description of itself &mdash; origin, selection criteria, how the "
+    "answers were verified, licence. Kept beside the problems rather than written into prose on "
+    "a slide, so the page and the file cannot disagree about what the dataset is or where it came "
+    "from. The Dataset section of this page is rendered entirely from what this returns.",
+
 "harness/problems.py::Problem":
     "Frozen, so a problem cannot be mutated mid-study and two runs of the same id are two runs of "
     "the same problem. The important line is <code>for_solver()</code>: it returns the question "
@@ -289,7 +295,13 @@ C = {
     "fault with the base class.",
 
 "providers/base.py::ProviderResponse":
-    "The one shape every adapter returns. <code>reasoning_summary</code> holds only what the API "
+    "The one shape every adapter returns, and the place the token convention is ENFORCED rather "
+    "than trusted. <code>__post_init__</code> catches an adapter that reports more reasoning "
+    "tokens than output tokens — impossible if reasoning is included, as the convention requires "
+    "— then corrects it and records the anomaly in the trace. This is not hypothetical: it "
+    "shipped. The xAI adapter assumed the OpenAI convention and the first real call returned 313 "
+    "completion tokens with 2520 reasoning tokens, understating the cost and producing a total "
+    "smaller than one of its own parts. <code>reasoning_summary</code> holds only what the API "
     "explicitly labelled as reasoning; <code>reasoning_exposure</code> says which of the three cases "
     "we are in; <code>output_tokens</code> always includes reasoning tokens because the adapters "
     "normalise to that; and <code>reasoning_request</code> records what actually went on the wire "
@@ -523,6 +535,23 @@ C = {
     "the one case where a human has to read it, and carrying it otherwise would triple the size of the "
     "inlined data for no benefit.",
 
+"analysis/build_results.py::sample_request":
+    "What actually goes on the wire for one problem. It calls the SAME constant and the SAME "
+    "method the runner calls, so the request shown on the page cannot be a retyped approximation "
+    "that has quietly drifted from what was really sent. The per-provider block is lifted out of "
+    "the stored runs, so it is the request that genuinely happened rather than one reconstructed "
+    "from the mapping table.",
+
+"analysis/build_results.py::sample_judge_request":
+    "The complete judge prompt for one real candidate, built by <code>judges/prompts.build</code> "
+    "&mdash; again the real function, not a copy. Showing it in full is the fastest way to make the "
+    "blinding checkable by eye: the expected answer, the harness's verdict and the solver's identity "
+    "are all absent, and anyone can confirm that by reading it.",
+
+"analysis/build_results.py::_problem_dicts":
+    "Question text by id, for the judge sample above. A helper rather than an inline loop only so "
+    "that <code>sample_judge_request</code> stays readable on a slide.",
+
 "analysis/build_results.py::build":
     "The join. Verdicts are indexed by the candidate they judged and the effort they used, then "
     "attached to their solver run along with the agreement summary. The <code>simulated</code> flag is "
@@ -535,7 +564,10 @@ C = {
     "forget. With two judges at two efforts, evaluating usually costs more than solving did.",
 
 "analysis/build_results.py::main":
-    "Writes the file and prints what is in it: how many cells, how many verdicts, how many failed to "
+    "Writes the file and prints what is in it &mdash; including a loud warning if the corpus is "
+    "MIXED. That is the failure mode which looks most like success: <code>run_all</code> resumes "
+    "from disk, so re-running it over a simulated set skips every simulated cell and the page "
+    "then reports a study that never happened. It happened here on the first real run. Then: how many cells, how many verdicts, how many failed to "
     "parse, the split bill, and a banner if any of it is simulated. Then it names the next command, so "
     "the pipeline is discoverable from any point in it.",
 }

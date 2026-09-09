@@ -60,6 +60,29 @@ class ProviderResponse:
     reasoning_request: dict = field(default_factory=dict)
     raw_meta: dict = field(default_factory=dict)
 
+    def __post_init__(self):
+        """Enforce the one convention every adapter must satisfy.
+
+        `output_tokens` includes `reasoning_tokens`. An adapter that gets this
+        wrong understates cost, reports a nonsense reasoning share, and produces
+        a total that is smaller than one of its own parts — silently.
+
+        This is not hypothetical: it shipped. The xAI adapter assumed the
+        OpenAI convention, and the first real call came back with 313 completion
+        tokens and 2520 reasoning tokens. Rather than trust every adapter to
+        remember, the violation is corrected here and RECORDED, so the fact
+        appears in the stored trace instead of vanishing into a wrong number.
+        """
+        r = self.reasoning_tokens
+        if r is not None and r > self.output_tokens:
+            self.raw_meta = dict(self.raw_meta or {})
+            self.raw_meta["usage_anomaly"] = (
+                f"provider reported reasoning_tokens={r} > output_tokens="
+                f"{self.output_tokens}; reasoning tokens were counted separately "
+                f"and have been added to output_tokens"
+            )
+            self.output_tokens = int(self.output_tokens) + int(r)
+
     @property
     def total_tokens(self) -> int:
         return int(self.input_tokens) + int(self.output_tokens)

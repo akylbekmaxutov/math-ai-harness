@@ -31,9 +31,10 @@ from analysis import agreement  # noqa: E402
 from harness import models, problems, storage  # noqa: E402
 from harness.pricing import MODEL_PRICING, PRICING_VERSION  # noqa: E402
 from harness.reasoning import ReasoningMode  # noqa: E402
+from judges import prompts as judge_prompts  # noqa: E402
 from judges.prompts import CRITERIA, ERROR_SEVERITY, SYSTEM as JUDGE_SYSTEM  # noqa: E402
 from judges.run_all import DEFAULT_JUDGE_MODES  # noqa: E402
-from harness.runner import SYSTEM_PROMPT  # noqa: E402
+from harness.runner import SYSTEM_PROMPT, prompt_sha  # noqa: E402
 
 OUT = storage.RESULTS / "workshop_results.json"
 
@@ -63,8 +64,65 @@ def slim_verdict(v: dict) -> dict:
         "cost": v.get("cost"),
         "simulated": v.get("simulated", False),
         "error": v.get("error"),
-        "raw_text": v.get("raw_text") if v["status"] == "parse_failed" else None,
+        # The judge's reply verbatim, always — not only when parsing failed.
+        # "Show me what the judge actually said" is the first question anyone
+        # asks about a verdict, and a summary of it is not an answer.
+        "raw_text": v.get("raw_text"),
+        "reasoning_exposure": v.get("reasoning_exposure"),
     }
+
+
+def sample_request(problem, runs: list[dict]) -> dict:
+    """Exactly what goes on the wire for this problem.
+
+    Reconstructed by calling the SAME constant and the SAME method the runner
+    uses, so the page cannot show a retyped approximation that has quietly
+    drifted from what was really sent. The per-provider block is lifted from
+    the stored runs, so it is the request that actually happened.
+    """
+    per_provider = {}
+    for r in runs:
+        if r["problem_id"] != problem.problem_id or not r.get("reasoning_request"):
+            continue
+        per_provider.setdefault(r["model_key"], {})[r["reasoning_mode"]] = {
+            "provider": r["provider"],
+            "model": r["model"],
+            "request": r["reasoning_request"],
+        }
+    return {
+        "system": SYSTEM_PROMPT,
+        "system_sha": prompt_sha(SYSTEM_PROMPT),
+        "user": problem.for_solver(),
+        "note": ("The user turn is the question and nothing else. The expected answer is "
+                 "not in the object the solver is handed, so no prompt builder can leak it."),
+        "per_provider": per_provider,
+    }
+
+
+def sample_judge_request(runs: list[dict]) -> dict | None:
+    """The complete judge prompt for one real candidate, built by judges/prompts.build."""
+    cand = next((r for r in runs if r["status"] == "ok" and r.get("response_text")), None)
+    if cand is None:
+        return None
+    return {
+        "system": JUDGE_SYSTEM,
+        "user": judge_prompts.build(
+            question=next(p["question"] for p in _problem_dicts()
+                          if p["problem_id"] == cand["problem_id"]),
+            solution_text=cand["response_text"],
+            claimed_answer=cand["final_answer"],
+        ),
+        "built_for": {"problem_id": cand["problem_id"], "model": cand["display"],
+                      "reasoning_mode": cand["reasoning_mode"]},
+        "note": ("Note what is absent: the expected answer, the harness's correctness "
+                 "verdict, and the identity, effort, token count and cost of the model "
+                 "that wrote the solution."),
+    }
+
+
+def _problem_dicts() -> list[dict]:
+    return [{"problem_id": p.problem_id, "question": p.question}
+            for p in problems.load_problems().values()]
 
 
 def build() -> dict:
@@ -133,6 +191,10 @@ def build() -> dict:
         "rubric": {k: {"title": t, "anchors": a} for k, (t, a) in CRITERIA.items()},
         "error_severity_scale": list(ERROR_SEVERITY),
         "capability_matrix": models.capability_matrix(),
+        "dataset": problems.dataset_info(),
+        "sample_requests": {p.problem_id: sample_request(p, runs)
+                            for p in problems.load_problems().values()},
+        "sample_judge_request": sample_judge_request(runs),
         "models": [
             {"key": k, "display": s.display, "provider": s.provider, "family": s.family,
              "pricing": MODEL_PRICING.get(k)}
@@ -241,7 +303,21 @@ def main(argv=None) -> int:
     print(f"  solver ${cost['solver_usd']:.4f}  +  judges ${cost['judge_usd']:.4f}"
           f"  =  ${cost['total_usd']:.4f}   "
           f"(judges are {100 * (cost['judge_share'] or 0):.0f}% of it)")
-    if data["simulated"]:
+    # A mixed corpus is the failure mode that looks most like success: `run_all`
+    # resumes from disk, so re-running it over a simulated set silently keeps the
+    # simulated cells and the page reports a study that never happened.
+    sim = sum(1 for r in data["runs"] if r["simulated"])
+    real = len(data["runs"]) - sim
+    if sim and real:
+        print()
+        print("  " + "!" * 66)
+        print(f"  MIXED CORPUS: {real} real cell(s) and {sim} SIMULATED cell(s) in one set.")
+        print("  This is not a study. run_all resumes from disk, so simulated cells")
+        print("  already on disk were skipped rather than re-run. Fix it with:")
+        print("      rm -rf results/solver results/judges")
+        print("      python3 -m harness.run_all && python3 -m judges.run_all")
+        print("  " + "!" * 66)
+    elif data["simulated"]:
         print("  SIMULATED DATA — the website will banner every figure derived from it.")
     print(f"  wrote {out.relative_to(storage.ROOT)}  {out.stat().st_size:,} bytes")
     print("  next: python3 deck/build.py\n")

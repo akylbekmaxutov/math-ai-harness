@@ -67,6 +67,7 @@ EXPLAIN = {
         ("output_tokens", "Includes reasoning tokens, because that is the convention the adapters normalise to &mdash; so the cost calculator never has to ask which provider it is looking at."),
         ("reasoning_request", "What the adapter actually put on the wire, not what we intended. The trace records the request, so a reader can check it rather than trusting the label."),
         ("total_tokens", "Derived, not stored, so it cannot drift from its two inputs."),
+        ("__post_init__", "The convention is enforced here, not trusted. An adapter reporting more reasoning tokens than output tokens has violated it — impossible if reasoning is included — so the value is corrected and the anomaly recorded in the trace. xAI did exactly this on the first real call."),
     ]),
 
 "providers/base.py|BaseAdapter.require_supported": dict(

@@ -35,6 +35,19 @@ class Problem:
         return self.question
 
 
+def dataset_info(path: Path | None = None) -> dict:
+    """The problem set's own description of itself.
+
+    Kept beside the problems rather than in prose on a slide, so the page and
+    the file cannot disagree about what the dataset is or where it came from.
+    """
+    raw = json.loads((path or PROBLEMS_FILE).read_text(encoding="utf-8"))
+    info = dict(raw.get("dataset", {}))
+    info.setdefault("version", raw.get("problem_set_version", "unversioned"))
+    info["size"] = len(raw["problems"])
+    return info
+
+
 def load_problems(path: Path | None = None) -> dict[str, Problem]:
     """Read problems.json into `{problem_id: Problem}`, insertion-ordered.
 

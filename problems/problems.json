@@ -44,5 +44,23 @@
       "answer_kind": "integer",
       "why_this_problem": "Reduce 3x + 4y = 0 (mod 7) to x = y (mod 7), then count. The range 1..20 is NOT a multiple of 7: residues 1..6 occur three times but residue 0 occurs only twice, so the count is 6*3^2 + 2^2 = 58, not 7*3^2 = 63. The near-miss 63 is exactly what careless counting produces, so judges have something real to disagree about."
     }
-  ]
+  ],
+  "dataset": {
+    "name": "AI-Math Workshop Problem Set",
+    "version": "2026-09-08",
+    "size": 3,
+    "origin": "written for this workshop",
+    "public_benchmark": false,
+    "summary": "Three problems written for this workshop. Deliberately NOT a public benchmark: a competition set that predates the models is contaminated, and one that postdates them is a moving target that cannot be re-run next year. These three are fixed, versioned, and chosen so that a model can reach the right answer by an invalid route — which is the whole point of Part II.",
+    "selection_criteria": [
+      "Not arithmetic. Each needs a derivation a judge can score as valid or not.",
+      "Each has a specific plausible-but-wrong route that lands on a near-miss or, worse, on the right answer.",
+      "Solvable in a workshop without specialised mathematics.",
+      "Exact answers — a fraction or an integer, never a decimal approximation."
+    ],
+    "verification": "Every answer was verified by brute force in Python before anything was built on it. Two of the three answers were WRONG in the first draft and the brute-force check caught both. That check is reproduced on this page.",
+    "answer_format": "Each problem declares an exact expected answer plus the alternative spellings that mean the same value. The grader normalises presentation (LaTeX, $, thousands separators) and compares exact rationals — it never accepts a decimal approximation of a fraction.",
+    "licence": "CC BY 4.0, with the rest of the workshop materials.",
+    "swapping_it_out": "Replace problems/problems.json with the same shape and everything downstream follows: the loader, the matrix, the judge rotation and the website all read problem ids from that one file."
+  }
 }

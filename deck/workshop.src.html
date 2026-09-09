@@ -143,14 +143,102 @@
 </section>
 
 <!-- ================================================================== -->
+<section class="part part--rule" id="dataset">
+  <p class="partno"><b>03</b> The dataset</p>
+  <h2>What the models were actually asked.</h2>
+  <p class="lede">Three problems, written for this workshop. Every claim on this page is a claim about these three questions, so they get a section rather than a footnote.</p>
+  <div class="grid g4" id="datasetfacts" style="margin-top:18px"></div>
+
+  <div class="pair" style="margin-top:20px">
+    <div>
+      <div class="why">
+        <h3>Why not a public benchmark?</h3>
+        <p id="dsSummary"></p>
+      </div>
+      <div class="why">
+        <h3>How the answers were checked</h3>
+        <p id="dsVerify"></p>
+      </div>
+      <div class="why">
+        <h3>What counts as the right answer</h3>
+        <p id="dsAnswerFormat"></p>
+      </div>
+      <div class="why">
+        <h3>Swapping in your own</h3>
+        <p id="dsSwap"></p>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:10px">Selection criteria</h3>
+      <ol class="cl" id="dsCriteria"></ol>
+      <div class="good" style="margin-top:16px">
+        <span class="lbl">The check that caught two errors</span>
+        <p>Two of the three answers were wrong in the first draft. The brute force below found both before a single API call was made — which is the cheapest bug in the entire project to have fixed.</p>
+      </div>
+      <div class="fig" style="margin:0">
+        <p class="fig__cap"><b>Verification</b> · run it yourself</p>
+        <pre class="sol" style="max-height:none">from fractions import Fraction as F
+
+# algebra_01 — rates add, times do not
+1 / (F(1,6) + F(1,4) - F(1,9))          # -> 36/11
+
+# reasoning_02 — the only n under 5000 that fits
+[n for n in range(2, 5000)
+ if len([i for i in range(1, n+1) if n % i == 0]) == 8
+ and sorted(i for i in range(1, n+1) if n % i == 0)[-2] == 21]   # -> [42]
+
+# multistep_03 — count, do not estimate
+sum(1 for x in range(1, 21) for y in range(1, 21)
+    if (3*x + 4*y) % 7 == 0)            # -> 58</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sub" id="problem-set">
+  <p class="eyebrow">3.1</p>
+  <h2>The three problems, in full.</h2>
+  <p class="lede" style="margin-bottom:16px">Each one is shown exactly as the model receives it, with the answer key and the wrong route it is designed to expose.</p>
+  <div id="problemfull"></div>
+</section>
+
+<section class="sub" id="prompt-sample">
+  <p class="eyebrow">3.2</p>
+  <h2>What the model receives.</h2>
+  <p class="lede" style="margin-bottom:16px">The literal request. Not a description of it &mdash; this block is assembled by calling the same constant and the same method the runner calls, so it cannot drift from what was really sent.</p>
+
+  <div class="picker" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <div><label for="selSampleProblem">Show the request for</label><select id="selSampleProblem"></select></div>
+    <p class="picker__hint" id="sampleHint"></p>
+  </div>
+  <div id="samplepanel"></div>
+
+  <div class="pair" style="margin-top:20px">
+    <div>
+      <div class="why">
+        <h3>The system turn is pinned and hashed</h3>
+        <p>It is a module constant, not an f-string built at the call site. Its SHA travels into every stored run, so a single edited character is visible in every record produced afterwards.</p>
+      </div>
+      <div class="why">
+        <h3>The user turn is the question and nothing else</h3>
+        <p>No problem id, no difficulty hint, no answer key, no mention of who is asking or what happens next. Whatever the model does with it, it did with this.</p>
+      </div>
+    </div>
+    <div>
+      {{CODE|harness/runner.py|SYSTEM_PROMPT|the pinned system turn, verbatim}}
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================== -->
 <section class="part part--rule" id="harness">
-  <p class="partno"><b>03</b> Part I · Harness engineering</p>
+  <p class="partno"><b>04</b> Part I · Harness engineering</p>
   <h2>Everything that is not the model.</h2>
   <p class="lede">The model is one component. It is also the component you did not write, cannot inspect, and will replace next quarter. Everything that makes a number from it trustworthy is the part you do control.</p>
 </section>
 
 <section class="sub" id="what-is-a-harness">
-  <p class="eyebrow">3.1 · Concept</p>
+  <p class="eyebrow">4.1 · Concept</p>
   <h2>What is a harness?</h2>
   <div class="pair">
     <div>
@@ -189,7 +277,7 @@
 </section>
 
 <section class="sub" id="harness-architecture">
-  <p class="eyebrow">3.2 · Architecture</p>
+  <p class="eyebrow">4.2 · Architecture</p>
   <h2>The complete harness.</h2>
   <p class="lede" style="margin-bottom:18px">The same picture at full resolution. Every box below is a module in this repository, and each one gets its own section.</p>
 
@@ -230,7 +318,7 @@
 
 <!-- ---------------- component: problem loader ---------------- -->
 <section class="sub" id="problem-loader">
-  <p class="eyebrow">3.3 · Component 1 of 8</p>
+  <p class="eyebrow">4.3 · Component 1 of 8</p>
   <h2>Problem Loader</h2>
   <div class="pair">
     <div>
@@ -267,7 +355,7 @@ why_this_problem: the common wrong route adds the TIMES
 
 <!-- ---------------- component: experiment config ---------------- -->
 <section class="sub" id="experiment-config">
-  <p class="eyebrow">3.4 · Component 2 of 8</p>
+  <p class="eyebrow">4.4 · Component 2 of 8</p>
   <h2>Experiment Configuration</h2>
   <div class="pair pair--even">
     <div>
@@ -293,7 +381,7 @@ why_this_problem: the common wrong route adds the TIMES
 
 <!-- ---------------- component: model adapter ---------------- -->
 <section class="sub" id="model-adapter">
-  <p class="eyebrow">3.5 · Component 3 of 8 · the important one</p>
+  <p class="eyebrow">4.5 · Component 3 of 8 · the important one</p>
   <h2>Model Adapter</h2>
   <p class="lede" style="margin-bottom:16px">GPT, Gemini and Grok do not speak the same language. The rest of the harness must not know that.</p>
 
@@ -351,7 +439,7 @@ why_this_problem: the common wrong route adds the TIMES
 
 <!-- ---------------- component: reasoning configuration ---------------- -->
 <section class="sub" id="reasoning-config">
-  <p class="eyebrow">3.6 · Component 4 of 8</p>
+  <p class="eyebrow">4.6 · Component 4 of 8</p>
   <h2>Reasoning Configuration</h2>
   <p class="lede" style="margin-bottom:16px">The harness has three levels. The providers have three different mechanisms — and one of them does not have all three levels at all.</p>
 
@@ -394,7 +482,7 @@ why_this_problem: the common wrong route adds the TIMES
 
 <!-- ---------------- component: model execution ---------------- -->
 <section class="sub" id="model-execution">
-  <p class="eyebrow">3.7 · Component 5 of 8</p>
+  <p class="eyebrow">4.7 · Component 5 of 8</p>
   <h2>Model Execution</h2>
   <div class="pair">
     <div>
@@ -428,7 +516,7 @@ why_this_problem: the common wrong route adds the TIMES
 
 <!-- ---------------- component: trace collector ---------------- -->
 <section class="sub" id="trace-collector">
-  <p class="eyebrow">3.8 · Component 6 of 8 · the scientific caveat</p>
+  <p class="eyebrow">4.8 · Component 6 of 8 · the scientific caveat</p>
   <h2>Trace Collector</h2>
   <p class="lede" style="margin-bottom:16px">What can be collected about how the model reasoned — and, more importantly, what cannot.</p>
 
@@ -473,7 +561,7 @@ why_this_problem: the common wrong route adds the TIMES
 
 <!-- ---------------- component: metrics collector ---------------- -->
 <section class="sub" id="metrics-collector">
-  <p class="eyebrow">3.9 · Component 7 of 8</p>
+  <p class="eyebrow">4.9 · Component 7 of 8</p>
   <h2>Metrics Collector</h2>
   <div class="pair pair--even">
     <div>
@@ -500,7 +588,7 @@ why_this_problem: the common wrong route adds the TIMES
 
 <!-- ---------------- component: cost calculator ---------------- -->
 <section class="sub" id="cost-calculator">
-  <p class="eyebrow">3.10 · Component 8 of 8</p>
+  <p class="eyebrow">4.10 · Component 8 of 8</p>
   <h2>Cost Calculator</h2>
   <div class="pair">
     <div>
@@ -533,7 +621,7 @@ is a separate field, not an assumption.</pre>
 
 <!-- ---------------- component: result store ---------------- -->
 <section class="sub" id="result-store">
-  <p class="eyebrow">3.11 · Where it all lands</p>
+  <p class="eyebrow">4.11 · Where it all lands</p>
   <h2>Result Store</h2>
   <div class="pair pair--even">
     <div>
@@ -567,7 +655,7 @@ is a separate field, not an assumption.</pre>
 
 <!-- ================================================================== -->
 <section class="part part--rule" id="matrix">
-  <p class="partno"><b>04</b> The experiment matrix</p>
+  <p class="partno"><b>05</b> The experiment matrix</p>
   <h2>3 models × 3 reasoning modes × 3 problems.</h2>
   <p class="lede" style="margin-bottom:18px">Each cell is one model run. Twenty-seven cells; twenty-four of them exist.</p>
 
@@ -621,7 +709,7 @@ is a separate field, not an assumption.</pre>
 
 <!-- ================================================================== -->
 <section class="part part--rule" id="running">
-  <p class="partno"><b>05</b> Running the experiment</p>
+  <p class="partno"><b>06</b> Running the experiment</p>
   <h2>Two stages, deliberately separate.</h2>
   <div class="grid g2" style="margin-bottom:18px">
     <div class="card card--blue"><span class="card__k">Stage 1 · experiment</span><h3>Run it once, before the talk</h3><p>Commands hit the APIs, write one JSON file per execution, and join them into a single results file. This costs money and takes minutes.</p></div>
@@ -630,7 +718,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="one-run">
-  <p class="eyebrow">5.1</p>
+  <p class="eyebrow">6.1</p>
   <h2>One complete run, start to finish.</h2>
   <p class="lede" style="margin-bottom:16px">Watch the harness do exactly one cell. Step through it — each stage highlights the block of the architecture doing the work.</p>
 
@@ -650,7 +738,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="commands">
-  <p class="eyebrow">5.2</p>
+  <p class="eyebrow">6.2</p>
   <h2>Every command, in order.</h2>
   <p class="lede" style="margin-bottom:18px">These are the real entry points. The build fails if a command shown here names a module that does not exist.</p>
 
@@ -705,13 +793,13 @@ is a separate field, not an assumption.</pre>
 
 <!-- ================================================================== -->
 <section class="part part--rule" id="judge">
-  <p class="partno partno--judge"><b>06</b> Part II · LLM-as-a-judge</p>
+  <p class="partno partno--judge"><b>07</b> Part II · LLM-as-a-judge</p>
   <h2>We now have twenty-four solutions. Which one is better?</h2>
   <p class="lede">The harness answered three of the four questions. It cannot answer the fourth, because there is no deterministic check for "is this argument valid". So we reach for a second instrument — and immediately acquire the problem of validating it.</p>
 </section>
 
 <section class="sub" id="what-is-judge">
-  <p class="eyebrow eyebrow--judge">6.1 · Concept</p>
+  <p class="eyebrow eyebrow--judge">7.1 · Concept</p>
   <h2>What is LLM-as-a-judge?</h2>
   <div class="pair">
     <div>
@@ -747,7 +835,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="judge-architecture">
-  <p class="eyebrow eyebrow--judge">6.2 · Architecture</p>
+  <p class="eyebrow eyebrow--judge">7.2 · Architecture</p>
   <h2>The judge pipeline.</h2>
   <div class="fig">
     <p class="fig__cap fig__cap--judge"><b>Diagram 5</b> · LLM-as-a-judge, end to end</p>
@@ -774,7 +862,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="candidate-output">
-  <p class="eyebrow eyebrow--judge">6.3 · Component 1</p>
+  <p class="eyebrow eyebrow--judge">7.3 · Component 1</p>
   <h2>Candidate Output</h2>
   <div class="pair pair--even">
     <div>
@@ -814,7 +902,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="judge-prompt">
-  <p class="eyebrow eyebrow--judge">6.4 · Component 2</p>
+  <p class="eyebrow eyebrow--judge">7.4 · Component 2</p>
   <h2>Judge Prompt</h2>
   <div class="pair">
     <div>
@@ -835,7 +923,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="rubric">
-  <p class="eyebrow eyebrow--judge">6.5 · Component 3</p>
+  <p class="eyebrow eyebrow--judge">7.5 · Component 3</p>
   <h2>The Rubric</h2>
   <p class="lede" style="margin-bottom:16px">Six criteria with written anchors, so that a 3 means the same thing to two different judges.</p>
   <div class="grid g3" id="rubriccards" style="margin-bottom:16px"></div>
@@ -859,7 +947,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="structured-output">
-  <p class="eyebrow eyebrow--judge">6.6 · Component 4</p>
+  <p class="eyebrow eyebrow--judge">7.6 · Component 4</p>
   <h2>Structured Output</h2>
   <div class="pair">
     <div>
@@ -893,7 +981,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="two-judges">
-  <p class="eyebrow eyebrow--judge">6.7 · Component 5</p>
+  <p class="eyebrow eyebrow--judge">7.7 · Component 5</p>
   <h2>Two Judges</h2>
   <p class="lede" style="margin-bottom:16px">One rule: a model never judges its own family.</p>
 
@@ -946,7 +1034,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="judge-modes">
-  <p class="eyebrow eyebrow--judge">6.8 · Component 6</p>
+  <p class="eyebrow eyebrow--judge">7.8 · Component 6</p>
   <h2>Judge Reasoning Modes</h2>
   <p class="lede" style="margin-bottom:16px">If reasoning effort changes how a model solves, does it change how a model judges?</p>
   <div class="pair">
@@ -978,7 +1066,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="agreement">
-  <p class="eyebrow eyebrow--judge">6.9 · Component 7</p>
+  <p class="eyebrow eyebrow--judge">7.9 · Component 7</p>
   <h2>Judge Agreement</h2>
   <p class="lede" style="margin-bottom:16px">Two judges agreeing on the verdict is not the same as two judges agreeing.</p>
 
@@ -1023,7 +1111,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="limitations">
-  <p class="eyebrow eyebrow--judge">6.10</p>
+  <p class="eyebrow eyebrow--judge">7.10</p>
   <h2>Advantages and limitations.</h2>
   <p class="lede" style="margin-bottom:16px">Both lists, stated in full, because a method presented without its failure modes is being sold rather than taught.</p>
 
@@ -1066,7 +1154,7 @@ is a separate field, not an assumption.</pre>
 
 <!-- ================================================================== -->
 <section class="part part--rule" id="pipeline">
-  <p class="partno"><b>07</b> The full pipeline</p>
+  <p class="partno"><b>08</b> The full pipeline</p>
   <h2>Both halves, joined.</h2>
   <div class="fig">
     <p class="fig__cap"><b>Diagram 8</b> · solver → harness → judge → comparison</p>
@@ -1097,7 +1185,7 @@ is a separate field, not an assumption.</pre>
 
 <!-- ================================================================== -->
 <section class="part part--rule" id="results">
-  <p class="partno"><b>08</b> Results</p>
+  <p class="partno"><b>09</b> Results</p>
   <h2>What the experiment produced.</h2>
   <div id="simbanner"></div>
   <div class="grid g4" id="headline"></div>
@@ -1105,7 +1193,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="explorer">
-  <p class="eyebrow">8.1</p>
+  <p class="eyebrow">9.1</p>
   <h2>Run Explorer</h2>
   <p class="lede" style="margin-bottom:14px">Choose a problem, a solver and a reasoning mode. Everything recorded for that cell is below.</p>
 
@@ -1121,14 +1209,45 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="judge-compare">
-  <p class="eyebrow eyebrow--judge">8.2</p>
+  <p class="eyebrow eyebrow--judge">9.2</p>
   <h2>Judge Comparison</h2>
   <p class="lede" style="margin-bottom:14px">The same solution, read by two models from different families. Selected above.</p>
   <div id="judgepanel"></div>
 </section>
 
+<section class="sub" id="all-runs">
+  <p class="eyebrow">9.3</p>
+  <h2>Every run, every trace.</h2>
+  <p class="lede" style="margin-bottom:14px">All 27 cells. The complete response text and whatever reasoning information the API exposed, for every one &mdash; nothing summarised, nothing omitted.</p>
+
+  <div class="picker" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+    <div><label for="fltProblem">Problem</label><select id="fltProblem"></select></div>
+    <div><label for="fltModel">Model</label><select id="fltModel"></select></div>
+    <div><label for="fltMode">Reasoning mode</label><select id="fltMode"></select></div>
+    <div><label for="fltOutcome">Outcome</label><select id="fltOutcome"></select></div>
+    <p class="picker__hint" id="runsCount"></p>
+  </div>
+  <div id="allruns"></div>
+</section>
+
+<section class="sub" id="all-verdicts">
+  <p class="eyebrow eyebrow--judge">9.4</p>
+  <h2>Every judge verdict.</h2>
+  <p class="lede" style="margin-bottom:14px">All 96 verdicts, with the rubric scores, the written justification and the judge&rsquo;s raw reply exactly as it came back.</p>
+
+  <div class="picker" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+    <div><label for="vfProblem">Problem</label><select id="vfProblem"></select></div>
+    <div><label for="vfCand">Candidate model</label><select id="vfCand"></select></div>
+    <div><label for="vfJudge">Judge model</label><select id="vfJudge"></select></div>
+    <div><label for="vfVerdict">Verdict</label><select id="vfVerdict"></select></div>
+    <p class="picker__hint" id="verdictsCount"></p>
+  </div>
+  <div class="tallscroll"><table id="allverdicts"></table></div>
+  <div id="verdictdetail"></div>
+</section>
+
 <section class="sub" id="dashboard">
-  <p class="eyebrow">8.3</p>
+  <p class="eyebrow">9.5</p>
   <h2>Model Comparison</h2>
   <p class="lede" style="margin-bottom:16px">Six measures, six charts. Never two scales on one axis — if two things are worth comparing they are worth two pictures.</p>
 
@@ -1155,7 +1274,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="dimensions">
-  <p class="eyebrow">8.4</p>
+  <p class="eyebrow">9.6</p>
   <h2>What we are actually measuring.</h2>
   <div class="fig">
     <p class="fig__cap"><b>Four dimensions, not one number</b></p>
@@ -1185,7 +1304,7 @@ is a separate field, not an assumption.</pre>
 
 <!-- ================================================================== -->
 <section class="part part--rule" id="reproducibility">
-  <p class="partno"><b>09</b> Reproducibility</p>
+  <p class="partno"><b>10</b> Reproducibility</p>
   <h2>What has to be recorded for a number to mean anything.</h2>
   <div class="pair pair--even">
     <div>
@@ -1214,7 +1333,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="security">
-  <p class="eyebrow">9.1</p>
+  <p class="eyebrow">10.1</p>
   <h2>Keys and security.</h2>
   <div class="pair">
     <div>
@@ -1253,7 +1372,7 @@ XAI_API_KEY=</pre>
 </section>
 
 <section class="sub" id="errors">
-  <p class="eyebrow">9.2</p>
+  <p class="eyebrow">10.2</p>
   <h2>Error handling.</h2>
   <p class="lede" style="margin-bottom:16px">Every one of these is stored rather than raised. A study that dies on cell nineteen has produced nothing.</p>
   <div class="scroll">
@@ -1275,7 +1394,7 @@ XAI_API_KEY=</pre>
 
 <!-- ================================================================== -->
 <section class="part part--rule" id="conclusions">
-  <p class="partno"><b>10</b> Conclusions</p>
+  <p class="partno"><b>11</b> Conclusions</p>
   <h2>Evaluating an AI agent means evaluating the system around it.</h2>
   <div class="grid g2" style="margin-top:18px">
     <div>
@@ -1312,7 +1431,7 @@ XAI_API_KEY=</pre>
 
 <!-- ================================================================== -->
 <section class="part part--rule" id="appendix">
-  <p class="partno"><b>11</b> Appendix</p>
+  <p class="partno"><b>12</b> Appendix</p>
   <h2>The complete source.</h2>
   <p class="lede" style="margin-bottom:18px">Every file, split into components, each component explained. The build refuses to run if any component has no explanation.</p>
 
@@ -1834,6 +1953,273 @@ renderRun();
   }
   $("#walknext").addEventListener("click", function () { i = (i + 1) % STEPS.length; draw(); });
   $("#walkprev").addEventListener("click", function () { if (i > 0) { i--; draw(); } });
+  draw();
+})();
+
+/* ======================================================================
+   DATASET
+   ====================================================================== */
+(function () {
+  var D = DATA.dataset || {};
+  $("#datasetfacts").innerHTML = [
+    [D.size, "problems in the set"],
+    [esc(D.version), "problem-set version<br>stamped into every stored run"],
+    [D.public_benchmark ? "public" : "purpose-written", "origin<br>" + esc(D.origin || "")],
+    ["100%", "answers brute-force verified<br>before any API call"]
+  ].map(function (t) {
+    return '<div class="tile"><div class="tile__n" style="font-size:clamp(18px,2vw,26px)">' +
+      t[0] + '</div><div class="tile__l">' + t[1] + "</div></div>";
+  }).join("");
+  $("#dsSummary").textContent = D.summary || "";
+  $("#dsVerify").textContent = D.verification || "";
+  $("#dsAnswerFormat").textContent = D.answer_format || "";
+  $("#dsSwap").textContent = D.swapping_it_out || "";
+  $("#dsCriteria").innerHTML = (D.selection_criteria || []).map(function (c) {
+    return "<li>" + esc(c) + "</li>";
+  }).join("");
+
+  /* the three problems, in full */
+  $("#problemfull").innerHTML = DATA.problems.map(function (p, i) {
+    var runs = DATA.runs.filter(function (r) { return r.problem_id === p.problem_id && r.status === "ok"; });
+    var solved = runs.filter(function (r) { return r.correct; }).length;
+    return '<div class="panel"><div class="panel__h">' +
+      "<h3>Problem " + (i + 1) + " · " + esc(p.title) + "</h3>" +
+      '<span class="tag tag--blue">' + esc(p.problem_id) + "</span>" +
+      '<span class="tag">' + esc(p.kind) + "</span>" +
+      '<span class="tag ' + (solved ? "tag--pass" : "tag--fail") + '">solved by ' + solved + " of " + runs.length + " runs</span>" +
+      "</div><div class=\"panel__b\">" +
+      '<h4 style="margin-bottom:7px">The question, exactly as sent</h4>' +
+      '<div class="sol" style="max-height:none;white-space:pre-wrap">' + esc(p.question) + "</div>" +
+      '<div class="kv" style="margin-top:12px">' +
+        "<div><b>Expected answer</b><span>" + esc(p.expected_answer) + "</span></div>" +
+        "<div><b>Answer kind</b><span style=\"font-size:11.5px\">" + esc(p.kind) + "</span></div>" +
+        "<div><b>Set version</b><span style=\"font-size:11.5px\">" + esc(p.set_version) + "</span></div>" +
+      "</div>" +
+      '<div class="why" style="margin-top:14px"><h3>The wrong route it is designed to expose</h3><p>' +
+      esc(p.why_this_problem) + "</p></div>" +
+      "</div></div>";
+  }).join("");
+})();
+
+/* ---------- the literal request ---------- */
+(function () {
+  var sel = $("#selSampleProblem");
+  if (!sel) return;
+  opts(sel, DATA.problems.map(function (p) { return { v: p.problem_id, t: p.title + "  (" + p.problem_id + ")" }; }));
+  $("#sampleHint").innerHTML = "Assembled by calling the same constant and the same method the runner calls &mdash; so this is the request, not a description of it.";
+
+  function draw() {
+    var sr = (DATA.sample_requests || {})[sel.value];
+    if (!sr) { $("#samplepanel").innerHTML = "<p>No sample stored.</p>"; return; }
+    var pp = sr.per_provider || {};
+    var rows = Object.keys(pp).map(function (mk) {
+      var m = modelOf(mk);
+      return Object.keys(pp[mk]).sort().map(function (mode) {
+        var e = pp[mk][mode];
+        return "<tr><td>" + esc(m ? m.display : mk) + '</td><td class="mono">' + esc(mode) +
+          '</td><td class="mono" style="font-size:11px">' + esc(e.provider + " / " + e.model) +
+          '</td><td class="mono" style="font-size:11px;overflow-wrap:anywhere">' +
+          esc(JSON.stringify(e.request)) + "</td></tr>";
+      }).join("");
+    }).join("");
+
+    $("#samplepanel").innerHTML =
+      '<div class="panel"><div class="panel__h"><h3>The request for ' + esc(sel.value) + "</h3>" +
+      '<span class="tag tag--blue">system sha ' + esc(sr.system_sha) + "</span></div>" +
+      '<div class="panel__b">' +
+      '<h4 style="margin-bottom:7px">System turn <span class="mono" style="font-weight:400;color:var(--meta);font-size:11px">— pinned constant, hashed into every run</span></h4>' +
+      '<div class="sol" style="max-height:none;white-space:pre-wrap">' + esc(sr.system) + "</div>" +
+      '<h4 style="margin:14px 0 7px">User turn <span class="mono" style="font-weight:400;color:var(--meta);font-size:11px">— the question and nothing else</span></h4>' +
+      '<div class="sol" style="max-height:none;white-space:pre-wrap">' + esc(sr.user) + "</div>" +
+      '<p class="note">' + esc(sr.note) + "</p>" +
+      '<h4 style="margin:14px 0 7px">And the reasoning control each provider actually received</h4>' +
+      '<div class="scroll"><table><thead><tr><th>Model</th><th>Mode</th><th>Provider / model string</th><th>Sent on the wire</th></tr></thead><tbody>' +
+      rows + "</tbody></table></div></div></div>" +
+      (DATA.sample_judge_request ? judgeSample() : "");
+  }
+
+  function judgeSample() {
+    var j = DATA.sample_judge_request;
+    return '<div class="panel" style="border-color:var(--amber)"><div class="panel__h" style="background:var(--amber-soft)">' +
+      "<h3>And what a judge receives</h3>" +
+      '<span class="tag tag--judge">built for ' + esc(j.built_for.model + " / " + j.built_for.reasoning_mode) + "</span></div>" +
+      '<div class="panel__b">' +
+      '<h4 style="margin-bottom:7px">Judge system turn</h4>' +
+      '<div class="sol sol--sum" style="max-height:none;white-space:pre-wrap">' + esc(j.system) + "</div>" +
+      '<h4 style="margin:14px 0 7px">Judge user turn <span class="mono" style="font-weight:400;color:var(--meta);font-size:11px">— the complete prompt, for a real candidate</span></h4>' +
+      '<div class="sol" style="max-height:420px;white-space:pre-wrap">' + esc(j.user) + "</div>" +
+      '<p class="note">' + esc(j.note) + "</p></div></div>";
+  }
+  sel.addEventListener("change", draw);
+  draw();
+})();
+
+/* ======================================================================
+   EVERY RUN & TRACE
+   ====================================================================== */
+(function () {
+  var fP = $("#fltProblem"), fM = $("#fltModel"), fR = $("#fltMode"), fO = $("#fltOutcome");
+  var ALL = { v: "*", t: "all" };
+  opts(fP, [ALL].concat(DATA.problems.map(function (p) { return { v: p.problem_id, t: p.problem_id }; })));
+  opts(fM, [ALL].concat(MODELS.map(function (m) { return { v: m.key, t: m.display }; })));
+  opts(fR, [ALL].concat(MODE_ORDER.map(function (m) { return { v: m, t: m }; })));
+  opts(fO, [ALL, { v: "correct", t: "correct only" }, { v: "wrong", t: "wrong only" },
+            { v: "unsupported", t: "unsupported cells" }]);
+
+  function match(r) {
+    if (fP.value !== "*" && r.problem_id !== fP.value) return false;
+    if (fM.value !== "*" && r.model_key !== fM.value) return false;
+    if (fR.value !== "*" && r.reasoning_mode !== fR.value) return false;
+    if (fO.value === "correct") return r.correct === true;
+    if (fO.value === "wrong") return r.status !== "unsupported" && r.correct === false;
+    if (fO.value === "unsupported") return r.status === "unsupported";
+    return true;
+  }
+
+  function draw() {
+    var rows = DATA.runs.filter(match);
+    $("#runsCount").innerHTML = "Showing <strong>" + rows.length + "</strong> of " + DATA.runs.length +
+      " cells. Each panel expands to the full response text and whatever reasoning the API exposed.";
+    $("#allruns").innerHTML = rows.map(function (r) {
+      if (r.status === "unsupported") {
+        return '<details class="more"><summary style="color:var(--meta)">' +
+          esc(r.problem_id + " · " + r.display + " · " + r.reasoning_mode) +
+          " — UNSUPPORTED</summary><div class=\"inner\">" +
+          '<div class="bad"><span class="lbl">not executed</span><p>' + esc(r.error.message) +
+          ". No call was made, so there is no trace to show. The cell is recorded rather than omitted.</p></div></div></details>";
+      }
+      var u = r.usage || {};
+      var badge = r.correct
+        ? '<span class="verdictpill verdictpill--pass">correct</span>'
+        : '<span class="verdictpill verdictpill--fail">wrong</span>';
+      return '<details class="more"><summary>' +
+        '<span style="min-width:0;overflow:hidden;text-overflow:ellipsis">' +
+        esc(r.problem_id + " · " + r.display + " · " + r.reasoning_mode) + "</span>" +
+        '<span style="margin-left:auto;display:flex;gap:9px;align-items:center;flex-wrap:wrap">' +
+        badge + '<span class="mono" style="font-size:10px;color:var(--meta)">' +
+        esc(r.final_answer === null ? "no answer" : r.final_answer) + " · " + num(u.total_tokens) +
+        " tok · " + usd(r.cost && r.cost.estimated_usd) + "</span></span>" +
+        '</summary><div class="inner">' +
+        '<div class="kv" style="margin-bottom:12px">' +
+          "<div><b>Expected</b><span>" + esc(r.expected_answer) + "</span></div>" +
+          "<div><b>Answered</b><span>" + esc(r.final_answer === null ? "—" : r.final_answer) + "</span></div>" +
+          "<div><b>Correct</b><span class=\"" + (r.correct ? "ok" : "no") + '">' + (r.correct ? "YES" : "NO") + "</span></div>" +
+          "<div><b>Input tok</b><span>" + num(u.input_tokens) + "</span></div>" +
+          "<div><b>Output tok</b><span>" + num(u.output_tokens) + "</span></div>" +
+          "<div><b>Reasoning tok</b><span" + (u.reasoning_tokens === null ? ' class="na"' : "") + ">" +
+            (u.reasoning_tokens === null ? "n/a" : num(u.reasoning_tokens)) + "</span></div>" +
+          "<div><b>Latency</b><span>" + num(r.timing && r.timing.latency_seconds, 2) + "s</span></div>" +
+          "<div><b>Cost</b><span>" + usd(r.cost && r.cost.estimated_usd) + "</span></div>" +
+          "<div><b>Timestamp</b><span style=\"font-size:10.5px\">" + esc(r.timestamp) + "</span></div>" +
+        "</div>" +
+        exposureBadge(r.reasoning_exposure) +
+        '<h4 style="margin:10px 0 6px">Full response</h4>' +
+        '<div class="sol" style="max-height:420px">' + esc(r.response_text) + "</div>" +
+        (r.reasoning_summary
+          ? '<h4 style="margin:12px 0 6px">Reasoning information the API exposed</h4>' +
+            '<div class="sol sol--sum" style="max-height:300px">' + esc(r.reasoning_summary) + "</div>"
+          : '<p class="note">No reasoning content was exposed for this run — only a token count.</p>') +
+        "</div></details>";
+    }).join("") || '<p class="note">No cells match these filters.</p>';
+  }
+  [fP, fM, fR, fO].forEach(function (el) { el.addEventListener("change", draw); });
+  draw();
+})();
+
+/* ======================================================================
+   EVERY JUDGE VERDICT
+   ====================================================================== */
+(function () {
+  var ALLV = [];
+  DATA.runs.forEach(function (r) {
+    Object.keys(r.judges || {}).forEach(function (jm) {
+      r.judges[jm].forEach(function (v) { ALLV.push({ run: r, v: v, jm: jm }); });
+    });
+  });
+  var ALL = { v: "*", t: "all" };
+  var fP = $("#vfProblem"), fC = $("#vfCand"), fJ = $("#vfJudge"), fV = $("#vfVerdict");
+  opts(fP, [ALL].concat(DATA.problems.map(function (p) { return { v: p.problem_id, t: p.problem_id }; })));
+  opts(fC, [ALL].concat(MODELS.map(function (m) { return { v: m.key, t: m.display }; })));
+  opts(fJ, [ALL].concat(MODELS.map(function (m) { return { v: m.key, t: m.display }; })));
+  opts(fV, [ALL, { v: "pass", t: "pass" }, { v: "fail", t: "fail" },
+            { v: "parse_failed", t: "unparseable" }]);
+
+  function match(e) {
+    if (fP.value !== "*" && e.run.problem_id !== fP.value) return false;
+    if (fC.value !== "*" && e.run.model_key !== fC.value) return false;
+    if (fJ.value !== "*" && e.v.judge_key !== fJ.value) return false;
+    if (fV.value === "parse_failed") return e.v.status === "parse_failed";
+    if (fV.value !== "*") return e.v.verdict === fV.value;
+    return true;
+  }
+
+  function draw() {
+    var rows = ALLV.filter(match);
+    $("#verdictsCount").innerHTML = "Showing <strong>" + rows.length + "</strong> of " + ALLV.length +
+      " verdicts. Click a row for the rubric scores, the justification and the judge's raw reply.";
+    var head = "<thead><tr><th>Problem</th><th>Candidate</th><th>Cand. effort</th><th>Judge</th>" +
+      "<th>Judge effort</th><th>Verdict</th><th class='num'>Corr</th><th class='num'>Reas</th>" +
+      "<th class='num'>Comp</th><th class='num'>Eff</th><th class='num'>Clar</th>" +
+      "<th class='num'>Mean</th><th>Severity</th><th class='num'>Cost</th></tr></thead>";
+    var body = rows.map(function (e, i) {
+      var v = e.v, sc = v.scores || {};
+      if (v.status !== "ok") {
+        return '<tr class="vrow" data-i="' + i + '" style="cursor:pointer"><td>' + esc(e.run.problem_id) +
+          "</td><td>" + esc(e.run.display) + '</td><td class="mono">' + esc(e.run.reasoning_mode) +
+          "</td><td>" + esc(v.display) + '</td><td class="mono">' + esc(v.reasoning_mode) +
+          '</td><td colspan="9" style="color:var(--fail)">' + esc(v.status) + "</td></tr>";
+      }
+      return '<tr class="vrow" data-i="' + i + '" style="cursor:pointer"><td>' + esc(e.run.problem_id) +
+        "</td><td>" + esc(e.run.display) + '</td><td class="mono">' + esc(e.run.reasoning_mode) +
+        "</td><td>" + esc(v.display) + '</td><td class="mono">' + esc(v.reasoning_mode) +
+        '</td><td><span class="verdictpill verdictpill--' + esc(v.verdict) + '">' + esc(v.verdict) + "</span></td>" +
+        '<td class="num">' + sc.correctness + '</td><td class="num">' + sc.reasoning +
+        '</td><td class="num">' + sc.completeness + '</td><td class="num">' + sc.efficiency +
+        '</td><td class="num">' + sc.clarity + '</td><td class="num">' + num(v.mean_score, 2) +
+        '</td><td class="mono" style="font-size:10.5px">' + esc(v.error_severity) +
+        '</td><td class="num">' + usd(v.cost && v.cost.estimated_usd) + "</td></tr>";
+    }).join("");
+    $("#allverdicts").innerHTML = head + "<tbody>" + body + "</tbody>";
+    $("#verdictdetail").innerHTML = "";
+    $$("#allverdicts .vrow").forEach(function (tr) {
+      tr.addEventListener("click", function () { detail(rows[+tr.getAttribute("data-i")]); });
+    });
+  }
+
+  function detail(e) {
+    var v = e.v, r = e.run, u = v.usage || {};
+    $("#verdictdetail").innerHTML =
+      '<div class="panel" style="margin-top:14px;border-color:var(--amber)">' +
+      '<div class="panel__h" style="background:var(--amber-soft)"><h3>' + esc(v.display) +
+      " judging " + esc(r.display) + " / " + esc(r.reasoning_mode) + " on " + esc(r.problem_id) + "</h3>" +
+      '<span class="tag tag--judge">judge effort ' + esc(v.reasoning_mode) + "</span></div>" +
+      '<div class="panel__b">' +
+      (v.status === "ok"
+        ? '<div class="rub" style="margin-bottom:12px">' + CRIT.map(function (k) {
+            return '<div class="rubrow"><span class="rubrow__l">' + esc(k) + "</span>" +
+              '<span class="rubrow__t"><i class="rubrow__f rubrow__f--b" style="width:' +
+              (v.scores[k] / 5) * 100 + '%"></i></span><span class="rubrow__v">' + v.scores[k] + " <i>/5</i></span></div>";
+          }).join("") + "</div>" +
+          '<div class="kv" style="margin-bottom:12px">' +
+            "<div><b>Verdict</b><span>" + esc(v.verdict) + "</span></div>" +
+            "<div><b>Error severity</b><span style=\"font-size:11px\">" + esc(v.error_severity) + "</span></div>" +
+            "<div><b>Mean</b><span>" + num(v.mean_score, 2) + "</span></div>" +
+            "<div><b>Tokens</b><span>" + num(u.total_tokens) + "</span></div>" +
+            "<div><b>Latency</b><span>" + num(v.timing && v.timing.latency_seconds, 2) + "s</span></div>" +
+            "<div><b>Cost</b><span>" + usd(v.cost && v.cost.estimated_usd) + "</span></div>" +
+          "</div>" +
+          '<h4 style="margin:0 0 6px">Justification</h4><p style="font-size:13px;color:var(--ink-2)">' +
+          esc(v.explanation) + "</p>"
+        : '<div class="bad"><span class="lbl">' + esc(v.status) + "</span><p>" +
+          esc(v.error ? v.error.message : "") + "</p></div>") +
+      '<h4 style="margin:12px 0 6px">The judge&rsquo;s raw reply</h4>' +
+      '<div class="sol" style="max-height:280px">' + esc(v.raw_text || "(not stored)") + "</div>" +
+      '<h4 style="margin:12px 0 6px">The solution it was judging</h4>' +
+      '<div class="sol" style="max-height:280px">' + esc(r.response_text) + "</div>" +
+      "</div></div>";
+    $("#verdictdetail").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+  [fP, fC, fJ, fV].forEach(function (el) { el.addEventListener("change", draw); });
   draw();
 })();
 
