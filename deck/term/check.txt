@@ -1,37 +1,36 @@
 
-M1
-  PASS  Rollout round-trips through JSONL with no loss                     1 rollout, 3 events
-  PASS  config_hash is sensitive to model, prompt, temperature, tools      base 4bc5a5a2d923, 4 dimensions
-  PASS  Task carries no answer field                                       fields ['task_id', 'problem']
+  ENVIRONMENT
+    3 variable(s) read from .env
+    OPENAI_API_KEY taken from OPENAI_TOKEN
+    GEMINI_API_KEY taken from GEMINI_TOKEN
+    XAI_API_KEY taken from GROK_TOKEN
 
-M2
-  PASS  dataset loader yields tasks and a separate answer key              8 tasks, synthetic=True
-  PASS  tool schemas are generated from signatures                         2 tools
+  KEYS
+    PASS  OPENAI_API_KEY   openai   set (164 chars)
+    PASS  GEMINI_API_KEY   gemini   set (53 chars)
+    PASS  XAI_API_KEY      xai      set (84 chars)
 
-M3
-  PASS  sandbox blocks network, enforces timeout, survives errors          exec / error / timeout / network
-  PASS  error, timeout and max_turns classify to distinct outcomes         7 outcomes, all distinct
+  PROBLEMS
+    PASS  algebra_01     algebra                          expected 36/11
+    PASS  reasoning_02   logical/mathematical reasoning   expected 42
+    PASS  multistep_03   multi-step                       expected 58
+          set version 2026-09-08
 
-M4
-  PASS  resumption is idempotent; budget halts at the tool boundary        4 ran, 4 resumed, cap tripped
-  PASS  re-running a key appends to the log but never double-counts        6 records in the log, 3 rollouts in the view
-  PASS  effort arms get distinct keys, hashes and trace files              4 arms, 4 distinct hashes
+  PRICING
+    PASS  gpt-5.6-terra     in $1.25/M  out $10.0/M  checked 2026-09-08
+    PASS  gemini-3.8-flash  in $0.3/M  out $2.5/M  checked 2026-09-08
+    PASS  grok-4.6          in $2.0/M  out $10.0/M  checked 2026-09-08
+          pricing version 2026-09-08
 
-M6
-  PASS  the blinding ablation is stratified, not the first N sorted        16 picked across 4 arms
+  CAPABILITY MATRIX
+                            low    medium      high
+    gpt-5.6-terra           yes       yes       yes
+    gemini-3.8-flash        yes       yes       yes
+    grok-4.6                yes        NO       yes
 
-M5
-  PASS  answer_match handles boxed / leading-zero / non-integer inputs     5 forms, escape counter increments
-  PASS  pass@k / pass^k estimators agree with their definitions            boundary + interior cases
+  STUDY SIZE
+    3 problems x 8 supported (model, mode) cells = 24 solver calls
+    + 24 x 2 judges x 2 judge efforts = 96 judge calls
 
-M6
-  PASS  blinded prompt hides identifiers, outcome, metadata and the tell   774 chars, 0 hard leaks
-  PASS  a verdict without a non-empty span is rejected at parse time       4 rejected, 1 accepted
-
-M7
-  PASS  judge metrics compute over stored verdicts                         agreement, kappa, blinding effect
-  PASS  report.py runs end to end when a graded corpus exists              150 lines emitted
-
-17/17 checks passed
-standing check green
+  ALL CHECKS PASS
 

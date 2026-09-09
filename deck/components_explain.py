@@ -1,677 +1,541 @@
-"""One explanation for every component of every file shown in full.
+"""One explanation per component of every file shown in the appendix.
 
-Keyed "path::component-name", matching deck/components.py::split(). Values are
-either a string, or (text, citation) where the component implements something
-that comes from the literature — the citation is rendered beside the code so
-the claim and its source sit together.
+deck/build.py refuses to build if a component has none. Docstrings, import
+blocks, path bootstraps and `__main__` guards are described automatically by
+build.py::_auto_note; everything else is written here.
 
-deck/build.py refuses to build if a component has no entry.
+    "path::component name": "explanation"
+    "path::component name": ("explanation", "citation")
 """
-
-# Citations used more than once, so the wording stays identical everywhere.
-YAO = "Yao et al. (2024), τ-bench, arXiv:2406.12045"
-MILLER = "Miller (2024), Adding Error Bars to Evals, arXiv:2411.00640"
-KIRGIS = "Kirgis et al. (2026), Log analysis is necessary, arXiv:2605.08545"
-ZHU = "Zhu et al. (2025), Agentic Benchmark Checklist, arXiv:2507.02825"
-KAPOOR25 = "Kapoor et al. (2025), Holistic Agent Leaderboard, arXiv:2510.11977"
-KAPOOR24 = "Kapoor et al. (2024), AI Agents That Matter, arXiv:2407.01502"
-GU = "Gu et al. (2025), A Survey on LLM-as-a-Judge, arXiv:2411.15594"
-SOHN = "Sohn, Lee et al. (2026), How to Correctly Report LLM-as-a-Judge, arXiv:2511.21140"
-SHI = "Shi et al. (2025), Position bias in LLM-as-a-Judge, arXiv:2406.07791"
-WATAOKA = "Wataoka et al. (2024), Self-Preference Bias, arXiv:2410.21819"
-POMBAL = "Pombal et al. (2026), Self-Preference in Rubric-Based Evaluation, arXiv:2604.06996"
-LEAK = "Li et al. (2025), Preference Leakage, arXiv:2502.01534"
-CURSE = "Zheng et al. (2025), Curse of Knowledge, arXiv:2509.03419"
-PROCESS = "Zheng et al. (2025), ProcessBench, arXiv:2412.06559"
-VERGA = "Verga et al. (2024), Replacing Judges with Juries, arXiv:2404.18796"
-HAN = "Han et al. (2025), Judge's Verdict, arXiv:2510.09738"
-MATHARENA = "Balunović et al. (2025), MathArena, arXiv:2505.23281"
-TAN = "Tan et al. (2025), JudgeBench, arXiv:2410.12784"
 
 C = {
 
-# ======================================================== core/contracts.py
-"core/contracts.py::OUTCOMES · AGENT_OUTCOMES · HARNESS_STOPS · HARNESS_FAILURES · EVENT_KINDS":
-    ("The seven outcomes, named once and split into three groups the rest of the harness reasons "
-     "about: what the agent did, what boundary we hit, and where the apparatus failed. "
-     "<code>EVENT_KINDS</code> is the closed vocabulary of the trace — a kind not on this list "
-     "cannot be recorded, which keeps the log parseable years later.", ZHU),
-"core/contracts.py::Event":
-    "One thing that happened, with a timestamp relative to the start of the rollout. "
-    "<code>payload</code> is a free-form dict on purpose: the schema of a tool result is the "
-    "tool's business, not the recorder's. <code>to_dict</code>/<code>from_dict</code> are "
-    "explicit rather than automatic so the on-disk format is a decision, not an accident of "
-    "whatever dataclass library is installed.",
-"core/contracts.py::Task":
-    "Everything the agent is allowed to see. The important line is the one that is not here: "
-    "there is no <code>answer</code> field, so the agent code path cannot reach the key even by "
-    "mistake. A structural guarantee, not a careful convention.",
-"core/contracts.py::Rollout":
-    "One complete attempt: the events, the submission, the execution state and the usage. "
-    "<code>key</code> is the identity used everywhere for resumption and joins — "
-    "<code>(solver_config, task_id, run_idx)</code>. Note that <code>outcome</code> holds an "
-    "execution state at write time; the grade is assigned later, downstream.",
-"core/contracts.py::Verdict":
-    "One verifier's opinion about one rollout. <code>judge_model</code> and <code>blinded</code> "
-    "are nullable because a deterministic verifier has neither — but a judged verdict without "
-    "both recorded is unreproducible, so they live in the contract rather than in a detail dict.",
-"core/contracts.py::Agent":
-    "A Protocol, not a base class, so anything with a <code>run</code> method qualifies. The "
-    "harness never imports a concrete agent; it is handed one.",
-"core/contracts.py::Verifier":
-    ("The reason \"two judges from different families\" is a config list rather than new code: a "
-     "judge is a Verifier like any other, parameterised by a model. Swapping the panel touches "
-     "no Python.", VERGA),
+# ======================================================================
+# harness/
+# ======================================================================
+"harness/reasoning.py::ReasoningMode":
+    "The harness's whole vocabulary for effort. A <code>str</code> subclass so it serialises "
+    "into JSON as <code>\"high\"</code> with no custom encoder, while still comparing as an enum "
+    "in code. <code>parse</code> is the single place a string becomes a mode, and it rejects an "
+    "unknown value with the list of valid ones rather than defaulting to something plausible.",
 
-# ============================================================ core/trace.py
-"core/trace.py::ROOT · TRACES · VERDICTS":
-    "The two stores, resolved relative to this file rather than the working directory, so the "
-    "scripts behave the same whether run from the repo root or anywhere else.",
-"core/trace.py::trace_path":
-    "One file per <code>(solver_config, task_id)</code>. Sharding this way means a rollout can be "
-    "appended without reading or locking anything else, which is what makes bounded concurrency "
-    "safe here.",
-"core/trace.py::TraceRecorder":
-    "Collects events for one rollout and holds no opinion about correctness — it cannot, it has "
-    "no key. <code>emit</code> stamps time relative to the start; <code>finish</code> seals the "
-    "rollout with an execution state and the usage totals.",
-"core/trace.py::append_rollout":
-    ("Append mode always; the pinned config header written exactly once on file creation; "
-     "<code>fsync</code> so a run killed mid-batch loses nothing it had already reported. "
-     "This is the function the whole architecture rests on.", KIRGIS),
-"core/trace.py::read_trace":
-    "Reads a trace file back into the header and its rollouts. Skips blank lines and tolerates a "
-    "file that is being appended to, because the demo reads files that a background run is still "
-    "writing.",
-"core/trace.py::iter_all":
-    "Every stored rollout, with last-write-wins deduplication by key. The log keeps every "
-    "attempt, including one superseded by a re-run; derived views see one row per rollout. Pass "
-    "<code>dedupe=False</code> to audit the raw log.",
-"core/trace.py::completed_keys":
-    "Resumption in one line: ask the store what it already has. There is no separate bookkeeping "
-    "table that could disagree with the data — the log is the state.",
-"core/trace.py::append_verdicts":
-    "Verdicts get the same treatment as traces: one append-only file per verifier. Re-grading "
-    "adds; it never overwrites, so an earlier verifier's opinion survives its own replacement.",
-"core/trace.py::read_verdicts":
-    "The read side. Imported inside the function to avoid a circular import with contracts — a "
-    "small ugliness kept local rather than restructuring the module around it.",
+"harness/reasoning.py::UNSUPPORTED":
+    "A sentinel string rather than <code>None</code>, because <code>None</code> already reads as "
+    "\"no reasoning was requested\" &mdash; which is a different and perfectly legitimate thing "
+    "from \"this provider has no such setting\".",
 
-# =========================================================== core/config.py
-"core/config.py::ROOT · CONFIGS · REQUIRED_KEYS · KEY_ALIASES · SOLVER_PROMPT":
-    "<code>REQUIRED_KEYS</code> maps a provider to the environment variable it needs, which is "
-    "what lets the startup check name the missing one. <code>SOLVER_PROMPT</code> lives here, not "
-    "in the agent, because it is part of the pinned configuration — change it and every number "
-    "downstream describes a different experiment. <code>KEY_ALIASES</code> lists the other "
-    "names people actually have in their .env; they are copied into the canonical variable "
-    "at startup and the substitution is printed, because which variable authenticated a run "
-    "is part of knowing what the run was.",
-"core/config.py::prompt_hash":
-    "The prompt is hashed rather than embedded in the fingerprint, so the config hash stays short "
-    "but still moves if a single character of the prompt changes.",
-"core/config.py::ModelSpec":
-    ("A pinned model: provider, exact model string, temperature and the price list. Frozen, so a "
-     "spec cannot be mutated halfway through a batch. Prices live here because cost per "
-     "successful solve is a first-class reported number, not an afterthought.", KAPOOR24),
-"core/config.py::RunConfig":
-    "The apparatus for one solver configuration, and <code>config_hash</code> is its fingerprint: "
-    "model string, temperature, prompt hash and sorted tool set, serialised canonically. "
-    "<code>header()</code> is what gets written at the top of every trace file and printed on "
-    "screen during the demo.",
-"core/config.py::Registry":
-    ("Loads the two YAML files and hands out solver and judge configurations. The <code>mock</code> "
-     "flag returns a simulator spec that keeps the real price list but carries a name nobody can "
-     "mistake for a real model — and therefore a different config hash.", KAPOOR25),
-"core/config.py::MissingKey":
-    "Its own exception type, so a missing key is distinguishable from any other RuntimeError by "
-    "a caller that wants to offer the offline path instead.",
-"core/config.py::validate_env":
-    "Collects every missing variable rather than failing on the first, names the provider that "
-    "needs each, and points at the way out. Failing fast only helps if it says what to do next.",
-"core/config.py::load_dotenv":
-    "A four-line .env reader. Uses <code>setdefault</code>, so a variable already exported in the "
-    "shell wins over the file — the usual precedence, and the one people expect when overriding "
-    "a key for a single run.",
+"harness/reasoning.py::UnsupportedReasoningMode":
+    "The exception that keeps an invented row out of the results table. It carries the provider, "
+    "the model, the mode asked for and the modes that exist, so the stored record can say exactly "
+    "what was unavailable. The runner catches it and writes <code>status: unsupported</code>; "
+    "nothing anywhere substitutes a nearby effort.",
 
-# =========================================================== core/budget.py
-"core/budget.py::BudgetExceeded":
-    "Carries the trip <code>kind</code>. That single field is what lets the caller record "
-    "<code>max_turns</code> and <code>budget_exceeded</code> as different outcomes instead of "
-    "flattening two different facts into one.",
-"core/budget.py::Budget":
-    ("Two caps in one object, checked by one method. <code>check()</code> runs immediately before "
-     "a tool executes and before each turn — before the spending, not after it. Instructions in a "
-     "prompt are a request; this is a limit.", KAPOOR25),
+"harness/problems.py::ROOT · PROBLEMS_FILE":
+    "The problem file is located relative to this module, not to the working directory, so "
+    "<code>python3 -m harness.run</code> behaves the same from anywhere in the tree.",
 
-# ========================================================= core/miniyaml.py
-"core/miniyaml.py::_NUM":
-    "The one regex needed to tell an integer or float scalar from a bare string.",
-"core/miniyaml.py::_scalar":
-    "Converts a YAML scalar to a Python value: quoted strings, booleans in their several "
-    "spellings, nulls, numbers, and otherwise a plain string.",
-"core/miniyaml.py::_strip_comment":
-    "Removes a trailing comment while respecting quotes, so a <code>#</code> inside a string "
-    "survives. The reason this is a character loop rather than a regex.",
-"core/miniyaml.py::_inline":
-    "Handles the inline list form — <code>[a, b, c]</code> — which is the only compound value the "
-    "config files use on one line.",
-"core/miniyaml.py::loads":
-    "Indentation-driven parse of the subset the configs actually use: nested mappings, block and "
-    "inline lists, comments, scalars. Deliberately small — this exists so the harness runs with "
-    "an empty environment during a live demo, not to be a YAML implementation.",
-"core/miniyaml.py::load_file":
-    "Prefers PyYAML when it is installed and falls back to the parser above when it is not. The "
-    "fallback is the tested path on a machine with no dependencies, which is exactly the machine "
-    "a rehearsal happens on.",
+"harness/problems.py::Problem":
+    "Frozen, so a problem cannot be mutated mid-study and two runs of the same id are two runs of "
+    "the same problem. The important line is <code>for_solver()</code>: it returns the question "
+    "and nothing else, which is why a prompt builder cannot leak the answer key by accident &mdash; "
+    "it never holds it.",
 
-# ============================================================ agent/loop.py
-"agent/loop.py::REFUSAL_MARKERS":
-    "The strings that turn a tool-less reply into <code>refused</code> rather than a nudge. Crude "
-    "and openly so — a refusal classifier is its own project, and pretending otherwise would hide "
-    "an assumption inside a number.",
-"agent/loop.py::run_rollout":
-    ("The whole tool-calling loop. Note what it does not do: it never decides whether the answer "
-     "was correct. It has no key and cannot get one, so it records what happened and stops. "
-     "Timeouts are caught separately from other faults so they get their own outcome.", ZHU),
-"agent/loop.py::_stop":
-    "Every exit path funnels through here, so there is no route by which something happens and no "
-    "trace is written.",
+"harness/problems.py::load_problems":
+    "Reads the file into <code>{problem_id: Problem}</code> and raises on a duplicate id. A "
+    "duplicate would silently drop one problem and quietly change every aggregate downstream. "
+    "The set version is stamped onto each Problem, so a stored result records which edition of "
+    "the questions produced it.",
 
-# ======================================================= agent/providers.py
-"agent/providers.py::ProviderError":
-    "The apparatus failed. Naming this separately from a Python error is what makes "
-    "\"harness failure, not agent failure\" expressible in code rather than only on a slide.",
-"agent/providers.py::ProviderTimeout":
-    "A subclass, so a caller can catch timeouts specifically or all provider faults generally. "
-    "The loop catches it first, which is why a timeout becomes <code>timeout</code>.",
-"agent/providers.py::Completion":
-    "The one shape every provider returns: text, tool calls, and token counts. Everything above "
-    "this line is model-agnostic because everything below it converts to this.",
-"agent/providers.py::Provider":
-    "The interface, as a Protocol. Two methods' worth of surface is the entire coupling between "
-    "the harness and any model vendor.",
-"agent/providers.py::usd":
-    ("Cost for one call from the pinned price list. Computed at the call site and recorded in the "
-     "trace, so cost per successful solve is a fact about the run rather than an estimate made "
-     "afterwards.", KAPOOR24),
-"agent/providers.py::_OpenAICompatible":
-    "OpenAI and xAI speak the same chat-completions dialect, so one adapter serves both and the "
-    "difference is a base URL and a key name. Provider exceptions are translated into the "
-    "harness's own types here, at the boundary.",
-"agent/providers.py::OpenAIProvider":
-    "The default base URL, and <code>OPENAI_API_KEY</code>.",
-"agent/providers.py::XAIProvider":
-    "The same adapter pointed at x.ai, with <code>XAI_API_KEY</code>. Two lines, because the "
-    "abstraction above was drawn in the right place.",
-"agent/providers.py::GeminiProvider":
-    "Gemini's API differs enough to need its own adapter: system instructions are separate, "
-    "roles are named differently, and tool calls arrive as parts of a candidate. All of that "
-    "asymmetry is absorbed here so the loop never sees it.",
-"agent/providers.py::_THINKING · SKILL · EFFORT_SKILL · EFFORT_TOKENS · FLAW_RATE · ERR_RATE · TIMEOUT_RATE · LOOP_RATE · REFUSE_RATE":
-    ("The simulator's parameters, in one block so they can be read and argued with. "
-     "<code>FLAW_RATE</code> is the share of correct answers reached by unsound reasoning — the "
-     "phenomenon the judging half of the workshop exists to measure. "
-     "<code>EFFORT_SKILL</code> deliberately does <b>not</b> make 'high' uniformly best: higher "
-     "reasoning effort reduced accuracy in most of the runs in the study cited beside this, and "
-     "a simulator that hid that would teach the wrong lesson before the real sweep is ever run. "
-     "<code>_THINKING</code> maps the four named levels onto Gemini's token budget, since not "
-     "every provider expresses effort the same way.", KAPOOR25),
-"agent/providers.py::_rng":
-    "A random generator seeded by hashing its arguments, so every simulated rollout is a pure "
-    "function of <code>(config, task, run_idx)</code>. The rehearsal you ran yesterday is the "
-    "rehearsal you get today.",
-"agent/providers.py::SOLUTIONS · FALLBACK":
-    "Real solutions to the shipped problems, each with a subtly buggy variant. The simulator "
-    "picks which program to run; the sandbox decides what it prints; a verifier decides later "
-    "whether that was right. So the simulator never needs the answer key to produce a wrong run — "
-    "it needs a worse program, which is closer to how a solver actually fails.",
-"agent/providers.py::MockSolver":
-    "A trace generator, not an agent. It exists so the workshop has a corpus with no keys and no "
-    "network. Everything it writes is marked <code>simulated: true</code> and carries its own "
-    "config hash, and every report built from it prints a banner.",
-"agent/providers.py::_last_stdout":
-    "Reads the most recent tool result out of the message list, so the simulator narrates what "
-    "the sandbox actually printed rather than what it intended to print.",
-"agent/providers.py::_NUM":
-    "Integer matcher, used to compare what a trace's narration claims against what its tool "
-    "produced.",
-"agent/providers.py::MockJudge":
-    ("Simulates a process judge including its biases. It reads a genuine signal from the blinded "
-     "prompt — does the narrated value match the tool output — then adds severity and noise so "
-     "the two judges disagree realistically, and is pulled toward ESTABLISHES when the prompt is "
-     "unblinded. That last behaviour is simulated outcome leakage.", CURSE),
-"agent/providers.py::_section":
-    "Pulls a labelled section out of a rendered prompt. Shared by the simulated judge and the "
-    "masked-continuation check, so both read the prompt the same way a real model would.",
-"agent/providers.py::build":
-    "The factory. One line decides simulator or real provider, and it is the only place in the "
-    "codebase that knows the difference.",
+"harness/problems.py::get":
+    "One problem by id, with the known ids listed in the error. <code>KeyError: 'algebra_1'</code> "
+    "alone would send you looking in the wrong file.",
 
-# ========================================================= agent/sandbox.py
-"agent/sandbox.py::PREAMBLE · DEFAULT_TIMEOUT_S · DEFAULT_MEM_MB · DEFAULT_CPU_S":
-    "The preamble disables sockets and the network-reaching import paths before any submitted "
-    "code runs. Prepended to the source rather than installed as a policy, because a subprocess "
-    "that never had the capability is easier to reason about than one that gave it up.",
-"agent/sandbox.py::ExecResult":
-    "Execution outcome as data — stdout, stderr, return code, and whether the wall clock ran out. "
-    "<code>timed_out</code> is separate from a non-zero return code because they are different "
-    "failures and the outcome taxonomy needs to tell them apart.",
-"agent/sandbox.py::_limits":
-    "Best-effort resource caps set in the child before exec. Not every limit is enforceable "
-    "everywhere — macOS refuses to start a CPython child under <code>RLIMIT_AS</code> — so a "
-    "limit that cannot be set is skipped rather than fatal, and the wall-clock timeout is the "
-    "backstop that always holds.",
-"agent/sandbox.py::run_python":
-    "A fresh isolated interpreter per call, with a timeout, a trimmed environment, and truncated "
-    "output. Never raises on user error: a traceback from submitted code is a result to record, "
-    "not an exception to propagate.",
+"harness/answers.py::BOXED · MARKER":
+    "Two patterns for the two ways a solution marks its conclusion: LaTeX <code>\\boxed{...}</code> "
+    "and an explicit <code>FINAL ANSWER:</code> line. The boxed pattern allows one level of nested "
+    "braces, which is what <code>\\boxed{\\frac{36}{11}}</code> needs.",
 
-# =========================================================== agent/tools.py
-"agent/tools.py::_JSON_TYPES":
-    "The Python-annotation to JSON-schema-type mapping. Small on purpose — a tool needing a type "
-    "outside this set is a signal to reconsider the tool.",
-"agent/tools.py::Tool":
-    "A name, a function, a description, and a schema generated from the signature. Because the "
-    "schema is derived, it cannot drift from the code; hand-written schemas silently describe "
-    "last month's function. Harness-injected parameters are filtered out — the model is offered "
-    "<code>code</code>, and the budget is none of its business.",
-"agent/tools.py::SubmitAnswer":
-    "Control flow, not an error. Submission is the one tool call that ends the loop, and raising "
-    "is how a nested call site unwinds to the loop without a return-value convention threaded "
-    "through every layer.",
-"agent/tools.py::python_exec":
-    "The enforcement point. <code>budget.check()</code> runs before the sandbox call, not after — "
-    "a check that runs after the work is an accounting entry, not a limit.",
-"agent/tools.py::submit_answer":
-    "Takes the value and the reasoning. The reasoning field is the point: it records what the "
-    "model <i>claims</i> its reasoning was, separately from the trace of what it actually did. "
-    "The gap between those two is the whole of Session 2.",
-"agent/tools.py::REGISTRY":
-    "Two tools, and the descriptions the model sees. Keeping the registry this small is a "
-    "deliberate scope decision — no side-effecting tools, so no permission model and no undo.",
-"agent/tools.py::schemas":
-    "Builds the tool-schema list handed to a provider. One line, because the work is in "
-    "<code>Tool.schema</code>.",
-"agent/tools.py::call":
-    "Dispatch. Injects <code>budget</code> only into tools whose signature asks for it, so the "
-    "enforcement dependency is explicit per tool rather than ambient.",
+"harness/answers.py::extract_final_answer":
+    "Takes the LAST marker, because a solution often restates its answer after a check. Returns "
+    "<code>None</code> when nothing was marked rather than guessing from the last number on the "
+    "page &mdash; a guess here would turn a formatting failure into a wrong answer, and the harness "
+    "counts those separately for exactly that reason.",
 
-# ======================================================= runner/outcomes.py
-"runner/outcomes.py::EXECUTION_STATES":
-    "What the loop can know on its own, before any verifier runs. <code>submitted</code> appears "
-    "here and not in OUTCOMES, because it is not a grade — it is the state of having produced an "
-    "answer that nobody has checked yet.",
-"runner/outcomes.py::classify":
-    ("Combines the recorded execution state with the deterministic answer check. Raising when a "
-     "submitted rollout has no answer check makes it impossible to silently default a missing "
-     "grade to <code>incorrect</code> — which is the specific bug that deflates a reported "
-     "accuracy.", ZHU),
-"runner/outcomes.py::is_harness_failure":
-    "The predicate the reporting layer uses to compute an error rate. Named, so the definition "
-    "lives in one place rather than being re-derived at each call site.",
-"runner/outcomes.py::is_agent_outcome":
-    "Its counterpart: the outcomes that actually say something about the agent.",
-"runner/outcomes.py::bucket":
-    "Groups the seven into agent / stop / harness — the three-way split the slides use, computed "
-    "from the same constants the code uses so the deck cannot disagree with the harness.",
-"runner/outcomes.py::tally":
-    ("Counts by outcome and returns the error rate alongside. Both numbers together, always, "
-     "because accuracy without an error rate does not say whether the denominator was a "
-     "measurement or an outage.", KIRGIS),
+"harness/answers.py::normalise":
+    "Strips the presentation and keeps the value: dollar signs, <code>\\frac</code>, "
+    "<code>\\text</code>, spacing macros, thousands separators, a trailing full stop. Deliberately "
+    "narrow. It does not do algebra, because a checker clever enough to accept 2.4 for 12/5 is also "
+    "clever enough to accept something it should not.",
 
-# ======================================================= runner/rollouts.py
-"runner/rollouts.py::MAX_ATTEMPTS · BASE_BACKOFF_S":
-    "Retry parameters for the narrow case below. Small numbers, because the thing being retried "
-    "is rare and the thing not being retried is most of it.",
-"runner/rollouts.py::_with_backoff":
-    ("Exponential backoff with jitter, for faults that escape the loop entirely — where no trace "
-     "was obtained at all. What it refuses to retry is the point: a provider error the loop "
-     "caught stays in the corpus as <code>error</code> or <code>timeout</code>, because "
-     "re-rolling failures until they succeed is exactly how a reported accuracy gets inflated.", ZHU),
-"runner/rollouts.py::run_batch":
-    ("n runs across tasks with bounded concurrency, resuming from whatever is already on disk and "
-     "recording a rollout even for a job that raised. The header records <code>simulated</code>, "
-     "so a corpus can always say what produced it.", KAPOOR25),
+"harness/answers.py::_as_fraction":
+    "Parses an exact rational, or returns <code>None</code>. Notably it does NOT fall back to "
+    "<code>float</code>: that is what stops <code>3.27</code> being accepted for <code>36/11</code>, "
+    "which would quietly raise every model's score.",
 
-# ==================================================== verifiers/answer_match
-"verifiers/answer_match.py::NAME · _BOXED · _INT":
-    "The verifier's name as it appears in the verdict store, and the two patterns that do most of "
-    "the normalisation work.",
-"verifiers/answer_match.py::Escapes":
-    ("The disclosure counter: exact, symbolic, unparsed, and the escape rate over them. This is "
-     "the number that bounds how much of a headline figure was decided by something fuzzier than "
-     "code — and it keeps the failing strings, because an escape rate you cannot inspect is one "
-     "you cannot act on.", ZHU),
-"verifiers/answer_match.py::normalise":
-    ("Turns a submission into an integer or admits it cannot. Handles <code>\\boxed{}</code>, "
-     "currency marks, thousands separators, LaTeX spacing, leading zeros and integer-valued "
-     "floats — every one a real submission format. Returning None is the honest failure: it does "
-     "not guess, it escalates to a path that gets counted.", MATHARENA),
-"verifiers/answer_match.py::_symbolic":
-    "The last deterministic resort before a judge. Optional by design — sympy is not a hard "
-    "dependency, and a missing sympy shows up as an escape rather than a crash.",
-"verifiers/answer_match.py::verify":
-    "Runs the ladder, records which rung decided it, and returns the verdict. Rollouts that never "
-    "submitted are labelled <code>not_submitted</code> rather than <code>incorrect</code>, "
-    "because a timeout did not get the answer wrong.",
+"harness/answers.py::is_correct":
+    "Exact match after normalisation, against the key and its declared aliases, with one piece of "
+    "arithmetic allowed &mdash; if both sides are exact rationals they are compared as rationals, so "
+    "<code>36/11</code> and <code>72/22</code> agree. This is the entire deterministic half of the "
+    "evaluation, and it is boring on purpose.",
 
-# ===================================================== verifiers/tool_replay
-"verifiers/tool_replay.py::NAME":
-    "The verifier's name in the verdict store.",
-"verifiers/tool_replay.py::logged_calls":
-    "Walks the trace pairing each <code>tool_call</code> with the <code>tool_result</code> that "
-    "followed it. Only possible because the log records both — a summary would have kept the "
-    "result and lost the code.",
-"verifiers/tool_replay.py::verify":
-    ("Re-executes every logged call now, offline, and diffs against what was recorded. Catches "
-     "hallucinated tool results and non-determinism, and flags the case where a tool produced the "
-     "answer the narration then takes credit for. No model is involved, which is what makes it a "
-     "control on the judges rather than another one of them.", KIRGIS),
+"harness/models.py::ADAPTERS":
+    "Provider name to adapter class. The classes are imported at module load, which is safe because "
+    "each adapter imports its SDK inside <code>__init__</code> &mdash; so the registry, the capability "
+    "matrix and the whole <code>--mock</code> path work with no packages installed.",
 
-# ==================================================== verifiers/process_judge
-"verifiers/process_judge.py::NAME · ANCHORS · SYSTEM · TASK_BLOCK · REDACTED":
-    ("The rubric: four discrete anchors, a mandatory quoted span, one line of justification. Not "
-     "a 1–10 scale, because models do not use the middle of numeric scales consistently and "
-     "scores stop being comparable across items. The same block is used for the human calibration "
-     "labels — score the human on a different instrument and the agreement number means nothing.", GU),
-"verifiers/process_judge.py::BlindingLeak":
-    "Raised when something the harness controls survived into a blinded prompt. An exception "
-    "rather than a warning, because a leaked prompt produces a verdict that looks exactly like a "
-    "valid one.",
-"verifiers/process_judge.py::VerdictRejected":
-    ("A verdict without a non-empty span is rejected at parse time, not coerced into a default. "
-     "This is the rule that removes hallucinated criticism: a judge that cannot point at the step "
-     "it objects to has not found one.", PROCESS),
-"verifiers/process_judge.py::_identifiers":
-    ("Collects every string that could reveal which model produced the trace — from the pinned "
-     "header, the model-call events, and the configuration. Provenance blinding has to be "
-     "family-level, because verdicts are inflated when judge and generator are merely related.", LEAK),
-"verifiers/process_judge.py::render":
-    ("The blinding function, and the most important code in the project. It assembles the prompt "
-     "from the event log — narration, tool code, tool output, in order — and skips the events "
-     "that carry the submission, the pinned config and provider error strings. The unblinded arm "
-     "is the same function with a flag, adding two lines; those two lines are the whole "
-     "experiment.", CURSE),
-"verifiers/process_judge.py::_audit":
-    ("The assertion. Hard failure for anything the harness controls: identifiers, outcome, answer "
-     "key, metadata, and the redaction marker whose earlier presence was itself a tell. One soft "
-     "flag for what it cannot control — that the judge could reconstruct <i>what</i> was answered "
-     "from tool output, true of 100% of our traces. That is not outcome leakage, and saying so "
-     "precisely is the difference between a caveat and a claim.", SOHN),
-"verifiers/process_judge.py::_blocks":
-    "Extracts all blocks carrying a given label from a rendered prompt. Used by the audit to "
-    "check narration and tool output separately, since the two need different rules.",
-"verifiers/process_judge.py::parse_verdict":
-    "Accepts only the four anchors and only with a non-empty span. Raising rather than defaulting "
-    "means a rejected verdict is visible in the counts instead of quietly becoming data.",
-"verifiers/process_judge.py::judge":
-    ("Renders, calls, parses, and records the judge model and blinding condition on the verdict. "
-     "Pinning the judge's configuration exactly as the system under test is pinned is what makes "
-     "any judge-derived number reproducible.", GU),
+"harness/models.py::ModelSpec":
+    "What is being measured, pinned. <code>model</code> is the exact string that goes on the wire; "
+    "<code>family</code> is what the judge rotation compares, so two models from the same lab could "
+    "never end up judging each other's output as though they were independent.",
 
-# ==================================================== verifiers/masked_cont
-"verifiers/masked_cont.py::NAME · PROMPT · _NUM":
-    "The prompt asks for a value, not an opinion — which is what separates this check from the "
-    "judges it is meant to control.",
-"verifiers/masked_cont.py::MockContinuer":
-    "The offline stand-in. It reads what the narration actually committed to rather than "
-    "guessing, so the check exercises the same signal a real continuation would.",
-"verifiers/masked_cont.py::verify":
-    ("Strips the submission, hands over the reasoning through the same blinding function the "
-     "judges get, and compares where the reasoning lands to what was submitted. A disagreement "
-     "means the reasoning argued for one number and the run submitted another — regardless of "
-     "which was right.", PROCESS),
+"harness/models.py::MODELS · SOLVERS":
+    "The three models under study, in the order the website shows them. A rename is a change to this "
+    "dict and therefore visible in a diff &mdash; never a silent substitution somewhere in a call site.",
 
-# ======================================================= metrics/aggregate.py
-"metrics/aggregate.py::pass_at_k":
-    ("The probability that at least one of k attempts succeeds, estimated unbiasedly from n "
-     "trials and c successes without re-running anything. It rises toward 1 for almost any agent, "
-     "which is why it never appears without pass^k beside it.", YAO),
-"metrics/aggregate.py::pass_hat_k":
-    ("The probability that all k succeed — the reliability number. Zero, exactly, when there are "
-     "fewer than k successes. The gap between this curve and pass@k is the whole compounding-"
-     "reliability story.", YAO),
-"metrics/aggregate.py::majority_at_k":
-    "Estimates the chance that the modal answer of k samples is correct, by resampling the "
-    "observed answers. Ties are broken at random rather than by first-seen, so the estimate does "
-    "not inherit the order the rollouts happened to finish in.",
-"metrics/aggregate.py::bootstrap_ci":
-    ("A percentile interval — and the choice of what to resample is the methodological point. The "
-     "values are per-<i>task</i> rates, not per-rollout outcomes: ten rollouts of one problem are "
-     "correlated, and treating them as ten independent samples yields an interval far too "
-     "narrow.", MILLER),
-"metrics/aggregate.py::per_task_rates":
-    "Collapses (task, success) rows into a per-task rate. The unit of clustering, made explicit "
-    "so the interval above is computed over the right thing.",
-"metrics/aggregate.py::summarise":
-    ("Every reliability number for one solver, with the denominator stated in the output rather "
-     "than assumed by the reader. The curve is emitted for every k so the pass@k / pass^k "
-     "divergence can be drawn rather than asserted.", YAO),
+"harness/models.py::get":
+    "Model key to spec, naming the known keys on failure. The same pattern as "
+    "<code>problems.get</code>: an error that tells you what to type next.",
 
-# ========================================================== metrics/cost.py
-"metrics/cost.py::summarise":
-    ("Cost per run and cost per <i>successful</i> solve. The second is the number that matters: "
-     "cost per run rewards an agent that fails cheaply, while cost per successful solve says what "
-     "the capability actually costs to obtain. Infinity when nothing succeeded, which is the "
-     "honest value.", KAPOOR24),
+"harness/models.py::supported_modes":
+    "Reads <code>supported_reasoning</code> off the adapter CLASS &mdash; the same declaration that "
+    "will refuse the call at runtime. One source of truth, so the grid drawn on the website and the "
+    "behaviour of the harness cannot drift apart.",
 
-# ======================================================== metrics/judges.py
-"metrics/judges.py::ANCHORS":
-    "The same four anchors as the rubric, restated here so the metrics layer can be read without "
-    "importing the judge.",
-"metrics/judges.py::_key":
-    "The join key across verdict streams: config, task, run. Every metric below is a group-by on "
-    "this.",
-"metrics/judges.py::pair_up":
-    "Groups blinded verdicts by trace so the two judges' opinions sit side by side. Unblinded "
-    "verdicts are excluded here — mixing conditions would measure the ablation instead of the "
-    "agreement.",
-"metrics/judges.py::cohens_kappa":
-    ("Agreement above chance. Reported alongside raw agreement because raw agreement on a skewed "
-     "label distribution flatters every judge — two judges that both say ESTABLISHES most of the "
-     "time will agree often while sharing no information.", TAN),
-"metrics/judges.py::inter_judge_agreement":
-    ("Raw agreement, kappa, per-configuration breakdown, and the top disagreement pairs. Reported "
-     "as a headline number, not a footnote: presenting a process score while the instrument "
-     "disagrees with itself is the failure this exists to prevent.", VERGA),
-"metrics/judges.py::severity":
-    ("Each judge's rate of not saying ESTABLISHES, across both of its judging roles. The rotation "
-     "is what makes this comparable — a consistently harsh model shows up in both of its roles, "
-     "over two independent solver populations.", POMBAL),
-"metrics/judges.py::blinding_effect":
-    ("The direct measurement of outcome leakage: the same traces, keyed by trace <i>and</i> judge, "
-     "judged both ways. Direction is counted separately from magnitude, because noise flips both "
-     "ways and leniency flips one.", CURSE),
-"metrics/judges.py::human_agreement":
-    ("Each judge's agreement with the instructor's labels, per judge and never averaged into one "
-     "figure. Reported with n attached, because forty is a small number and the audience is "
-     "entitled to know that before believing a percentage.", HAN),
-"metrics/judges.py::right_answer_wrong_reasoning":
-    ("Of the runs that reached the right answer, the share whose reasoning at least one blinded "
-     "judge called unsound — reported both as 'any judge' and 'both judges'. This is the number "
-     "that makes the case for having a process axis at all.", PROCESS),
+"harness/models.py::capability_matrix":
+    "The grid the website draws, computed with no API keys, no network and no SDK. This is the "
+    "function that makes the Grok/medium cell a documented hole rather than a surprise discovered "
+    "at run time.",
 
-# ======================================================= tasks/math/loader.py
-"tasks/math/loader.py::path bootstrap":
-    "Lets the file be run directly as well as imported, without a package install step.",
-"tasks/math/loader.py::HERE · PROBLEMS · DATASET":
-    ("The dataset is a recurring competition set, chosen so the problems postdate the models' "
-     "training data. Evaluating on widely available problems measures memorisation as much as "
-     "reasoning.", MATHARENA),
-"tasks/math/loader.py::task_id":
-    "The naming convention, in one function, so a trace filename and a problem index can always "
-    "be reconciled.",
-"tasks/math/loader.py::sync":
-    "The only function in the project that touches the network, and it runs once. Everything "
-    "afterwards reads the cached JSONL.",
-"tasks/math/loader.py::_rows":
-    "Reads the cache, with an error that names the command to populate it rather than a bare "
-    "FileNotFoundError.",
-"tasks/math/loader.py::load_tasks":
-    "Tasks only, no answers. This is what the agent sees, and the split between this function and "
-    "the next is the whole isolation mechanism.",
-"tasks/math/loader.py::answer_key":
-    "Answers only. Imported by verifiers, never by anything under <code>agent/</code> — the "
-    "separation is enforced by which module calls which, and asserted in the standing check.",
-"tasks/math/loader.py::is_synthetic":
-    "Says whether the shipped placeholder problems are still in place. Surfaced in the standing "
-    "check so a corpus built on placeholders cannot be mistaken for one built on the real set.",
-"tasks/math/loader.py::__main__":
-    "Running the file prints what is cached; <code>--sync</code> replaces it with the real "
-    "dataset.",
+"harness/models.py::build_adapter":
+    "Model key to a live adapter. Under <code>--mock</code> it returns the simulator but passes the "
+    "real key as a label, so a rehearsal shows three different-looking models rather than one "
+    "repeated three times &mdash; while <code>solver.model</code> still records "
+    "<code>mock-model</code>, because that is what actually answered.",
 
-# ========================================================== display/live.py
-"display/live.py::COLS · _C":
-    "Six columns, never seven. A table wider than this is unreadable past row four from the back "
-    "of an auditorium, and that is the most common way a good demo fails.",
-"display/live.py::banner":
-    "Prints the pinned configuration at the top of every run, so the room sees the apparatus was "
-    "pinned rather than being told it was — and prints a loud warning when the corpus is "
-    "simulated.",
-"display/live.py::row":
-    "One rollout, one line, with the outcome colour-coded. Takes an optional graded outcome so "
-    "the same renderer can show execution states live and grades on replay.",
-"display/live.py::footer":
-    "Totals by outcome and the spend. The counts are printed even when a category is zero-free, "
-    "so the seven-outcome taxonomy is visible on screen rather than only in the slides.",
+"harness/models.py::pricing_for":
+    "The price row for a model, falling back to the mock row. Small, but it means no call site has "
+    "to reach into the pricing dict and decide what to do about a missing key.",
 
-# ======================================================== display/replay.py
-"display/replay.py::path bootstrap":
-    "Lets the replay tool run as a script from anywhere in the repo.",
-"display/replay.py::main":
-    "Replays a stored trace through the <i>same</i> renderer the live run uses, at a configurable "
-    "speed. That sharing is the point: if the network dies, the fallback does not look like a "
-    "fallback, and nobody in the room can tell which they are watching.",
-"display/replay.py::__main__":
-    "Standard entry point.",
+"harness/pricing.py::PRICING_VERSION · MODEL_PRICING":
+    "Every price in the project, in one dict, each row carrying the date it was checked and where "
+    "it came from. <code>reasoning_out</code> is a separate field defaulting to <code>None</code> "
+    "(meaning \"billed at the output rate\") because assuming that costs money quietly. Bump "
+    "<code>PRICING_VERSION</code> when a number changes; it is stored with every run.",
 
-# ==================================================== scripts/initial_check.py
-"scripts/initial_check.py::path bootstrap":
-    "Runs from anywhere without an install step.",
-"scripts/initial_check.py::_results":
-    "Colours and the results accumulator. The check reports everything it ran, passes included, "
-    "because a green list is the artifact — a silent success proves nothing was checked.",
-"scripts/initial_check.py::check":
-    "A decorator that runs a check immediately and records the outcome instead of aborting on the "
-    "first failure. One run tells you everything that is broken, not the first thing.",
-"scripts/initial_check.py::run":
-    ("The cumulative standing check, milestone by milestone. These are not tests of implementation "
-     "detail — they are the claims of the workshop asserted in code: Task carries no answer field, "
-     "the seven outcomes are distinct, a verdict without a span is rejected, a blinded prompt "
-     "leaks nothing. Offline unless <code>--online</code> is passed.", ZHU),
-"scripts/initial_check.py::__main__":
-    "Entry point, with the one flag that turns on live provider calls.",
+"harness/pricing.py::estimate_cost":
+    "Itemised cost for one call. It RAISES on an unknown model rather than returning zero &mdash; a "
+    "run silently reported as free is worse than a crash, because it survives into the summary "
+    "table. <code>visible_out</code> subtracts reasoning tokens from output tokens, which is what "
+    "stops them being charged twice given the adapters' normalisation.",
 
-# ============================================================ scripts/run.py
-"scripts/run.py::path bootstrap":
-    "Runs from anywhere without an install step.",
-"scripts/run.py::main":
-    ("The only entry point that calls a solver. It executes rollouts and records traces, and "
-     "grades nothing — the fact that the last line prints execution states and points at "
-     "grade.py is the architecture refusing to blur the seam.", KIRGIS),
-"scripts/run.py::__main__":
-    "Entry point.",
+"harness/metrics.py::stopwatch":
+    "A context manager around exactly one API call. <code>perf_counter</code> is monotonic, so a "
+    "clock adjustment cannot produce a negative latency, and the <code>finally</code> means a call "
+    "that raised still has a duration rather than a blank.",
 
-# ========================================================== scripts/grade.py
-"scripts/grade.py::path bootstrap":
-    "Runs from anywhere without an install step.",
-"scripts/grade.py::_providers":
-    "Builds the judge panel for a configuration — two simulated judges with different severity "
-    "offline, the two real cross-family judges otherwise.",
-"scripts/grade.py::main":
-    ("Runs the whole verifier stack over stored traces with zero solver calls. This script "
-     "existing separately from run.py is the structural proof that the architecture is "
-     "trace-first: three of these four verifiers were written after the corpus existed and "
-     "applied to all of it for nothing.", KIRGIS),
-"scripts/grade.py::__main__":
-    "Entry point.",
-"scripts/grade.py::ROOT":
-    "Repo root, resolved from this file.",
+"harness/metrics.py::usage_block":
+    "Token counts with the unknowns preserved. <code>None</code> means \"the provider did not tell "
+    "us\" and <code>0</code> means \"it told us, and the answer was none\" &mdash; collapsing them "
+    "makes an average over the column silently wrong, so they stay distinct all the way to the screen.",
 
-# ========================================================== scripts/label.py
-"scripts/label.py::path bootstrap":
-    "Runs from anywhere without an install step.",
-"scripts/label.py::ROOT · OUT":
-    "Where the labels are written. Append-only JSONL, like everything else derived by hand or by "
-    "machine.",
-"scripts/label.py::stratified":
-    ("Samples across the three solver configurations <i>and</i> across correct and incorrect "
-     "outcomes, round-robin, under a fixed seed. Sample only from the strongest solver, or only "
-     "from runs that succeeded, and every judge–human agreement figure downstream is measured on "
-     "the easy half of the corpus.", SOHN),
-"scripts/label.py::main":
-    ("Presents the same blinded prompt a judge receives, on the same anchors, and refuses to "
-     "record a label without a span — the human is held to the rule the judges are held to. "
-     "Progress is saved after each label so the evening can be interrupted.", HAN),
-"scripts/label.py::__main__":
-    "Entry point.",
+"harness/metrics.py::cost_block":
+    "Three lines that hand the response's token counts to the pricing module. It exists so that no "
+    "runner ever calls <code>estimate_cost</code> with hand-assembled arguments and gets the "
+    "reasoning-token convention wrong.",
 
-# ========================================================= scripts/report.py
-"scripts/report.py::path bootstrap":
-    "Runs from anywhere without an install step.",
-"scripts/report.py::ROOT · REPORTS":
-    "Output location and the terminal styling. Yellow is reserved for the simulated-corpus "
-    "banner and for missing calibration, which are the two things a reader must not miss.",
-"scripts/report.py::h":
-    "Section heading helper. Cosmetic, but the report is read aloud from a stage and structure "
-    "matters.",
-"scripts/report.py::main":
-    ("Every number used in either session, from one command, over stored traces and verdicts — "
-     "outcomes with the error rate, reliability with intervals, the escape rate, judge agreement "
-     "and severity, the blinding effect, calibration, and cost per successful solve. Nothing here "
-     "calls a model. If a figure cannot be produced by this script, it does not go in the deck.", KAPOOR25),
-"scripts/report.py::__main__":
-    "Entry point.",
+"harness/storage.py::ROOT · RESULTS · SOLVER_DIR · JUDGE_DIR · SCHEMA_VERSION":
+    "Paths resolved relative to this module, and a schema version stored in every record &mdash; so "
+    "when the shape changes, old files stay readable and the reader can say so instead of throwing "
+    "a KeyError.",
 
-# ============================================================== configs/
-"configs/models.yaml::models.yaml":
-    "The pinned model strings and their price lists. A rename must surface as an error rather "
-    "than a silent substitution, which is why the exact string lives in configuration and is "
-    "recorded in every trace header.",
-"configs/rotation.yaml::rotation.yaml":
-    ("The whole rotation design, in seventeen lines. Each configuration names one solver and two "
-     "judges from different families, and no solver appears in its own judge list — so "
-     "\"no model judges itself\" is a property of the data rather than a promise. Changing the "
-     "panel never touches a Python file.", WATAOKA),
+"harness/storage.py::now_iso":
+    "UTC, to the second. Timezone-aware, because a naive timestamp from a laptop in Astana and one "
+    "from a CI runner in Frankfurt are not comparable and nothing in the file says so.",
 
-"core/config.py::EFFORTS":
-    ("The four reasoning-effort levels, named once. Effort is part of the <b>pinned apparatus</b>, "
-     "not a knob you turn between runs and still compare the numbers — which is why it feeds the "
-     "config hash below and is printed with every run. It has to be recorded for the finding "
-     "beside this to be discoverable at all: higher effort reduced accuracy in most runs.", KAPOOR25),
-"core/config.py::base_config":
-    "<code>S1@high</code> → <code>S1</code>. An effort sweep runs the same solver on the same "
-    "tasks, so each arm needs its own rollout key or resumption skips every arm after the first "
-    "and the study quietly does not happen. The arms are separate configurations for keys and "
-    "files, but the same rotation entry when it comes to who judges them.",
-"core/config.py::effort_of":
-    "The inverse: recovers which effort arm a stored configuration label belongs to, so the "
-    "report can group the sweep without re-deriving it from the header.",
-"scripts/grade.py::_stratified_ablation":
-    ("Chooses which traces to <i>also</i> judge unblinded. Taking the first n in sorted order "
-     "looks harmless and is not: with several solver configurations — an effort sweep produces "
-     "twelve — the whole ablation lands inside whichever one sorts first, and the blinding effect "
-     "gets measured on one arm and reported as though it covered the study. Round-robin across "
-     "(configuration, correct/incorrect) buckets under a fixed seed, so the sample cannot be "
-     "accidentally all-easy or all-one-model.", SOHN),
-"core/config.py::resolve_aliases":
-    "Copies a recognised alias into the canonical variable the provider SDKs read, and returns "
-    "what it substituted so the caller can say so out loud. Forgiving about the name, never "
-    "silent about the substitution — a run authenticated by a variable nobody mentioned is a run "
-    "you cannot fully describe afterwards.",
-"scripts/pipeline.py::ROOT":
-    "Repo root, so every stage runs from the same place regardless of where the command was typed.",
-"scripts/pipeline.py::stage":
-    "Runs one stage as a subprocess and stops the pipeline if it fails. Each stage is literally "
-    "the command you would have typed — nothing here is a second implementation that could drift "
-    "from the real one — and a failure halts rather than continuing, because every later stage "
-    "builds on a corpus the failed one was supposed to produce.",
-"scripts/pipeline.py::main":
-    ("The whole study in one command: standing check, rotation corpus, reasoning-effort sweep, "
-     "offline grading, report. It prints the planned rollout count before anything runs and, for "
-     "a real run, refuses to start until you type <code>run</code> — the money is yours and the "
-     "confirmation is cheap. Calibration is deliberately excluded: label.py needs a human, and a "
-     "pipeline that pretended otherwise would emit judge numbers with nothing behind them.", SOHN),
-"scripts/pipeline.py::__main__":
-    "Entry point.",
+"harness/storage.py::new_run_id":
+    "A prefixed random id. The prefix (<code>solve_</code> / <code>judge_</code>) means a run id "
+    "pasted into a chat message is self-describing.",
+
+"harness/storage.py::solver_path":
+    "The path IS the primary key: problem, model and mode are the three coordinates in the filename. "
+    "\"Which runs exist\" is answerable with <code>ls</code>, re-running one cell overwrites exactly "
+    "one file, and resumption is a file-existence check.",
+
+"harness/storage.py::judge_path":
+    "The same idea with five coordinates &mdash; candidate model and mode, then judge model and mode. "
+    "The <code>__by__</code> separator keeps it readable when you are staring at a directory listing "
+    "in front of an audience.",
+
+"harness/storage.py::write_record":
+    "Written to a temporary file and renamed, so a run interrupted mid-write leaves the previous "
+    "good file in place rather than a truncated one every later command has to defend against. "
+    "<code>os.replace</code> is atomic on POSIX and Windows alike.",
+
+"harness/storage.py::read_record":
+    "One record. Trivially thin, deliberately: it is the single place a stored file is decoded, so "
+    "a future format change has one call site.",
+
+"harness/storage.py::load_all":
+    "Every record under a directory, sorted by path. Sorted so that a rebuild produces byte-identical "
+    "output &mdash; an unsorted <code>rglob</code> would make the results file churn on every run and "
+    "hide the real changes in a diff.",
+
+"harness/storage.py::load_solver_runs":
+    "The solver corpus, as a list. Named rather than inlined so the judge pipeline and the analysis "
+    "both read it the same way.",
+
+"harness/storage.py::load_judge_runs":
+    "The verdict corpus. That this is a separate read from a separate directory is the structural "
+    "proof that judging is a second pass over stored results, not something that happens during "
+    "the experiment.",
+
+"harness/runner.py::SYSTEM_PROMPT · DEFAULTS":
+    "The solver prompt as a module constant with a hash, not an f-string assembled at the call site. "
+    "It asks for an explicit <code>FINAL ANSWER</code> marker and for exact form, which is what lets "
+    "the answer checker stay narrow and reproducible.",
+
+"harness/runner.py::prompt_sha":
+    "Twelve hex characters of SHA-256 &mdash; short enough to read aloud, sensitive enough that any "
+    "edit to the prompt is visible in every record produced after it.",
+
+"harness/runner.py::ExperimentConfig":
+    "Everything that decides what a run means, held together deliberately: a run is reproducible only "
+    "if all of it is recorded, and the surest way to record all of it is for all of it to be one "
+    "object that gets serialised in one place. <code>solver_block</code> renders it into the stored "
+    "record, so the run and the file cannot disagree about what was configured.",
+
+"harness/runner.py::run_one":
+    "The whole of Part I: configure, call, time, collect, price, grade, store. The record is built "
+    "first with <code>status: error</code> as the default, so every path out of the function returns "
+    "a complete record and there is no way to fall off the end silently. The capability check happens "
+    "before any call; grading happens after it, from the response text, by a checker that never "
+    "touched the prompt.",
+
+"harness/runner.py::run_and_store":
+    "Runs one cell and writes it to its canonical path. Two lines, and they are the two lines that "
+    "make the study resumable.",
+
+"harness/env.py::ROOT · ALIASES":
+    "The key names people actually have in their <code>.env</code>. Recognising them is a courtesy; "
+    "announcing the substitution is not, because which credential a run authenticated with is part "
+    "of the apparatus.",
+
+"harness/env.py::load_dotenv":
+    "Reads <code>KEY=value</code> without a dependency, and never overwrites a variable already set "
+    "in the environment &mdash; an explicit export on the command line beats a file, which is what "
+    "everyone expects and almost no minimal implementation does.",
+
+"harness/env.py::canonicalise":
+    "Copies a recognised alias into the canonical name and RETURNS what it did, so the caller can "
+    "print it. Returning rather than printing keeps this module free of output and lets the preflight "
+    "decide how to say it.",
+
+"harness/run.py::constants":
+    "The three-line path shim that lets the file run as a script as well as be imported, so a demo "
+    "never fails on a packaging detail.",
+
+"harness/run.py::summarise":
+    "The one-screen report the workshop reads out loud. It prints the reasoning request that actually "
+    "went on the wire, which of the three reasoning-exposure cases the run was in, "
+    "<code>n/a</code> for a token count the provider withheld, and the pricing version beside the "
+    "dollar figure.",
+
+"harness/run.py::main":
+    "Argument parsing, one run, one summary. The exit status treats <code>unsupported</code> as "
+    "success: a cell that legitimately does not exist is not a failure of the command.",
+
+"harness/run_all.py::constants":
+    "The same path shim, for the same reason.",
+
+"harness/run_all.py::plan":
+    "Every cell of the matrix, in a stable order, computed BEFORE anything runs &mdash; which is what "
+    "makes <code>--dry-run</code> print exactly what a real run would do rather than an approximation "
+    "of it.",
+
+"harness/run_all.py::main":
+    "The loop. It reports how many cells will call an API and how many are unsupported before it "
+    "starts, skips cells whose file already exists so a rate-limited study is finished by re-running "
+    "the same command, and names the next command in the pipeline when it is done.",
+
+"harness/check.py::constants":
+    "Path shim, plus the two labels the report prints. <code>PASS</code> and <code>FAIL</code> as "
+    "constants rather than literals, so the transcript embedded in the website is highlighted by a "
+    "rule that cannot go stale.",
+
+"harness/check.py::KEY_FOR":
+    "Which environment variable each provider needs. Small, and it is the difference between "
+    "\"missing GEMINI_API_KEY\" and an authentication error forty seconds into a batch.",
+
+"harness/check.py::main":
+    "Four checks and a bill, with no API call unless <code>--live</code> is passed. It prints the "
+    "LENGTH of each key and the alias it came from, never a value; it fails on an unpriced model, "
+    "because a run reported as free is worse than a crash; and it prints the exact size of the study "
+    "before you commit to paying for it.",
+
+# ======================================================================
+# providers/
+# ======================================================================
+"providers/base.py::REASONING_EXPOSURE":
+    "The three honest answers to \"what reasoning information do we have?\" &mdash; a "
+    "provider-labelled summary, a token count and nothing else, or neither. Collapsing these three "
+    "is the mistake this part of the workshop exists to prevent.",
+
+"providers/base.py::ProviderError":
+    "The apparatus failed. Named to make the distinction impossible to miss: this is not the model "
+    "being wrong, and a study that counts it as a wrong answer has mislabelled its own failure.",
+
+"providers/base.py::ProviderTimeout":
+    "A subclass, so a caller can retry a timeout specifically while still catching every provider "
+    "fault with the base class.",
+
+"providers/base.py::ProviderResponse":
+    "The one shape every adapter returns. <code>reasoning_summary</code> holds only what the API "
+    "explicitly labelled as reasoning; <code>reasoning_exposure</code> says which of the three cases "
+    "we are in; <code>output_tokens</code> always includes reasoning tokens because the adapters "
+    "normalise to that; and <code>reasoning_request</code> records what actually went on the wire "
+    "rather than what we intended.",
+
+"providers/base.py::Provider":
+    "The whole contract, as a Protocol: three attributes and one method. Written down so that adding "
+    "a fourth provider is a matter of satisfying an interface you can read in ten seconds, not of "
+    "reverse-engineering three existing classes.",
+
+"providers/base.py::BaseAdapter":
+    "Shared bookkeeping, and deliberately nothing else. Its one real job is "
+    "<code>require_supported</code>: it refuses, on every adapter's behalf, to answer a question the "
+    "provider cannot answer. Enforcing that here rather than remembering it in three subclasses is "
+    "what makes a fourth adapter correct by default.",
+
+"providers/base.py::build":
+    "Name to adapter, with each SDK imported inside its branch. That laziness is what lets a laptop "
+    "with no packages and no network import the registry, draw the capability grid and rehearse the "
+    "entire workshop.",
+
+"providers/openai_adapter.py::EFFORT":
+    "The identity map, written out anyway. The day a level is renamed on OpenAI's side, the change "
+    "belongs in this dict and not in a string concatenation somewhere else.",
+
+"providers/openai_adapter.py::OpenAIAdapter":
+    "The simplest of the three translations, because the named effort maps one-to-one onto the "
+    "harness's levels. <code>summary=\"auto\"</code> asks for a reasoning summary &mdash; a summary "
+    "the model wrote, returned in a field the API labels as reasoning, and not the raw chain of "
+    "thought. Provider exceptions are classified into timeout or error and re-raised as our own "
+    "types, so the runner never sees the SDK's exception tree.",
+
+"providers/openai_adapter.py::_reasoning_summary":
+    "Reads only output items the API itself typed as <code>reasoning</code>, and returns "
+    "<code>None</code> rather than an empty string when there were none &mdash; so \"the provider "
+    "gave us nothing\" stays distinguishable from \"the provider gave us an empty summary\".",
+
+"providers/gemini_adapter.py::THINKING_BUDGET":
+    "Gemini takes no named effort at all; it takes a token budget. This dict is a WORKSHOP DECISION, "
+    "documented as one: <code>HIGH</code> means \"effort=high\" on OpenAI and \"16k thinking tokens "
+    "allowed\" here, and those are not the same physical quantity. The harness makes the arms "
+    "comparable by naming them consistently; it cannot make them identical.",
+
+"providers/gemini_adapter.py::GeminiAdapter":
+    "The most interesting translation of the three. Note the token normalisation: google-genai "
+    "reports thinking tokens SEPARATELY from candidate tokens, so this adapter adds them into "
+    "<code>output_tokens</code> before returning &mdash; one convention, enforced at the edge, and "
+    "the cost calculator never has to ask which provider it is looking at.",
+
+"providers/gemini_adapter.py::_split_parts":
+    "Separates answer parts from thought-summary parts using <code>part.thought</code>. That flag is "
+    "the ONLY reason these two strings can be told apart, which is why the split happens here rather "
+    "than by pattern-matching prose later.",
+
+"providers/xai_adapter.py::BASE_URL · EFFORT":
+    "xAI speaks the OpenAI chat-completions dialect, so the same SDK is pointed at a different base "
+    "URL. The <code>EFFORT</code> map has TWO entries, not three: there is no middle setting, and "
+    "that missing key is what eventually draws a hole in the results grid.",
+
+"providers/xai_adapter.py::XAIAdapter":
+    "The adapter that earns the abstraction its keep, because it is the one that cannot do everything "
+    "the others can. Asking for MEDIUM raises before a request is built, the runner records "
+    "<code>status: unsupported</code>, and the grid shows a hole &mdash; instead of a row labelled "
+    "medium that is really the provider default.",
+
+"providers/mock_adapter.py::BANNER":
+    "Prefixed to every string the simulator emits, so a screenshot of simulated output taken out of "
+    "context still says what it is.",
+
+"providers/mock_adapter.py::_rng_int":
+    "A stable pseudo-random integer from a string seed. Deterministic, so a rebuilt page is "
+    "byte-identical and a rehearsal is repeatable &mdash; which matters more than randomness here.",
+
+"providers/mock_adapter.py::MockAdapter":
+    "A trace generator, not a model. It exists so the entire workshop can be rehearsed with no keys "
+    "and no network, and so a live demo never depends on three APIs being up at once. It supports "
+    "every level on purpose: the unsupported-mode path comes from the REAL adapter's declaration in "
+    "<code>harness/models.py</code>, so a <code>--mock</code> rehearsal still exercises it. It also "
+    "sleeps, so the latency the stopwatch records is a latency that actually elapsed rather than a "
+    "number written into a field.",
+
+"providers/mock_adapter.py::SOLUTIONS":
+    "Three canned solutions per problem: one sound derivation, one that reaches the RIGHT answer by "
+    "an invalid route, and one that is simply wrong. Those three cases are exactly what Part II needs "
+    "on screen, and a random generator will not produce them.",
+
+"providers/mock_adapter.py::_solution":
+    "Picks one, weighted by effort so that higher effort draws the sound solution more often. A "
+    "simulated tendency, not an observed one &mdash; and the page says so wherever the figure appears.",
+
+"providers/mock_adapter.py::_mentions":
+    "Identifies which canned problem is in the prompt by a distinctive phrase, because the solver "
+    "prompt never carries the problem id &mdash; the simulator is subject to the same blinding as a "
+    "real provider.",
+
+"providers/mock_adapter.py::QUALITY_MARKERS · QUALITY_PROFILE":
+    "How the simulated judge recognises its own canned solutions, and what it scores them. The jitter "
+    "width is zero for a sound solution and two for the unjustified one, so simulated judges agree "
+    "where agreement is easy and disagree exactly where the workshop needs a disagreement to point at. "
+    "<code>correctness</code> never jitters, because that is a fact both judges can check.",
+
+"providers/mock_adapter.py::_quality_of":
+    "Reads the candidate solution back out of the judge prompt. This is the seam that makes the "
+    "simulated verdicts coherent with the simulated solutions instead of independent noise.",
+
+"providers/mock_adapter.py::_judge_json":
+    "Emits strict JSON, so a simulated verdict is parsed by <code>judges/judge.py</code> through "
+    "exactly the same code path as a real one. If the parser has a bug, the rehearsal finds it.",
+
+# ======================================================================
+# judges/
+# ======================================================================
+"judges/prompts.py::CRITERIA · ERROR_SEVERITY · VERDICTS · SYSTEM":
+    "The rubric, and the part that matters is the written anchors: 5, 3 and 1 are described, so a 3 "
+    "means the same thing to two different judges. <code>ERROR_SEVERITY</code> is ordered worst-last, "
+    "which makes \"at least major\" a comparison rather than a set-membership test. The system prompt "
+    "states in its second line that the judge is not told the correct answer.",
+
+"judges/prompts.py::rubric_block":
+    "Renders the rubric from the dict above, so the prompt, the parser, the agreement analysis and "
+    "the website all read one definition. Adding a seventh criterion is a line in "
+    "<code>CRITERIA</code>, and nothing else needs to know.",
+
+"judges/prompts.py::output_block":
+    "The exact shape required back, shown to the judge verbatim and used by the parser to validate "
+    "what arrives. Writing it once means the instruction and the validation cannot disagree.",
+
+"judges/prompts.py::build":
+    "The complete judge prompt, and what matters is what is absent: no expected answer, no harness "
+    "verdict, no solver identity, no reasoning mode, no token count, no cost. A judge that knows it "
+    "is reading the expensive high-effort run from the famous model is not scoring the same thing as "
+    "one that does not.",
+
+"judges/judge.py::FENCE":
+    "Matches a fenced code block. Models wrap JSON in fences constantly; that is packaging, not "
+    "judgement, so the parser unwraps it rather than rejecting the verdict.",
+
+"judges/judge.py::VerdictParseError":
+    "Its own exception type, so a formatting failure is caught and recorded separately from a "
+    "provider failure. The two have different causes and different fixes.",
+
+"judges/judge.py::JudgeConfig":
+    "The judge's counterpart to <code>ExperimentConfig</code>. Deliberately the same shape, because "
+    "a judge run is a model run &mdash; and treating it as one is what gets it timed, priced and "
+    "stored with the same rigour as the thing it is judging.",
+
+"judges/judge.py::parse_verdict":
+    "Tolerant about packaging &mdash; a fence, the whole reply, or the outermost braces &mdash; and "
+    "strict about content: every criterion present, integers in 1&ndash;5, labels from the rubric's "
+    "own lists. <code>4.5</code> is rejected, because a judge answering off a five-point scale has "
+    "not used the rubric. <code>mean_score</code> is computed here, once, so no two places can "
+    "average the rubric differently.",
+
+"judges/judge.py::judge_one":
+    "Structurally the solver runner again, with two additions specific to judging: the output must "
+    "parse, and a failure to parse is stored as <code>parse_failed</code> with the raw text kept. "
+    "Note <code>correct_per_harness</code> &mdash; recorded on the record for the analysis, and "
+    "absent from the prompt built four lines above it.",
+
+"judges/judge.py::judge_and_store":
+    "One verdict to its canonical five-coordinate path. As with the solver, this is what makes the "
+    "judging pass resumable.",
+
+"judges/run_all.py::constants":
+    "Path shim, so the module runs as a script as well as importing.",
+
+"judges/run_all.py::DEFAULT_JUDGE_MODES":
+    "Low and high &mdash; the two levels ALL THREE providers expose. Using the intersection keeps the "
+    "judge sweep even; including medium would reproduce the solver grid's hole here and make the "
+    "judge comparison uneven for one model only.",
+
+"judges/run_all.py::judges_for":
+    "The entire rotation: the other two models, compared on family so that two models from the same "
+    "lab could never judge each other as though independent. No model is ever shown its own output, "
+    "so self-preference cannot occur &mdash; a design that EXCLUDES the bias rather than measuring it "
+    "and hoping it is small.",
+
+"judges/run_all.py::candidates":
+    "Only solver runs that produced text a judge could read. An unsupported cell has no solution in "
+    "it, so it is skipped here and shown as a hole on the website rather than as a zero.",
+
+"judges/run_all.py::main":
+    "The judging loop, resumable on the same principle as the solver. It prints the verdict, the mean "
+    "score, the reasoning score and the cost per line, so disagreement is visible in the terminal "
+    "before anyone opens the website.",
+
+# ======================================================================
+# analysis/
+# ======================================================================
+"analysis/agreement.py::AGREEMENT_BANDS":
+    "How far apart two 1&ndash;5 scores may be before we stop calling it agreement. Bands rather than "
+    "a raw number, because the results interface pairs each label with an icon and a word &mdash; a "
+    "status colour never carries the meaning alone.",
+
+"analysis/agreement.py::band":
+    "Difference to label. Four lines, and it is the whole of the agreement vocabulary &mdash; which is "
+    "the point: every number in this module can be recomputed on a slide by hand while a room watches.",
+
+"analysis/agreement.py::compare":
+    "Two verdicts to one summary, per criterion rather than once. The last field, "
+    "<code>verdict_agrees_but_scores_do_not</code>, is the reason the function exists: reporting only "
+    "the verdict would call a three-point gap on completeness perfect agreement, which is the most "
+    "common way judge reliability gets overstated.",
+
+"analysis/agreement.py::judge_vs_ground_truth":
+    "How often the judges' correctness score matched the deterministic check. Because the judges were "
+    "never shown the answer key, this is a genuine measurement OF THE INSTRUMENT rather than of the "
+    "solutions. The <code>&gt;= 4</code> threshold is stated rather than implied, and shown on screen "
+    "beside the number, because the number moves if you change it.",
+
+"analysis/agreement.py::severity_profile":
+    "How often each judge reaches for each severity label. A judge that says <code>major</code> twice "
+    "as often as another is a stricter instrument, and that is a property of the judge, not of the "
+    "solutions it happened to be given &mdash; which is why it is reported next to the scores rather "
+    "than averaged into them.",
+
+"analysis/build_results.py::constants":
+    "Path shim, so the module runs as a script.",
+
+"analysis/build_results.py::OUT":
+    "The single file the website reads. Everything upstream of it is many small files, because that "
+    "is what makes a study resumable and inspectable; everything downstream wants one document.",
+
+"analysis/build_results.py::_avg":
+    "Mean over the values that exist, returning <code>None</code> when none do. This is where the "
+    "null-preservation discipline from the metrics collector finally pays: an average over a column "
+    "the provider never populated comes back as \"n/a\", not as zero.",
+
+"analysis/build_results.py::slim_verdict":
+    "One verdict as the page needs it. The raw text is kept ONLY when the parse failed &mdash; that is "
+    "the one case where a human has to read it, and carrying it otherwise would triple the size of the "
+    "inlined data for no benefit.",
+
+"analysis/build_results.py::build":
+    "The join. Verdicts are indexed by the candidate they judged and the effort they used, then "
+    "attached to their solver run along with the agreement summary. The <code>simulated</code> flag is "
+    "true if ANY row came from the simulator, because a mixed set is not a study and the page banners "
+    "the whole section rather than individual rows.",
+
+"analysis/build_results.py::summarise":
+    "The comparison dashboard, computed once, here &mdash; not in the browser. Note the cost block: it "
+    "reports solver and judge spend separately and gives the judges' share, which is the number people "
+    "forget. With two judges at two efforts, evaluating usually costs more than solving did.",
+
+"analysis/build_results.py::main":
+    "Writes the file and prints what is in it: how many cells, how many verdicts, how many failed to "
+    "parse, the split bill, and a banner if any of it is simulated. Then it names the next command, so "
+    "the pipeline is discoverable from any point in it.",
 }

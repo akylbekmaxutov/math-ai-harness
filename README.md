@@ -1,25 +1,38 @@
 # How Do We Actually Know an AI Agent Is Good at Math?
 
-A model-agnostic evaluation harness for tool-using agents, instantiated on competition
-mathematics, plus the two-session workshop built on top of it.
+An evaluation harness and an LLM-as-a-judge pipeline, plus the workshop built on top of them.
+
+**1st International Conference and Workshop on Mathematics and Artificial Intelligence**
+**September 9–11, 2026**
 
 **Instructor:** Akylbek Maxutov — Senior Data Scientist, ISSAI, Nazarbayev University, Astana
 
-> A harness is a measurement apparatus. A judge is one instrument inside it. Harness
-> engineering is what makes the measurement reproducible; judge hygiene is what makes that
-> particular instrument trustworthy. Neither produces a meaningful number alone.
+> A model returns 42. The answer key says 42. Almost every evaluation you will read stops
+> there. Evaluating an AI agent means evaluating the entire experimental system around it —
+> not merely asking whether the final answer is correct.
+
+## The experiment
+
+```
+3 problems  ×  3 models  ×  3 reasoning modes   =  27 cells, 24 of which exist
+    then every solution judged by the other two models, at two judge efforts
+                                                =  96 verdicts
+```
+
+| | |
+|---|---|
+| Models | GPT-5.6-Terra · Gemini-3.8-Flash · Grok 4.6 |
+| Reasoning modes | `low`, `medium`, `high` — Grok exposes no `medium`, so those three cells are recorded as `unsupported` rather than silently substituted |
+| Judges | the other two models, never the candidate's own family |
+| Judge efforts | `low` and `high` — the two levels all three providers expose |
 
 ## The pages
 
 | File | What it is |
 |---|---|
-| [`index.html`](index.html) | **Start here.** What the workshop is: both sessions, format, syllabus |
+| [`index.html`](index.html) | **Start here.** What the workshop is |
 | [`about.html`](about.html) | The instructor, and selected publications |
-| [`workshop.html`](workshop.html) | The workshop itself — one continuous document, 28 parts |
-
-`workshop.html` runs as a single narrative: the 2026 news that motivates it, then the harness
-built one step at a time (explanation and diagram first, then the code that implements it),
-then LLM-as-a-judge, then the complete source of every file.
+| [`workshop.html`](workshop.html) | The workshop itself — collapsible contents, both parts, the interactive results |
 
 All three are generated. Edit `deck/*.src.html` and run:
 
@@ -28,72 +41,93 @@ python3 deck/build.py
 ```
 
 Code shown on a page is extracted from the real module at build time, so a page cannot drift
-from the code it quotes. The build **fails** if any code block or component has no
-explanation — see `deck/explain.py` and `deck/components_explain.py`.
+from the code it quotes. The build **fails** if a code block or component has no explanation
+(`deck/explain.py`, `deck/components_explain.py`), if a contents link points at an id that is
+not in the page, or if a command shown on screen names a module that does not exist.
 
-## Run it — one line
+## Run it
 
-```bash
-python3 scripts/pipeline.py --mock     # offline rehearsal: no keys, no network
-python3 scripts/pipeline.py --smoke    # one real rollout per model, then stop
-python3 scripts/pipeline.py            # the real study (asks before spending)
-```
-
-The pipeline runs the standing check, the rotation corpus, the reasoning-effort sweep,
-offline grading and the report — stopping at the first failure. Each stage is the command
-you would have typed, run as a subprocess, so there is no second implementation to drift.
-
-Dial the scale with `--n` (rotation rollouts), `--sweep-n` (per effort arm), `--task`,
-`--no-sweep`, `--ablation`.
-
-The 40-trace calibration is deliberately **not** in the pipeline — it needs a human:
+### Rehearse offline — no keys, no network, no spend
 
 ```bash
-python3 scripts/label.py --n 40
-python3 scripts/report.py --json
+python3 -m harness.run_all --mock      # 27 solver cells
+python3 -m judges.run_all --mock       # 96 verdicts
+python3 -m analysis.build_results      # join into results/workshop_results.json
+python3 deck/build.py                  # inline it into workshop.html
 ```
 
-### Or stage by stage
+`--mock` uses the offline simulator in `providers/mock_adapter.py`. Every record it writes is
+marked `simulated: true`, and the website puts a banner over every figure derived from it.
+**Nothing produced this way is a measurement of a real model.**
+
+### The real study
 
 ```bash
-python3 scripts/initial_check.py
-python3 scripts/run.py --config all --n 10 --mock
-python3 scripts/run.py --config all --n 5 --mock --sweep-effort
-python3 scripts/grade.py --all --mock --ablation 120
-python3 scripts/report.py
-python3 display/replay.py --trace traces/S1/aime2026-07.jsonl --speed 8
+pip install -r requirements.txt
+cp .env.example .env                   # then fill in the three keys
+python3 -m harness.check               # preflight: keys, problems, prices, capability, cost
+python3 -m harness.run_all             # 24 API calls · resumable
+python3 -m judges.run_all              # 96 verdicts
+python3 -m analysis.build_results
+python3 deck/build.py
 ```
 
-`--mock` uses the offline simulator in `agent/providers.py`. Every trace it writes is marked
-`simulated: true`, gets its own `config_hash`, and `report.py` prints a banner over any figure
-derived from it. **Nothing produced this way is a measurement of a real model.**
+Both `run_all` commands skip a cell whose file already exists, so a study interrupted by a
+rate limit is finished by re-running the same command. Pass `--force` to redo everything,
+`--dry-run` to see the plan without spending.
 
-### Keys
+### One cell
 
-Canonical: `OPENAI_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`. Common alternatives —
-`OPENAI_TOKEN`, `GEMINI_TOKEN`, `GROK_TOKEN`, `GOOGLE_API_KEY` — are accepted and copied into
-the canonical name at startup, with a line printed saying which was used.
+```bash
+python3 -m harness.run --problem algebra_01 --model gpt-5.6-terra --reasoning high
+```
 
-`tasks/math/problems.jsonl` ships **placeholder problems**, brute-force verified but not AIME.
-`python3 tasks/math/loader.py --sync` replaces them with the real set.
+### Present
+
+`workshop.html` opens directly from the filesystem — the results are inlined at build time,
+so a presentation never depends on a server, a network or an API key. If you prefer a server:
+
+```bash
+python3 -m http.server 8000
+```
+
+## Keys
+
+`OPENAI_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`. These alternatives are also accepted and
+copied into the canonical name at startup, with a line printed saying which was used:
+`OPENAI_TOKEN`, `GEMINI_TOKEN`, `GOOGLE_API_KEY`, `GROK_TOKEN`, `XAI_TOKEN`.
+
+Keys are read from the environment by the provider adapters and nowhere else. They never
+appear in the HTML, in JavaScript, in committed source, or in a stored result. `.env` is
+gitignored; `.env.example` holds placeholders only.
 
 ## Layout
 
 ```
-core/       contracts · trace recorder · config pinning · budget
-agent/      hand-written loop · tools · sandbox · providers (+ offline simulator)
-runner/     rollout orchestration · seven-way outcome classifier
-verifiers/  answer_match · tool_replay · process_judge (blinding) · masked_cont
-metrics/    aggregate (pass@k, pass^k) · judges (agreement, severity, blinding) · cost
-tasks/math/ loader · problems.jsonl        display/  live + replay, one renderer
-scripts/    initial_check · run · grade · label · report
+harness/     reasoning modes · problems · answers · models · pricing
+             metrics · storage · runner · env      + run · run_all · check
+providers/   base (one interface) · openai · gemini · xai · mock (offline simulator)
+judges/      prompts (the rubric) · judge (call + parse) · run_all (the rotation)
+analysis/    agreement · build_results
+problems/    problems.json — three problems, answers brute-force verified
+results/     solver/<problem>/<model>__<mode>.json
+             judges/<problem>/<model>__<mode>__by__<judge>__<judgemode>.json
+             workshop_results.json          <- what the website reads
+deck/        build.py · outline.py · deck.css · *.src.html · explain.py
+             components_explain.py · term/ (real captured transcripts)
 ```
 
-`grade.py` existing as a separate entry point from `run.py` is the structural proof that
-the architecture is trace-first: three of the four verifiers were written after the corpus
-existed and applied to all of it with zero solver calls.
+Three design commitments the code is built to make checkable:
+
+1. **The solver never sees the answer key.** `Problem.for_solver()` returns the question and
+   nothing else; the key is reachable only through an attribute the grader alone reads.
+2. **The judge never sees the answer key either.** It scores correctness by doing the
+   mathematics itself, so the gap between its correctness score and the deterministic check
+   is a real measurement of the judge — reported on the results page.
+3. **An unavailable capability is recorded as unavailable.** A reasoning mode a provider does
+   not expose becomes `status: "unsupported"` and a hole in the grid, never a substituted
+   default wearing the wrong label.
 
 ## Licence
 
-Code MIT. Workshop materials CC BY 4.0. Problems from AIME 2026 via MathArena
-(CC BY-NC-SA 4.0) once synced — cite Balunović et al. (2025) and Dekoninck et al. (2026).
+Code MIT. Workshop materials CC BY 4.0.

@@ -1,0 +1,13 @@
+
+  problem   reasoning_02  (The second-largest divisor)
+  model     GPT-5.6-Terra  [mock/mock-model]
+  reasoning high   requested: {'simulated_mode': 'high'}
+  status    ok
+  answer    42   expected 42   -> CORRECT
+  reasoning info exposed: summary
+  tokens    in 186  out 3138  reasoning 2653  total 3324
+  latency   0.582s
+  cost      $0.031613  (prices 2026-09-08)
+  SIMULATED — offline simulator output. NOT a measurement of a real model.
+  stored    results/solver/reasoning_02/gpt-5.6-terra__high.json
+

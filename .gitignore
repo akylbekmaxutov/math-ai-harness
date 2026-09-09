@@ -20,10 +20,8 @@ venv/
 .mypy_cache/
 
 # --- Run artifacts ---
-traces/
-verdicts/
-calibration/
-reports/
+results/*/
+!results/workshop_results.json
 *.log
 
 # --- OS / editor ---

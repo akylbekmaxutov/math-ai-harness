@@ -1,0 +1,7 @@
+# The harness core runs on the standard library alone: `--mock` needs nothing
+# below, so a laptop with no network can rehearse the entire workshop.
+#
+#     pip install -r requirements.txt
+
+openai>=1.40          # OpenAI (/v1/responses) and xAI (OpenAI-compatible at api.x.ai)
+google-genai>=1.0     # Gemini

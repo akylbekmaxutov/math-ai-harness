@@ -1,0 +1,8 @@
+
+  27 solver cells (24 ok, 3 unsupported, 0 error)
+  96 verdicts (96 ok, 0 unparseable)
+  solver $0.2446  +  judges $0.5838  =  $0.8284   (judges are 70% of it)
+  SIMULATED DATA — the website will banner every figure derived from it.
+  wrote results/workshop_results.json  210,533 bytes
+  next: python3 deck/build.py
+

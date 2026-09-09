@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "problem_set_version": "2026-09-08",
+  "note": "Three problems chosen so that reasoning quality can differ even when the final answer agrees. Each carries a stable id, an exact expected answer, and the trap a plausible-but-wrong route falls into.",
+  "problems": [
+    {
+      "problem_id": "algebra_01",
+      "title": "Two pipes and a leak",
+      "kind": "algebra",
+      "difficulty": "short derivation",
+      "question": "Pipe A alone fills a tank in 6 hours. Pipe B alone fills the same tank in 4 hours. A drain at the bottom empties a full tank in 9 hours. All three are opened at once on an empty tank. How many hours does it take to fill the tank? Give the answer as a fraction in lowest terms.",
+      "expected_answer": "36/11",
+      "answer_aliases": [
+        "36/11",
+        "\\frac{36}{11}",
+        "3 3/11"
+      ],
+      "answer_kind": "rational",
+      "why_this_problem": "One clean derivation: the net rate is 1/6 + 1/4 - 1/9 = 11/36 of a tank per hour, so the time is the reciprocal. The common wrong route adds and subtracts the TIMES (6 + 4 - 9) instead of the rates. A model can also invert only at the very end and still narrate the reciprocal step incorrectly, which is a reasoning fault the final answer alone would never reveal."
+    },
+    {
+      "problem_id": "reasoning_02",
+      "title": "The second-largest divisor",
+      "kind": "logical/mathematical reasoning",
+      "difficulty": "trap",
+      "question": "A positive integer n has exactly 8 positive divisors. The second-largest divisor of n is 21. Find n.",
+      "expected_answer": "42",
+      "answer_aliases": [
+        "42"
+      ],
+      "answer_kind": "integer",
+      "why_this_problem": "The second-largest divisor of n is n/p where p is the smallest prime factor, so n = 21p. Only p = 2 keeps 21 as the second-largest and gives 8 divisors, so n = 42. A model that simply guesses 42 because 42 = 21 x 2 lands on the right number without establishing why p = 2 or checking the divisor count. Correct answer, unjustified reasoning - which is the whole point of Part II."
+    },
+    {
+      "problem_id": "multistep_03",
+      "title": "Lattice points under a line",
+      "kind": "multi-step",
+      "difficulty": "several intermediate steps",
+      "question": "Let S be the set of ordered pairs of integers (x, y) with 1 <= x <= 20 and 1 <= y <= 20 such that 3x + 4y is divisible by 7. How many pairs are in S?",
+      "expected_answer": "58",
+      "answer_aliases": [
+        "58"
+      ],
+      "answer_kind": "integer",
+      "why_this_problem": "Reduce 3x + 4y = 0 (mod 7) to x = y (mod 7), then count. The range 1..20 is NOT a multiple of 7: residues 1..6 occur three times but residue 0 occurs only twice, so the count is 6*3^2 + 2^2 = 58, not 7*3^2 = 63. The near-miss 63 is exactly what careless counting produces, so judges have something real to disagree about."
+    }
+  ]
+}

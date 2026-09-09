@@ -8,8 +8,18 @@ keeps them in step — rebuild and the slide is correct again.
 
 Placeholders understood in deck/*.src.html:
     {{LOGO}}                       the ISSAI symbol definition (once per file)
+    {{CSS}}                        deck/deck.css, inlined
+    {{NAV}}                        the sidebar, generated from deck/outline.py
+    {{RESULTS}}                    results/workshop_results.json, inlined
     {{CODE|path|symbol|caption}}   a function/class pulled by name
     {{CODE|path|L12-40|caption}}   an explicit line range
+    {{TERM|path|command|a-b}}      a REAL captured terminal transcript
+    {{CMD|command|caption}}        a copyable command block
+    {{FULL|path}}                  a whole file, split into explained components
+
+Two things the build refuses to produce:
+  * a page with an unexplained code block or component (see explain.py), and
+  * a sidebar link whose target id is not in the finished page.
 """
 from __future__ import annotations
 
@@ -30,6 +40,7 @@ sys.path.insert(0, str(DECK))
 from explain import EXPLAIN  # noqa: E402
 from components import split  # noqa: E402
 from components_explain import C as COMPONENTS  # noqa: E402
+from outline import anchors, render as render_nav  # noqa: E402
 
 _KW = set(keyword.kwlist) | {"self", "cls"}
 _SOFT = {"match", "case", "type"}
@@ -172,9 +183,63 @@ def term_block(spec: str) -> str:
     return (f'<div class="term"><div class="term__bar">'
             f'<span class="term__dot"></span><span class="term__dot"></span>'
             f'<span class="term__dot"></span>'
-            f'<span class="term__cmd">$ {html.escape(cmd)}</span></div>'
+            f'<span class="term__cmd">$ {html.escape(cmd)}</span>'
+            f'<button class="copy" type="button" data-copy="{html.escape(cmd, quote=True)}">copy</button>'
+            f'</div>'
             f'<pre>{chr(10).join(body)}</pre></div>'
             + explain_block(relpath))
+
+
+# --------------------------------------------------------------------------
+# Commands shown on the page are the commands that exist. `verify_commands()`
+# below runs at build time and fails if a {{CMD}} block names an entry point
+# the repository does not have — so a command on screen cannot be one that was
+# renamed three commits ago.
+# --------------------------------------------------------------------------
+COMMANDS_SEEN: list[str] = []
+
+
+def cmd_block(spec: str) -> str:
+    """A copyable command.
+
+    The command WRAPS rather than scrolling. A copy button that has scrolled off
+    the right edge of a box is a copy button nobody can use, and on a projector
+    a horizontally scrolled command is a command the back row cannot read.
+    """
+    parts = spec.split("|")
+    cmd = parts[1]
+    caption = parts[2] if len(parts) > 2 else ""
+    COMMANDS_SEEN.append(cmd)
+    cap = f'<span class="cmd__what">{html.escape(caption)}</span>' if caption else ""
+    return (f'<div class="cmd"><div class="cmd__bar">'
+            f'<span class="cmd__p">$</span>'
+            f'<code class="cmd__t">{html.escape(cmd)}</code>'
+            f'{cap}'
+            f'<button class="copy" type="button" '
+            f'data-copy="{html.escape(cmd, quote=True)}">copy</button></div></div>')
+
+
+def verify_commands() -> None:
+    """Every `python3 -m <module>` shown on a page must be an importable module
+    with a `main`. This is what keeps section 'Every Command' honest."""
+    import importlib.util
+
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))     # resolve project modules, not deck/
+    bad = []
+    for cmd in COMMANDS_SEEN:
+        m = re.search(r"python3? -m ([\w.]+)", cmd)
+        if not m:
+            continue
+        mod = m.group(1)
+        if mod in ("http.server", "pip", "venv"):
+            continue
+        if importlib.util.find_spec(mod) is None:
+            bad.append(mod)
+    if bad:
+        raise SystemExit(
+            f"a command on the page names module(s) that do not exist: {sorted(set(bad))}"
+        )
 
 
 # --------------------------------------------------------------------------
@@ -202,10 +267,10 @@ def _auto_note(kind: str, name: str, src: str, relpath: str) -> str | None:
                 mods.add(line.split()[1].split(".")[0])
             elif line.startswith("from "):
                 mods.add(line.split()[1].split(".")[0])
-        internal = {"core", "agent", "runner", "verifiers", "metrics", "tasks", "display"}
+        internal = {"harness", "providers", "judges", "analysis"}
         own = sorted(m for m in mods if m in internal)
         ext = sorted(m for m in mods if m not in internal and m != "__future__")
-        third = [m for m in ext if m in {"openai", "google", "yaml", "datasets", "sympy", "numpy"}]
+        third = [m for m in ext if m in {"openai", "google", "yaml", "numpy", "sympy"}]
         bits = []
         if ext:
             bits.append("Standard library only" if not third
@@ -216,6 +281,10 @@ def _auto_note(kind: str, name: str, src: str, relpath: str) -> str | None:
         else:
             bits.append("depends on no other module in the project")
         return ". ".join(bits) + "."
+    if kind == "main":
+        return ("The entry-point guard. <code>raise SystemExit(main())</code> propagates the "
+                "exit status, so a failed stage stops a shell pipeline instead of letting the "
+                "next command run against a half-finished corpus.")
     if kind == "bootstrap":
         return ("Lets this file run as a script as well as be imported, without an install step. "
                 "Three lines, so a demo never fails on a packaging detail.")
@@ -261,16 +330,57 @@ def full_file(spec: str) -> str:
     return '<div class="fullfile">' + "".join(out) + "</div>"
 
 
+def results_json() -> str:
+    """Inline the built results file.
+
+    Inlined rather than fetched. A presentation should not depend on a web
+    server being up, on a file:// fetch being permitted, or on anything at all
+    happening over a network while someone is standing in front of a room.
+    Run `python3 -m analysis.build_results`, rebuild, and the page carries its
+    own data.
+    """
+    p = ROOT / "results" / "workshop_results.json"
+    if not p.exists():
+        raise SystemExit(
+            "results/workshop_results.json is missing. Run:\n"
+            "    python3 -m harness.run_all --mock\n"
+            "    python3 -m judges.run_all --mock\n"
+            "    python3 -m analysis.build_results"
+        )
+    body = p.read_text(encoding="utf-8")
+    # </script> inside JSON string data would end the tag early.
+    return body.replace("</", "<\\/")
+
+
+def check_nav(html_text: str, name: str) -> None:
+    """Every sidebar target must exist. A dead link is a build failure."""
+    ids = set(re.findall(r'id="([^"]+)"', html_text))
+    missing = [a for a in anchors() if a not in ids]
+    if missing:
+        raise SystemExit(
+            f"{name}: sidebar points at {len(missing)} id(s) that are not in the page: "
+            f"{missing}"
+        )
+
+
 def build(name: str) -> pathlib.Path:
     src = (DECK / f"{name}.src.html").read_text(encoding="utf-8")
     src = src.replace("{{LOGO}}", (DECK / "issai-symbol.svg").read_text(encoding="utf-8"))
     src = src.replace("{{CSS}}", (DECK / "deck.css").read_text(encoding="utf-8"))
+    if "{{NAV}}" in src:
+        src = src.replace("{{NAV}}", render_nav())
+    if "{{RESULTS}}" in src:
+        src = src.replace("{{RESULTS}}", results_json())
     src = re.sub(r"\{\{CODE\|[^}]+\}\}", lambda m: code_block(m.group(0)[2:-2]), src)
     src = re.sub(r"\{\{TERM\|[^}]+\}\}", lambda m: term_block(m.group(0)[2:-2]), src)
+    src = re.sub(r"\{\{CMD\|[^}]+\}\}", lambda m: cmd_block(m.group(0)[2:-2]), src)
     src = re.sub(r"\{\{FULL\|[^}]+\}\}", lambda m: full_file(m.group(0)[2:-2]), src)
     left = re.findall(r"\{\{[A-Z]+[^}]*\}\}", src)
     if left:
         raise SystemExit(f"unresolved placeholder(s) in {name}: {left[:3]}")
+    if name == "workshop":
+        check_nav(src, name)
+        verify_commands()
     out = ROOT / f"{name}.html"
     out.write_text(src, encoding="utf-8")
     return out

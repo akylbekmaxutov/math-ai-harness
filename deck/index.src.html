@@ -3,30 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Measuring a Math Agent</title>
+<title>How Do We Actually Know an AI Agent Is Good at Math?</title>
+<meta name="description" content="Workshop at the 1st International Conference and Workshop on Mathematics and Artificial Intelligence, September 9–11, 2026.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
-<style>{{CSS}}
-.hero{padding:clamp(28px,4.6vw,58px) 0 0}
-.hero h1{font-size:clamp(34px,5.4vw,66px);max-width:17ch;margin-bottom:22px}
-.sessions{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0;border:1px solid var(--rule);margin-top:clamp(24px,3.2vw,38px)}
-.ses{background:var(--surface);padding:clamp(18px,2.4vw,26px);border-right:1px solid var(--rule)}
-.ses:last-child{border-right:0}
-@media(max-width:680px){.ses{border-right:0;border-bottom:1px solid var(--rule)}.ses:last-child{border-bottom:0}}
-.ses__n{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)}
-.ses h2{font-size:clamp(20px,2.3vw,27px);margin:8px 0 8px}
-.ses > p{font-size:13.8px;color:var(--ink-2);line-height:1.55;margin:0 0 14px;max-width:46ch}
-.ses ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;border-top:1px solid var(--rule-soft);padding-top:12px}
-.ses li{font-size:12.8px;color:var(--ink-2);line-height:1.5;padding-left:15px;position:relative}
-.ses li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:1px;background:var(--navy)}
-.ses--judge li::before{background:var(--accent)}
-.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0;border:1px solid var(--rule);margin-top:clamp(22px,3vw,34px)}
-.fact{background:var(--surface);padding:15px 17px;border-right:1px solid var(--rule-soft)}
-.fact:last-child{border-right:0}
-.fact b{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--meta);display:block;margin-bottom:6px}
-.fact span{font-size:13.5px;color:var(--ink);line-height:1.5;display:block}
-</style>
+<style>{{CSS}}</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -35,11 +17,14 @@
 
 <header class="band band--top">
   <div class="band__in">
-    <a class="brand" href="index.html">
-      <svg class="logo logo--head" role="img" aria-label="ISSAI — Institute of Smart Systems and Artificial Intelligence"><use href="#issai"></use></svg>
-      <span class="brand__txt"><b>math-eval-harness</b>AI-Math Conference · Workshop</span>
+    <a class="conf" href="index.html">
+      <svg class="logo" style="width:92px;height:34px" role="img" aria-label="ISSAI — Institute of Smart Systems and Artificial Intelligence"><use href="#issai"></use></svg>
+      <span class="conf__txt">
+        <b>1st International Conference and Workshop on Mathematics and Artificial Intelligence</b>
+        <i>September 9–11, 2026</i>
+      </span>
     </a>
-    <nav class="navbtns" aria-label="Sections">
+    <nav class="navbtns" aria-label="Pages">
       <a class="navbtn" href="index.html" aria-current="page">Start</a>
       <a class="navbtn" href="about.html">About</a>
       <a class="navbtn" href="workshop.html">Workshop</a>
@@ -47,78 +32,83 @@
   </div>
 </header>
 
+<div class="shell">
 <div class="doc">
   <main class="hero">
-    <p class="eyebrow">AI-Math Conference · Workshop</p>
+    <p class="eyebrow">Workshop</p>
     <h1>How do we actually know an AI agent is good at math?</h1>
-    <p class="lede" style="max-width:68ch">Most agent evaluations report one number: accuracy. That number hides four separate questions &mdash; <strong>did it get the right answer, was the reasoning sound, what did it cost, and would it do it again</strong> &mdash; and it is usually produced by an apparatus nobody could rerun.</p>
-    <blockquote class="quote" style="margin-top:24px">A harness is a measurement apparatus. A judge is one instrument inside it. Harness engineering is what makes the measurement reproducible; judge hygiene is what makes that instrument trustworthy. <strong>Neither produces a meaningful number alone.</strong></blockquote>
 
-    <div class="sessions">
-      <div class="ses">
-        <span class="ses__n">Session 1 &middot; 40 min</span>
+    <div class="confmark">
+      <span>1st International Conference and Workshop</span>
+      <b>Mathematics and Artificial Intelligence · September 9–11, 2026</b>
+    </div>
+
+    <p class="lede" style="max-width:70ch">A model returns <strong>42</strong>. The answer key says <strong>42</strong>. Almost every evaluation you will read stops there and calls it a point. This workshop is about everything that question leaves out — and about building, live, the apparatus that answers it properly.</p>
+
+    <blockquote class="quote" style="margin-top:22px">Evaluating an AI agent means evaluating the entire experimental system around it — not merely asking whether the final answer is correct.</blockquote>
+
+    <div class="parts2">
+      <div class="p2">
+        <span class="p2__n">Part I</span>
         <h2>Harness engineering</h2>
-        <p>Everything that is <em>not</em> the model. The central commitment: everything downstream of execution is a pure function of an append-only event log.</p>
+        <p>The infrastructure around the model that makes an experiment repeatable, controlled, measurable, comparable and reproducible. The model is one component in it.</p>
         <ul>
-          <li>Model versus agent: why scoring the answer stops working once there are tool calls and turns</li>
-          <li>The four axes &mdash; outcome, process, cost, reliability &mdash; and why most reports answer one</li>
-          <li>Trace-first architecture: execution and grading separated by the log</li>
-          <li>Config pinning: model string, prompt hash, temperature, tool set</li>
-          <li>Seven outcomes, not two. An API timeout is a harness failure, not a wrong answer</li>
-          <li>Budget enforced at the tool boundary, because instructions do not constrain spend</li>
-          <li>Rollout orchestration: concurrency, backoff, resumption</li>
-          <li>pass@k versus pass^k, bootstrap intervals, cost per <em>successful</em> solve</li>
+          <li>What a harness is, and why the model is the easy part</li>
+          <li>Problem loader, experiment config, model adapter, trace collector, metrics, cost, result store — one block at a time</li>
+          <li>One interface over three different APIs: OpenAI, Google, xAI</li>
+          <li>Reasoning modes as a harness concern, and what to do when a provider does not have one</li>
+          <li>What the API actually exposes about reasoning — and what it does not</li>
+          <li>Tokens, latency and cost, collected because accuracy alone is not a result</li>
         </ul>
       </div>
-      <div class="ses ses--judge">
-        <span class="ses__n">Session 2 &middot; 40 min</span>
+      <div class="p2 p2--judge">
+        <span class="p2__n">Part II</span>
         <h2>LLM-as-a-judge</h2>
-        <p>Using a language model as a grader where no deterministic check exists &mdash; and recognising that most of the time one does.</p>
+        <p>Two models can both answer 42, one by valid reasoning and one by luck. Deciding which is which needs a second instrument — and that instrument needs measuring too.</p>
         <ul>
-          <li>Where a judge belongs: deterministic where you can, judged where you must</li>
-          <li>The escape rate &mdash; disclosing how much of a number was not decided by code</li>
-          <li>Blinding the judge to the outcome, demonstrated live rather than asserted</li>
-          <li>Blinding to provenance, and why two judges from different families</li>
-          <li>Discrete rubric anchors instead of a numeric scale; mandatory evidence spans</li>
-          <li>The rotation design, and the self-preference it excludes rather than measures</li>
-          <li>Inter-judge agreement and judge severity as headline numbers</li>
-          <li>Validation against human labels &mdash; an unvalidated instrument is not a measurement</li>
+          <li>Why exact-answer correctness is not enough</li>
+          <li>A six-criterion rubric with written anchors, instead of “is this good?”</li>
+          <li>Structured JSON output, and what to do when it does not parse</li>
+          <li>Two judges per candidate, never from the candidate's own family</li>
+          <li>Does a higher-effort judge judge better?</li>
+          <li>Where judges agree, where they do not, and the bias list you must state out loud</li>
         </ul>
       </div>
     </div>
 
     <div class="facts">
-      <div class="fact"><b>Format</b><span>Two sessions × 40 minutes. Watch-only, with a live demo run from a pre-mined trace corpus.</span></div>
-      <div class="fact"><b>Instructor</b><span>Akylbek Maxutov &mdash; Senior Data Scientist, ISSAI, Nazarbayev University, Astana.</span></div>
-      <div class="fact"><b>Problems</b><span>AIME 2026 via MathArena &mdash; a recurring competition, so the problems postdate the models' training data.</span></div>
-      <div class="fact"><b>You leave with</b><span>Two one-page checklists &mdash; ten rules for the harness, ten for judge hygiene &mdash; and the repository.</span></div>
+      <div class="fact"><b>The experiment</b><span>3 models × 3 reasoning modes × 3 problems, then every solution judged by the other two models at two judge efforts.</span></div>
+      <div class="fact"><b>Models</b><span>GPT-5.6-Terra · Gemini-3.8-Flash · Grok 4.6 — each solving, and each judging the other two.</span></div>
+      <div class="fact"><b>Format</b><span>Concept → intuition → architecture → components → example → code → execution → result. Runs from precomputed results, offline.</span></div>
+      <div class="fact"><b>You leave with</b><span>The working harness, the judge pipeline, the problem set, the result schema and every command, in one repository.</span></div>
     </div>
 
     <div class="pair" style="margin-top:clamp(22px,3vw,34px)">
       <div>
-        <h3 style="font-size:15px;margin-bottom:9px">Both payloads follow one pattern</h3>
-        <p style="font-size:13.8px;color:var(--ink-2)">Define it &rarr; show it done wrong &rarr; show it done right &rarr; hand you the artifact. For the harness, &ldquo;wrong&rdquo; is inline grading with a boolean outcome and an unpinned config. For the judge, &ldquo;wrong&rdquo; is a single unblinded judge on a 1&ndash;10 scale, deployed on the one question a deterministic check already answers.</p>
+        <h3 style="margin-bottom:9px">The whole argument, in one line</h3>
+        <p style="font-size:13.6px;color:var(--ink-2)">Accuracy is one number from a system with at least six moving parts: which problem, which model, which reasoning mode, what it cost, how long it took, and whether the reasoning that produced it was valid. A harness makes those six recordable. A judge makes the sixth one assessable. Neither is worth anything without the other, and neither is ground truth.</p>
       </div>
       <div>
-        <h3 style="font-size:15px;margin-bottom:9px">Deliberately not covered</h3>
-        <p style="font-size:13.8px;color:var(--ink-2)">Multi-agent coordination, long-horizon autonomy, side-effecting tools, and annotation at scale. This workshop teaches how to <em>measure</em> an agent, not how to build one &mdash; and says so rather than gesturing at breadth it does not have.</p>
+        <h3 style="margin-bottom:9px">Deliberately not covered</h3>
+        <p style="font-size:13.6px;color:var(--ink-2)">Training, fine-tuning, multi-agent coordination, tool-using agent loops, and human annotation at scale. This workshop is about how to <em>measure</em> a model on mathematics rigorously enough that the number means something — and it says what it does not cover rather than gesturing at breadth it does not have.</p>
       </div>
     </div>
-  </main>
 
-</div><!-- /doc -->
+    <p class="note">Every figure shown in the workshop is produced by the code in this repository and rebuilt into the page from stored results. The set shipped here was generated by the offline simulator so the site works before any API key exists; it is labelled as simulated everywhere it appears, and it is not a measurement of any real model.</p>
+  </main>
+</div>
+</div>
 
 <footer class="band band--bot">
   <div class="band__in">
-    <svg class="logo logo--foot" role="img" aria-label="ISSAI"><use href="#issai"></use></svg>
+    <svg class="logo" style="width:78px;height:29px;opacity:.85" role="img" aria-label="ISSAI"><use href="#issai"></use></svg>
     <div class="foot__cols">
-      <div class="fcol"><b>Instructor</b><span>Akylbek Maxutov · Senior Data Scientist</span></div>
-      <div class="fcol"><b>Institute</b><span>ISSAI, Nazarbayev University, Astana</span></div>
-      <div class="fcol"><b>Workshop</b><span>AI-Math Conference · two sessions × 40 min</span></div>
-      <div class="fcol"><b>Licence</b><span>Code MIT · Materials CC BY 4.0</span></div>
+      <div class="fcol"><b>Conference</b><span>1st International Conference and Workshop on Mathematics and Artificial Intelligence</span></div>
+      <div class="fcol"><b>Dates</b><span>September 9–11, 2026</span></div>
+      <div class="fcol"><b>Instructor</b><span>Akylbek Maxutov · ISSAI, Nazarbayev University, Astana</span></div>
+      <div class="fcol"><b>Licence</b><span>Code MIT · Workshop materials CC BY 4.0</span></div>
     </div>
   </div>
 </footer>
-
 </body>
 </html>
