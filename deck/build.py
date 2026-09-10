@@ -152,10 +152,15 @@ def code_block(spec: str) -> str:
     path = ROOT / relpath
     # Methods and nested defs come out indented; dedent so the snippet is
     # valid Python on its own and tokenises cleanly.
-    body = highlight(textwrap.dedent(extract(path, selector)).rstrip())
+    raw = textwrap.dedent(extract(path, selector)).rstrip()
+    body = highlight(raw)
+    nlines = len(raw.splitlines())
     what = f'<span class="code__what">{html.escape(caption)}</span>' if caption else ""
+    # Say how long it is. The pane scrolls, and a reader should know whether
+    # they are looking at eight lines or a hundred and forty.
+    count = f'<span class="code__lines">{nlines} lines</span>' if nlines > 24 else ""
     return (f'<div class="code"><div class="code__bar">'
-            f'<span class="code__file">{html.escape(relpath)}</span>{what}</div>'
+            f'<span class="code__file">{html.escape(relpath)}</span>{count}{what}</div>'
             f"<pre><code>{body}</code></pre></div>"
             + explain_block(f"{relpath}|{selector}"))
 

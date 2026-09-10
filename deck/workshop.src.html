@@ -106,7 +106,7 @@
         <span class="lbl">The naive evaluation</span>
         <p>Ask the model. Take the last number. Compare it with the key. Add one to a counter. Report a percentage.</p>
       </div>
-      <p style="font-size:18.6px;color:var(--ink-2)">It is fast, it is cheap, and every number it produces is defensible in exactly one sense: it is reproducible from the same two strings. What it cannot tell you is <em>anything about how the answer was obtained</em>, what it cost to obtain, or whether the same model would obtain it again.</p>
+      <p style="font-size:17.1px;color:var(--ink-2)">It is fast, it is cheap, and every number it produces is defensible in exactly one sense: it is reproducible from the same two strings. What it cannot tell you is <em>anything about how the answer was obtained</em>, what it cost to obtain, or whether the same model would obtain it again.</p>
       <div class="good">
         <span class="lbl">What we do instead</span>
         <p>Record the whole execution: what was asked, under what configuration, what came back, what the provider exposed about its reasoning, how many tokens, how long, how much money. Then assess the reasoning separately, with a second instrument whose reliability we also measure.</p>
@@ -118,12 +118,12 @@
         <div class="grid" style="gap:10px">
           <div class="card" style="border-left:3px solid var(--pass);box-shadow:none">
             <span class="card__k">Solution A — answer 244</span>
-            <p style="font-size:16.8px;line-height:1.6">Factorises the modulus condition, counts the divisor classes that satisfy it, and reduces the total mod 1000. Each step follows from the one before it.</p>
+            <p style="font-size:15.5px;line-height:1.6">Factorises the modulus condition, counts the divisor classes that satisfy it, and reduces the total mod 1000. Each step follows from the one before it.</p>
             <p style="margin-top:8px"><span class="tag tag--pass">valid derivation</span></p>
           </div>
           <div class="card" style="border-left:3px solid var(--fail);box-shadow:none">
             <span class="card__k">Solution B — answer 244</span>
-            <p style="font-size:16.8px;line-height:1.6">Computes a divisor count, asserts without argument that the remainder condition removes exactly three quarters of them, and reduces mod 1000. The arithmetic is right; the removed fraction was never established.</p>
+            <p style="font-size:15.5px;line-height:1.6">Computes a divisor count, asserts without argument that the remainder condition removes exactly three quarters of them, and reduces mod 1000. The arithmetic is right; the removed fraction was never established.</p>
             <p style="margin-top:8px"><span class="tag tag--fail">right answer, unsupported step</span></p>
           </div>
         </div>
@@ -238,11 +238,11 @@ python3 -m harness.sync_problems --indices 3,11,14   # a different three</pre>
       <p>Borrow the word from the laboratory. A <strong>harness is a measurement apparatus</strong>: the rig that holds the specimen, applies exactly the intended conditions, and records exactly what happened — so that the result is a property of the specimen and not of the afternoon.</p>
       <p>An evaluation harness is that rig for a model. It makes an experiment:</p>
       <ul style="list-style:none;padding:0;margin:0 0 14px;display:grid;gap:7px">
-        <li style="font-size:18.3px;color:var(--ink-2)"><strong>repeatable</strong> — the same command gives the same run</li>
-        <li style="font-size:18.3px;color:var(--ink-2)"><strong>controlled</strong> — one variable moves at a time, and it is written down</li>
-        <li style="font-size:18.3px;color:var(--ink-2)"><strong>measurable</strong> — tokens, latency and cost come back with the answer</li>
-        <li style="font-size:18.3px;color:var(--ink-2)"><strong>comparable</strong> — three different APIs produce one shape of record</li>
-        <li style="font-size:18.3px;color:var(--ink-2)"><strong>reproducible</strong> — someone else can rebuild the number from what you stored</li>
+        <li style="font-size:16.8px;color:var(--ink-2)"><strong>repeatable</strong> — the same command gives the same run</li>
+        <li style="font-size:16.8px;color:var(--ink-2)"><strong>controlled</strong> — one variable moves at a time, and it is written down</li>
+        <li style="font-size:16.8px;color:var(--ink-2)"><strong>measurable</strong> — tokens, latency and cost come back with the answer</li>
+        <li style="font-size:16.8px;color:var(--ink-2)"><strong>comparable</strong> — three different APIs produce one shape of record</li>
+        <li style="font-size:16.8px;color:var(--ink-2)"><strong>reproducible</strong> — someone else can rebuild the number from what you stored</li>
       </ul>
       <div class="why">
         <h3>The model is one box in the diagram</h3>
@@ -343,7 +343,7 @@ source_problem_idx: 8</pre>
   </div>
 
   <h3 style="margin-top:8px;margin-bottom:10px">The three problems</h3>
-  <p style="font-size:18.6px;color:var(--ink-2);max-width:78ch">Problems 1, 8 and 15 of AIME 2026 I, loaded from MathArena. The contest puts its problems in order of intended difficulty, so these three cover its easy, middle and hard end. We picked them before running anything.</p>
+  <p style="font-size:17.1px;color:var(--ink-2);max-width:78ch">Problems 1, 8 and 15 of AIME 2026 I, loaded from MathArena. The contest puts its problems in order of intended difficulty, so these three cover its easy, middle and hard end. We picked them before running anything.</p>
   <div class="grid g3" id="problemcards"></div>
 </section>
 
@@ -638,7 +638,7 @@ a separate field so nothing has to assume.</pre>
 │       └── gpt-5.6-terra__high__by__grok-4.6__low.json
 └── workshop_results.json              <- what this page reads</pre>
       </div>
-      <p style="font-size:18.3px;color:var(--ink-2)">"Which runs exist" is answerable with <span class="mono">ls</span>. Re-running one cell overwrites exactly one file. A study interrupted by a rate limit is finished by re-running the same command, because the runner skips a cell whose file is already there.</p>
+      <p style="font-size:16.8px;color:var(--ink-2)">"Which runs exist" is answerable with <span class="mono">ls</span>. Re-running one cell overwrites exactly one file. A study interrupted by a rate limit is finished by re-running the same command, because the runner skips a cell whose file is already there.</p>
     </div>
     <div>
       {{CODE|harness/storage.py|solver_path|the path IS the primary key}}
@@ -722,7 +722,7 @@ a separate field so nothing has to assume.</pre>
     <div style="display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap">
       <button class="railbtn" id="walkprev" type="button" style="border-color:var(--rule);color:var(--ink)">Back</button>
       <button class="railbtn" id="walknext" type="button" style="border-color:var(--blue-2);color:var(--blue)">Next step</button>
-      <span class="mono" style="font-size:15px;color:var(--meta)" id="walkpos"></span>
+      <span class="mono" style="font-size:13.8px;color:var(--meta)" id="walkpos"></span>
     </div>
     <p class="fig__note">Every value shown comes from the stored record for that cell. None of it is illustrative.</p>
   </div>
@@ -817,8 +817,8 @@ a separate field so nothing has to assume.</pre>
         <div class="nd nd--in" style="text-align:left"><b>Both answer 42 · answer key says 42</b><span>exact-answer scoring: 1 point each</span></div>
         <div class="dn" style="justify-self:center"></div>
         <div class="grid g2" style="gap:9px">
-          <div class="card" style="box-shadow:none;border-left:3px solid var(--pass)"><span class="card__k">A</span><p style="font-size:16.4px">Derives <i>n</i> = 21<i>p</i>, argues <i>p</i> = 2, verifies 8 divisors.</p></div>
-          <div class="card" style="box-shadow:none;border-left:3px solid var(--fail)"><span class="card__k">B</span><p style="font-size:16.4px">"42 feels right for a divisor-counting problem."</p></div>
+          <div class="card" style="box-shadow:none;border-left:3px solid var(--pass)"><span class="card__k">A</span><p style="font-size:15.1px">Derives <i>n</i> = 21<i>p</i>, argues <i>p</i> = 2, verifies 8 divisors.</p></div>
+          <div class="card" style="box-shadow:none;border-left:3px solid var(--fail)"><span class="card__k">B</span><p style="font-size:15.1px">"42 feels right for a divisor-counting problem."</p></div>
         </div>
         <div class="dn" style="justify-self:center"></div>
         <div class="nd nd--judge" style="text-align:left"><b>Rubric-scored by two judges</b><span>reasoning 5/5 vs 1&ndash;3/5 · verdict pass vs fail</span></div>
@@ -932,7 +932,7 @@ a separate field so nothing has to assume.</pre>
         <span class="lbl">A rubric</span>
         <p>Six named criteria, each with a written description of what 5, 3 and 1 look like, plus an ordered error-severity scale. When two judges differ you can point at the criterion and read both anchors aloud.</p>
       </div>
-      <p style="font-size:18.3px;color:var(--ink-2)">Anchors are the difference. Without them a rubric is six vibes instead of one.</p>
+      <p style="font-size:16.8px;color:var(--ink-2)">Anchors are the difference. Without them a rubric is six vibes instead of one.</p>
     </div>
     <div>
       {{CODE|judges/prompts.py|CRITERIA|the anchors are the load-bearing part}}
@@ -1077,7 +1077,7 @@ a separate field so nothing has to assume.</pre>
         </div>
         <p class="fig__note">Both judges said <em>fail</em>. Reporting only the verdict would call this perfect agreement. They are three points apart on whether the argument was complete — which is the thing we actually wanted to know.</p>
       </div>
-      <p style="font-size:18.3px;color:var(--ink-2)">This is why the harness records the flag <span class="mono">verdict_agrees_but_scores_do_not</span>, and why the results interface shows per-criterion agreement rather than a single agreement rate.</p>
+      <p style="font-size:16.8px;color:var(--ink-2)">This is why the harness records the flag <span class="mono">verdict_agrees_but_scores_do_not</span>, and why the results interface shows per-criterion agreement rather than a single agreement rate.</p>
     </div>
     <div>
       <h3 style="margin-bottom:9px">The four numbers, all recomputable by hand</h3>
@@ -1096,7 +1096,7 @@ a separate field so nothing has to assume.</pre>
     <div>
       <h3 style="margin-bottom:9px">The question to put to the room</h3>
       <blockquote class="quote" style="border-left-color:var(--amber)">Two strong models read the same reasoning trace and score it 5 and 3. Why?</blockquote>
-      <p style="font-size:18.3px;color:var(--ink-2)">There is no single answer, and the plausible ones are all uncomfortable: the rubric anchor is ambiguous; one judge missed a step; one judge is systematically more generous; the solution is genuinely borderline; or one of them is simply wrong about the mathematics. Each of those implies a different fix, and only the third is measurable from this data alone. That is what the severity profile below is for.</p>
+      <p style="font-size:16.8px;color:var(--ink-2)">There is no single answer, and the plausible ones are all uncomfortable: the rubric anchor is ambiguous; one judge missed a step; one judge is systematically more generous; the solution is genuinely borderline; or one of them is simply wrong about the mathematics. Each of those implies a different fix, and only the third is measurable from this data alone. That is what the severity profile below is for.</p>
     </div>
     <div>
       {{CODE|analysis/agreement.py|judge_vs_ground_truth|a real measurement of the instrument}}
@@ -1141,7 +1141,7 @@ a separate field so nothing has to assume.</pre>
 
   <div class="fig" style="margin-top:18px;border-color:var(--amber)">
     <p class="fig__cap fig__cap--judge"><b>The one thing to remember</b></p>
-    <blockquote class="quote" style="border-left-color:var(--amber);margin:0;font-size:clamp(23.2px,2vw,31.5px)">LLM-as-a-judge is an evaluation tool, not ground truth.</blockquote>
+    <blockquote class="quote" style="border-left-color:var(--amber);margin:0;font-size:clamp(21.3px,2vw,29px)">LLM-as-a-judge is an evaluation tool, not ground truth.</blockquote>
     <p class="fig__note">Which is why every judge number on this page is shown next to the deterministic correctness check, the inter-judge agreement, and the count of verdicts that failed to parse. A judge score without those three is a number with no error bar.</p>
   </div>
 </section>
@@ -1446,7 +1446,7 @@ XAI_API_KEY=</pre>
 
   <div class="fig" style="margin-top:22px">
     <p class="fig__cap"><b>One line to leave with</b></p>
-    <blockquote class="quote" style="margin:0;font-size:clamp(24.6px,2.3vw,35.5px);border-left-color:var(--blue-2)">If you cannot say which model string, which prompt, which reasoning setting, which price list and which judge produced a number — you do not have a measurement. You have an anecdote with a decimal point.</blockquote>
+    <blockquote class="quote" style="margin:0;font-size:clamp(22.6px,2.3vw,32.7px);border-left-color:var(--blue-2)">If you cannot say which model string, which prompt, which reasoning setting, which price list and which judge produced a number — you do not have a measurement. You have an anecdote with a decimal point.</blockquote>
   </div>
 
   <div class="grid g3" style="margin-top:20px">
@@ -1638,9 +1638,9 @@ function modelOf(k) { for (var i = 0; i < MODELS.length; i++) if (MODELS[i].key 
 $("#problemcards").innerHTML = DATA.problems.map(function (p, i) {
   return '<div class="card card--blue"><span class="card__k">Problem ' + (i + 1) + ' · ' + esc(p.kind) + '</span>' +
     "<h3>" + esc(p.title) + "</h3>" +
-    '<p style="font-family:var(--mono);font-size:15.7px;margin-bottom:9px">' + esc(p.question) + "</p>" +
+    '<p style="font-family:var(--mono);font-size:14.4px;margin-bottom:9px">' + esc(p.question) + "</p>" +
     '<p><span class="tag tag--blue">' + esc(p.problem_id) + '</span> <span class="tag">answer ' + esc(p.expected_answer) + "</span></p>" +
-    '<p style="margin-top:9px;font-size:16.8px"><strong>Why this one:</strong> ' + esc(p.why_this_problem) + "</p></div>";
+    '<p style="margin-top:9px;font-size:15.5px"><strong>Why this one:</strong> ' + esc(p.why_this_problem) + "</p></div>";
 }).join("");
 
 /* capability matrix */
@@ -1663,11 +1663,11 @@ $("#rubriccards").innerHTML = Object.keys(DATA.rubric).map(function (k, i) {
   var r = DATA.rubric[k];
   return '<div class="card card--judge"><span class="card__k">Criterion ' + (i + 1) + "</span>" +
     "<h3>" + esc(r.title) + "</h3>" +
-    '<p style="font-size:16.8px">' + esc(r.anchors) + "</p>" +
+    '<p style="font-size:15.5px">' + esc(r.anchors) + "</p>" +
     '<p style="margin-top:8px"><span class="tag tag--judge">' + esc(k) + "</span></p></div>";
 }).join("") +
   '<div class="card card--judge"><span class="card__k">Criterion 6</span><h3>Error severity</h3>' +
-  '<p style="font-size:16.8px">An ordered scale, worst last: ' +
+  '<p style="font-size:15.5px">An ordered scale, worst last: ' +
   DATA.error_severity_scale.map(function (s) { return "<span class=\"mono\">" + esc(s) + "</span>"; }).join(" → ") +
   '. Ordered, so "at least major" is a comparison rather than a set membership test.</p>' +
   '<p style="margin-top:8px"><span class="tag tag--judge">error_severity</span></p></div>';
@@ -1788,8 +1788,8 @@ function renderRun() {
       '<div class="bad"><span class="lbl">the apparatus failed — not the model being wrong</span><p>' +
       esc(e.message || "") + "</p></div>" +
       '<div class="kv">' +
-        "<div><b>Error type</b><span style=\"font-size:15.7px\">" + esc(e.type || "—") + "</span></div>" +
-        "<div><b>Cause</b><span style=\"font-size:15.7px\">" + esc(e.cause || "not recorded") + "</span></div>" +
+        "<div><b>Error type</b><span style=\"font-size:14.4px\">" + esc(e.type || "—") + "</span></div>" +
+        "<div><b>Cause</b><span style=\"font-size:14.4px\">" + esc(e.cause || "not recorded") + "</span></div>" +
         "<div><b>Attempts</b><span>" + r.attempts + "</span></div>" +
         "<div><b>Time spent failing</b><span>" + num(r.timing && r.timing.latency_seconds, 2) + "s</span></div>" +
       "</div>" +
@@ -1810,7 +1810,7 @@ function renderRun() {
   var u = r.usage || {}, c = r.cost || {};
   var body = '<div class="panel__b">' +
     '<h4 style="margin-bottom:7px">Question</h4>' +
-    '<p style="font-family:var(--mono);font-size:16.4px;color:var(--ink-2)">' + esc(p.question) + "</p>" +
+    '<p style="font-family:var(--mono);font-size:15.1px;color:var(--ink-2)">' + esc(p.question) + "</p>" +
     '<div class="kv" style="margin-bottom:14px">' +
       "<div><b>Expected</b><span>" + esc(r.expected_answer) + "</span></div>" +
       "<div><b>Model answered</b><span>" + esc(r.final_answer === null ? "— none marked —" : r.final_answer) + "</span></div>" +
@@ -1822,10 +1822,10 @@ function renderRun() {
       "<div><b>Total tokens</b><span>" + num(u.total_tokens) + "</span></div>" +
       "<div><b>Latency</b><span>" + num(r.timing && r.timing.latency_seconds, 2) + "s</span></div>" +
       "<div><b>Estimated cost</b><span>" + usd(c.estimated_usd) + "</span></div>" +
-      '<div class="kv__wide"><b>Reasoning control actually sent on the wire</b><span style="font-size:15.7px">' +
+      '<div class="kv__wide"><b>Reasoning control actually sent on the wire</b><span style="font-size:14.4px">' +
         esc(JSON.stringify(r.reasoning_request)) + "</span></div>" +
-      "<div><b>Prompt hash</b><span style=\"font-size:15px\">" + esc(r.system_prompt_sha) + "</span></div>" +
-      "<div><b>Prices</b><span style=\"font-size:15px\">" + esc(c.pricing_version) + "</span></div>" +
+      "<div><b>Prompt hash</b><span style=\"font-size:13.8px\">" + esc(r.system_prompt_sha) + "</span></div>" +
+      "<div><b>Prices</b><span style=\"font-size:13.8px\">" + esc(c.pricing_version) + "</span></div>" +
     "</div>" +
     exposureBadge(r.reasoning_exposure) +
     '<h4 style="margin:12px 0 7px">Generated solution</h4>' +
@@ -1881,7 +1881,7 @@ function jcol(v, which) {
     }).join("") + "</div>" +
     '<div class="kv">' +
       "<div><b>Mean score</b><span>" + num(v.mean_score, 2) + "</span></div>" +
-      "<div><b>Error severity</b><span style=\"font-size:15px\">" + esc(v.error_severity) + "</span></div>" +
+      "<div><b>Error severity</b><span style=\"font-size:13.8px\">" + esc(v.error_severity) + "</span></div>" +
       "<div><b>Tokens</b><span>" + num(u.total_tokens) + "</span></div>" +
       "<div><b>Latency</b><span>" + num(v.timing && v.timing.latency_seconds, 2) + "s</span></div>" +
       "<div><b>Cost</b><span>" + usd(v.cost && v.cost.estimated_usd) + "</span></div>" +
@@ -1919,8 +1919,8 @@ function renderJudges(r) {
       rows += '<div class="agrow"><div>' + esc(k) + '</div><div class="n">' + c.a + '</div><div class="n">' + c.b +
         "</div><div>" + agreementBadge(c.agreement) + "</div></div>";
     });
-    rows += '<div class="agrow"><div>Error severity</div><div class="n" style="font-size:14.3px">' + esc(ag.severities[0]) +
-      '</div><div class="n" style="font-size:14.3px">' + esc(ag.severities[1]) + "</div><div>" +
+    rows += '<div class="agrow"><div>Error severity</div><div class="n" style="font-size:13.2px">' + esc(ag.severities[0]) +
+      '</div><div class="n" style="font-size:13.2px">' + esc(ag.severities[1]) + "</div><div>" +
       agreementBadge(ag.severity_agreement ? "exact" : (ag.severity_distance > 1 ? "low" : "moderate")) + "</div></div>";
 
     cmp = '<h4 style="margin:16px 0 9px">Agreement</h4><div class="agree">' + rows + "</div>" +
@@ -1990,13 +1990,13 @@ renderRun();
       return '<div style="display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;padding:9px 0;' +
         (k < STEPS.length - 1 ? "border-bottom:1px solid var(--rule-soft);" : "") +
         "opacity:" + (on ? "1" : ".32") + '">' +
-        '<span class="mono" style="font-size:13.7px;color:' + (k === i ? "var(--blue-2)" : "var(--meta)") +
+        '<span class="mono" style="font-size:12.6px;color:' + (k === i ? "var(--blue-2)" : "var(--meta)") +
         ';padding-top:3px">' + (k < 9 ? "0" : "") + (k + 1) + "</span>" +
         "<div><div style=\"display:flex;gap:9px;align-items:baseline;flex-wrap:wrap\">" +
-        '<b style="font-size:18.5px;color:' + (k === i ? "var(--blue)" : "var(--ink)") + '">' + esc(s[0]) + "</b>" +
-        '<span class="mono" style="font-size:13.7px;color:var(--meta)">' + esc(s[1]) + "</span></div>" +
-        '<p style="font-size:16.8px;color:var(--ink-2);margin:3px 0 0">' + esc(s[2]) + "</p>" +
-        (k === i ? '<pre class="sol" style="max-height:none;margin-top:9px;font-size:15px">' + esc(s[3]) + "</pre>" : "") +
+        '<b style="font-size:17px;color:' + (k === i ? "var(--blue)" : "var(--ink)") + '">' + esc(s[0]) + "</b>" +
+        '<span class="mono" style="font-size:12.6px;color:var(--meta)">' + esc(s[1]) + "</span></div>" +
+        '<p style="font-size:15.5px;color:var(--ink-2);margin:3px 0 0">' + esc(s[2]) + "</p>" +
+        (k === i ? '<pre class="sol" style="max-height:none;margin-top:9px;font-size:13.8px">' + esc(s[3]) + "</pre>" : "") +
         "</div></div>";
     }).join("");
     pos.textContent = "step " + (i + 1) + " of " + STEPS.length;
@@ -2021,7 +2021,7 @@ renderRun();
      "source<br>" + esc(D.origin || "")],
     ["0–999", "every AIME answer is an integer<br>the deterministic check is trivial"]
   ].map(function (t) {
-    return '<div class="tile"><div class="tile__n" style="font-size:clamp(24.6px,2vw,35.5px)">' +
+    return '<div class="tile"><div class="tile__n" style="font-size:clamp(22.6px,2vw,32.7px)">' +
       t[0] + '</div><div class="tile__l">' + t[1] + "</div></div>";
   }).join("");
   $("#dsSummary").textContent = D.summary || "";
@@ -2052,8 +2052,8 @@ renderRun();
       '<div class="sol" style="max-height:none;white-space:pre-wrap">' + esc(p.question) + "</div>" +
       '<div class="kv" style="margin-top:12px">' +
         "<div><b>Expected answer</b><span>" + esc(p.expected_answer) + "</span></div>" +
-        "<div><b>Kind</b><span style=\"font-size:15.7px\">" + esc(p.kind) + "</span></div>" +
-        (p.source ? "<div><b>Source</b><span style=\"font-size:15.7px\">" + esc(p.source) +
+        "<div><b>Kind</b><span style=\"font-size:14.4px\">" + esc(p.kind) + "</span></div>" +
+        (p.source ? "<div><b>Source</b><span style=\"font-size:14.4px\">" + esc(p.source) +
           " #" + esc(p.source_problem_idx) + "</span></div>" : "") +
       "</div>" +
       '<div class="why" style="margin-top:14px"><h3>Where this sits in the contest</h3><p>' +
@@ -2078,8 +2078,8 @@ renderRun();
       return Object.keys(pp[mk]).sort().map(function (mode) {
         var e = pp[mk][mode];
         return "<tr><td>" + esc(m ? m.display : mk) + '</td><td class="mono">' + esc(mode) +
-          '</td><td class="mono" style="font-size:15px">' + esc(e.provider + " / " + e.model) +
-          '</td><td class="mono" style="font-size:15px;overflow-wrap:anywhere">' +
+          '</td><td class="mono" style="font-size:13.8px">' + esc(e.provider + " / " + e.model) +
+          '</td><td class="mono wrapok" style="font-size:13.8px">' +
           esc(JSON.stringify(e.request)) + "</td></tr>";
       }).join("");
     }).join("");
@@ -2088,13 +2088,13 @@ renderRun();
       '<div class="panel"><div class="panel__h"><h3>The request for ' + esc(sel.value) + "</h3>" +
       '<span class="tag tag--blue">system sha ' + esc(sr.system_sha) + "</span></div>" +
       '<div class="panel__b">' +
-      '<h4 style="margin-bottom:7px">System turn <span class="mono" style="font-weight:400;color:var(--meta);font-size:15px">— pinned constant, hashed into every run</span></h4>' +
+      '<h4 style="margin-bottom:7px">System turn <span class="mono" style="font-weight:400;color:var(--meta);font-size:13.8px">— pinned constant, hashed into every run</span></h4>' +
       '<div class="sol" style="max-height:none;white-space:pre-wrap">' + esc(sr.system) + "</div>" +
-      '<h4 style="margin:14px 0 7px">User turn <span class="mono" style="font-weight:400;color:var(--meta);font-size:15px">— the question and nothing else</span></h4>' +
+      '<h4 style="margin:14px 0 7px">User turn <span class="mono" style="font-weight:400;color:var(--meta);font-size:13.8px">— the question and nothing else</span></h4>' +
       '<div class="sol" style="max-height:none;white-space:pre-wrap">' + esc(sr.user) + "</div>" +
       '<p class="note">' + esc(sr.note) + "</p>" +
       '<h4 style="margin:14px 0 7px">And the reasoning control each provider actually received</h4>' +
-      '<div class="scroll"><table><thead><tr><th>Model</th><th>Mode</th><th>Provider / model string</th><th>Sent on the wire</th></tr></thead><tbody>' +
+      '<div class="scroll"><table class="idtbl"><thead><tr><th>Model</th><th>Mode</th><th>Provider / model string</th><th>Sent on the wire</th></tr></thead><tbody>' +
       rows + "</tbody></table></div></div></div>" +
       (DATA.sample_judge_request ? judgeSample() : "");
   }
@@ -2107,7 +2107,7 @@ renderRun();
       '<div class="panel__b">' +
       '<h4 style="margin-bottom:7px">Judge system turn</h4>' +
       '<div class="sol sol--sum" style="max-height:none;white-space:pre-wrap">' + esc(j.system) + "</div>" +
-      '<h4 style="margin:14px 0 7px">Judge user turn <span class="mono" style="font-weight:400;color:var(--meta);font-size:15px">— the complete prompt, for a real candidate</span></h4>' +
+      '<h4 style="margin:14px 0 7px">Judge user turn <span class="mono" style="font-weight:400;color:var(--meta);font-size:13.8px">— the complete prompt, for a real candidate</span></h4>' +
       '<div class="sol" style="max-height:420px;white-space:pre-wrap">' + esc(j.user) + "</div>" +
       '<p class="note">' + esc(j.note) + "</p></div></div>";
   }
@@ -2133,7 +2133,7 @@ renderRun();
     [usd(S.cost && S.cost.total_usd), "total spend<br>including everything that failed"]
   ].map(function (t, i) {
     return '<div class="tile' + (i === 2 ? " tile--judge" : "") + '">' +
-      '<div class="tile__n" style="font-size:clamp(27.3px,2.4vw,41px)">' + t[0] +
+      '<div class="tile__n" style="font-size:clamp(25.1px,2.4vw,37.7px)">' + t[0] +
       "</div><div class=\"tile__l\">" + t[1] + "</div></div>";
   }).join("");
 
@@ -2160,7 +2160,7 @@ renderRun();
     ? "<thead><tr><th>Problem</th><th>Model</th><th>Effort</th><th>Answered</th><th>Expected</th>" +
       "<th class='num'>Tokens</th><th class='num'>Cost</th></tr></thead><tbody>" +
       w.map(function (r) {
-        return "<tr><td>" + esc(r.problem_id) + "</td><td>" + esc(r.display) +
+        return '<tr><td class="nb">' + esc(r.problem_id) + '</td><td class="nb">' + esc(r.display) +
           '</td><td class="mono">' + esc(r.reasoning_mode) +
           '</td><td class="mono" style="color:var(--fail)">' + esc(r.answered) +
           '</td><td class="mono">' + esc(r.expected) + '</td><td class="num">' + num(r.tokens) +
@@ -2178,7 +2178,7 @@ renderRun();
       "<thead><tr><th>Problem</th><th>Model</th><th>Effort</th><th>Correct?</th>" +
       "<th class='num'>Tokens</th><th class='num'>Cap</th></tr></thead><tbody>" +
       e.map(function (r) {
-        return "<tr><td>" + esc(r.problem_id) + "</td><td>" + esc(r.display) +
+        return '<tr><td class="nb">' + esc(r.problem_id) + '</td><td class="nb">' + esc(r.display) +
           '</td><td class="mono">' + esc(r.reasoning_mode) + "</td><td>" +
           (r.correct ? '<span class="verdictpill verdictpill--pass">yes</span>'
                      : '<span class="verdictpill verdictpill--fail">no</span>') +
@@ -2215,25 +2215,25 @@ renderRun();
     var tries = (e.attempts || []).map(function (a) {
       return "<tr><td class=\"num\">" + a.attempt + '</td><td class="mono">' + esc(a.type) +
         '</td><td class="mono">' + esc(a.cause || "—") + '</td><td class="num">' +
-        num(a.elapsed_seconds, 2) + '</td><td style="font-size:15.7px">' + esc(a.message) + "</td></tr>";
+        num(a.elapsed_seconds, 2) + '</td><td style="font-size:14.4px">' + esc(a.message) + "</td></tr>";
     }).join("");
     return '<details class="more"><summary>' +
       '<span style="min-width:0;overflow:hidden;text-overflow:ellipsis">' +
       esc(r.problem_id + " · " + r.display + " · " + r.reasoning_mode) + "</span>" +
       '<span style="margin-left:auto;display:flex;gap:9px;align-items:center">' +
       '<span class="verdictpill verdictpill--fail">error</span>' +
-      '<span class="mono" style="font-size:13.7px;color:var(--meta)">' + esc(e.type || "") +
+      '<span class="mono" style="font-size:12.6px;color:var(--meta)">' + esc(e.type || "") +
       " · " + r.attempts + " attempt(s) · " + num(r.timing && r.timing.latency_seconds, 1) +
       "s</span></span></summary><div class=\"inner\">" +
       '<div class="bad"><span class="lbl">the apparatus failed — this is not the model being wrong</span>' +
       "<p>" + esc(e.message || "") + "</p></div>" +
       '<div class="kv" style="margin-bottom:12px">' +
-        "<div><b>Error type</b><span style=\"font-size:15.7px\">" + esc(e.type || "—") + "</span></div>" +
-        "<div><b>Underlying cause</b><span style=\"font-size:15.7px\">" + esc(e.cause || "not recorded") + "</span></div>" +
+        "<div><b>Error type</b><span style=\"font-size:14.4px\">" + esc(e.type || "—") + "</span></div>" +
+        "<div><b>Underlying cause</b><span style=\"font-size:14.4px\">" + esc(e.cause || "not recorded") + "</span></div>" +
         "<div><b>Attempts</b><span>" + r.attempts + "</span></div>" +
         "<div><b>Time spent failing</b><span>" + num(r.timing && r.timing.latency_seconds, 2) + "s</span></div>" +
         "<div><b>Token cap in force</b><span>" + num(r.max_output_tokens) + "</span></div>" +
-        "<div><b>Timestamp</b><span style=\"font-size:14.3px\">" + esc(r.timestamp) + "</span></div>" +
+        "<div><b>Timestamp</b><span style=\"font-size:13.2px\">" + esc(r.timestamp) + "</span></div>" +
       "</div>" +
       (tries ? '<h4 style="margin:10px 0 6px">Every attempt</h4><div class="scroll"><table>' +
         "<thead><tr><th class=\"num\">#</th><th>Type</th><th>Cause</th><th class=\"num\">Seconds</th><th>Message</th></tr></thead><tbody>" +
@@ -2270,7 +2270,7 @@ renderRun();
         '<span style="min-width:0;overflow:hidden;text-overflow:ellipsis">' +
         esc(r.problem_id + " · " + r.display + " · " + r.reasoning_mode) + "</span>" +
         '<span style="margin-left:auto;display:flex;gap:9px;align-items:center;flex-wrap:wrap">' +
-        badge + '<span class="mono" style="font-size:13.7px;color:var(--meta)">' +
+        badge + '<span class="mono" style="font-size:12.6px;color:var(--meta)">' +
         esc(r.final_answer === null ? "no answer" : r.final_answer) + " · " + num(u.total_tokens) +
         " tok · " + usd(r.cost && r.cost.estimated_usd) + "</span></span>" +
         '</summary><div class="inner">' +
@@ -2284,7 +2284,7 @@ renderRun();
             (u.reasoning_tokens === null ? "n/a" : num(u.reasoning_tokens)) + "</span></div>" +
           "<div><b>Latency</b><span>" + num(r.timing && r.timing.latency_seconds, 2) + "s</span></div>" +
           "<div><b>Cost</b><span>" + usd(r.cost && r.cost.estimated_usd) + "</span></div>" +
-          "<div><b>Timestamp</b><span style=\"font-size:14.3px\">" + esc(r.timestamp) + "</span></div>" +
+          "<div><b>Timestamp</b><span style=\"font-size:13.2px\">" + esc(r.timestamp) + "</span></div>" +
         "</div>" +
         exposureBadge(r.reasoning_exposure) +
         '<h4 style="margin:10px 0 6px">Full response</h4>' +
@@ -2367,7 +2367,7 @@ renderRun();
         '<td class="num">' + sc.correctness + '</td><td class="num">' + sc.reasoning +
         '</td><td class="num">' + sc.completeness + '</td><td class="num">' + sc.efficiency +
         '</td><td class="num">' + sc.clarity + '</td><td class="num">' + num(v.mean_score, 2) +
-        '</td><td class="mono" style="font-size:14.3px">' + esc(v.error_severity) +
+        '</td><td class="mono" style="font-size:13.2px">' + esc(v.error_severity) +
         '</td><td class="num">' + usd(v.cost && v.cost.estimated_usd) + "</td></tr>";
     }).join("");
     $("#allverdicts").innerHTML = head + "<tbody>" + body + "</tbody>";
@@ -2393,7 +2393,7 @@ renderRun();
           }).join("") + "</div>" +
           '<div class="kv" style="margin-bottom:12px">' +
             "<div><b>Verdict</b><span>" + esc(v.verdict) + "</span></div>" +
-            "<div><b>Error severity</b><span style=\"font-size:15px\">" + esc(v.error_severity) + "</span></div>" +
+            "<div><b>Error severity</b><span style=\"font-size:13.8px\">" + esc(v.error_severity) + "</span></div>" +
             "<div><b>Mean</b><span>" + num(v.mean_score, 2) + "</span></div>" +
             "<div><b>Tokens</b><span>" + num(u.total_tokens) + "</span></div>" +
             "<div><b>Latency</b><span>" + num(v.timing && v.timing.latency_seconds, 2) + "s</span></div>" +
@@ -2405,7 +2405,7 @@ renderRun();
                 return "<li>" + esc(t) + "</li>"; }).join("") + "</ol></div>"
             : '<p class="note">This judge returned no key points, which the rubric requires. ' +
               'Counted on this page rather than ignored.</p>') +
-          '<h4 style="margin:12px 0 6px">Justification</h4><p style="font-size:17.8px;color:var(--ink-2)">' +
+          '<h4 style="margin:12px 0 6px">Justification</h4><p style="font-size:16.4px;color:var(--ink-2)">' +
           esc(v.explanation) + "</p>"
         : '<div class="bad"><span class="lbl">' + esc(v.status) +
           " — no usable verdict</span><p>" + esc(v.error ? v.error.message : "") +
@@ -2493,7 +2493,7 @@ function groupedChart(cfg) {
 
   var table = "<table><thead><tr><th>Model</th>" + modes.map(function (m) { return '<th class="num">' + m + "</th>"; }).join("") +
     "</tr></thead><tbody>" + groups.map(function (g) {
-      return "<tr><td>" + esc(g.display) + "</td>" + modes.map(function (m) {
+      return '<tr><td class="nb">' + esc(g.display) + "</td>" + modes.map(function (m) {
         var v = cfg.value(g.key, m);
         return '<td class="num">' + (v === null || v === undefined ? "n/a" : cfg.label(v)) + "</td>";
       }).join("") + "</tr>";
@@ -2554,11 +2554,11 @@ $("#charts").innerHTML = [
     MODE_ORDER.forEach(function (mode) {
       var c = cellOf(m.key, mode);
       if (!c) {
-        rows += "<tr><td>" + esc(m.display) + '</td><td class="mono">' + mode + "</td>" +
+        rows += '<tr><td class="nb">' + esc(m.display) + '</td><td class="mono">' + mode + "</td>" +
           '<td class="num" colspan="' + cols.length + '" style="color:var(--meta)">unsupported — this provider exposes no ' + mode + " effort</td></tr>";
         return;
       }
-      rows += "<tr><td>" + esc(m.display) + '</td><td class="mono">' + mode + "</td>" +
+      rows += '<tr><td class="nb">' + esc(m.display) + '</td><td class="mono">' + mode + "</td>" +
         cols.map(function (cc) { return '<td class="num">' + cc[2](c[cc[0]]) + "</td>"; }).join("") + "</tr>";
     });
   });
@@ -2600,7 +2600,7 @@ $("#charts").innerHTML = [
   var rows = Object.keys(prof).map(function (k) {
     var m = modelOf(k), row = prof[k];
     var total = scale.reduce(function (a, s) { return a + (row[s] || 0); }, 0);
-    return "<tr><td>" + esc(m ? m.display : k) + "</td>" +
+    return '<tr><td class="nb">' + esc(m ? m.display : k) + "</td>" +
       scale.map(function (s) { return '<td class="num">' + (row[s] || 0) + "</td>"; }).join("") +
       '<td class="num">' + total + "</td></tr>";
   }).join("");
