@@ -242,12 +242,12 @@ EXPLAIN = {
 
 # ------------------------------------------------------------- terminals
 "deck/term/run_one.txt": dict(
-    lead="One cell of the matrix, exactly as the command prints it. <b>A real captured transcript, not a mock-up.</b>",
+    lead="One cell of the study, replayed from its stored record. <b>A real captured transcript, not a mock-up</b> &mdash; and replaying costs nothing, because the record is already on disk.",
     points=[
         ("requested:", "The literal reasoning control that went on the wire, not just the level we asked for."),
         ("reasoning info exposed", "Which of the three cases this run was in: a provider-labelled summary, a token count only, or nothing."),
         ("prices 2026-09-08", "The pricing version. A dollar figure without it is not a figure."),
-        ("SIMULATED", "Printed on every simulated run. The offline simulator is for rehearsal, and nothing it produces is a measurement of a real model."),
+        ("stored", "The path the record was read from. Every number above came out of that file, not out of a fresh API call."),
     ]),
 
 "deck/term/run_all.txt": dict(

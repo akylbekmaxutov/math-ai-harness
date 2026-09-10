@@ -29,3 +29,6 @@ results/*/
 Thumbs.db
 .idea/
 .vscode/
+
+# --- Private speaker notes (not for publication) ---
+PRESENTATION.md

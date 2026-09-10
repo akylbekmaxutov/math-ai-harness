@@ -1,13 +1,12 @@
 
   problem   aime2026_08  (AIME 2026 · Problem 8)
-  model     GPT-5.6-Terra  [mock/mock-model]
-  reasoning high   requested: {'simulated_mode': 'high'}
+  model     GPT-5.6-Terra  [openai/gpt-5.6-terra]
+  reasoning high   requested: {'reasoning': {'effort': 'high', 'summary': 'auto'}}
   status    ok
   answer    244   expected 244   -> CORRECT
-  reasoning info exposed: summary
-  tokens    in 224  out 2897  reasoning 2527  total 3121
-  latency   0.688s
-  cost      $0.029250  (prices 2026-09-08)
-  SIMULATED — offline simulator output. NOT a measurement of a real model.
+  reasoning info exposed: token_count_only
+  tokens    in 119  out 938  reasoning 346  total 1057
+  latency   16.801s
+  cost      $0.009529  (prices 2026-09-08)
   stored    results/solver/aime2026_08/gpt-5.6-terra__high.json
 

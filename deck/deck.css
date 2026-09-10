@@ -435,6 +435,32 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-ali
 .cmdgroup{margin:0 0 20px}
 .cmdgroup h4{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--meta);margin:0 0 8px}
 
+/* ---------- collapsed code ---------- */
+.codebox{border:1px solid var(--rule);background:var(--surface);margin:0 0 12px;box-shadow:var(--shadow)}
+.codebox>summary{
+  cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  padding:12px 15px;font-family:var(--mono);font-size:14.4px;color:var(--blue);
+}
+.codebox>summary::-webkit-details-marker{display:none}
+.codebox>summary::before{content:"▸";color:var(--meta);font-size:12px;flex:0 0 auto}
+.codebox[open]>summary::before{content:"▾"}
+.codebox>summary:hover{background:var(--sunk)}
+.codebox[open]>summary{border-bottom:1px solid var(--rule);background:var(--sunk)}
+.codebox__f{font-weight:600;color:var(--blue)}
+.codebox__s{color:var(--ink-2)}
+.codebox__s::before{content:"· "}
+.codebox__n{color:var(--meta);font-size:12.9px}
+.codebox__what{
+  margin-left:auto;font-size:11.9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--meta);text-align:right;
+}
+.codebox__b .code{border:0;box-shadow:none}
+/* the summary already names the file, the symbol and the length */
+.codebox__b .code__bar{display:none}
+.codebox__b .explain{border:0;border-top:1px solid var(--rule);margin:0}
+/* inside a build-step panel the box supplies its own frame */
+.step__code .codebox{border:0;margin:0;box-shadow:none}
+
 details.more{border:1px solid var(--rule);background:var(--surface);margin:0 0 18px}
 details.more>summary{
   cursor:pointer;padding:10px 14px;font-family:var(--mono);font-size:13.8px;letter-spacing:.1em;

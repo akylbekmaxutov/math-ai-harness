@@ -146,6 +146,13 @@ def explain_block(key: str) -> str:
 
 
 def code_block(spec: str) -> str:
+    """A code block, collapsed.
+
+    Code interrupts a narrative. A 143-line function interrupts it completely.
+    Each block is folded behind a one-line summary that names the file, the
+    symbol and the length, so the prose reads straight through and the code is
+    one click away when someone wants it.
+    """
     parts = spec.split("|")
     relpath, selector = parts[1], parts[2]
     caption = parts[3] if len(parts) > 3 else ""
@@ -156,13 +163,21 @@ def code_block(spec: str) -> str:
     body = highlight(raw)
     nlines = len(raw.splitlines())
     what = f'<span class="code__what">{html.escape(caption)}</span>' if caption else ""
-    # Say how long it is. The pane scrolls, and a reader should know whether
-    # they are looking at eight lines or a hundred and forty.
     count = f'<span class="code__lines">{nlines} lines</span>' if nlines > 24 else ""
-    return (f'<div class="code"><div class="code__bar">'
-            f'<span class="code__file">{html.escape(relpath)}</span>{count}{what}</div>'
-            f"<pre><code>{body}</code></pre></div>"
-            + explain_block(f"{relpath}|{selector}"))
+    sym = html.escape(selector) if selector not in ("", "*") else "whole file"
+    cap = f'<span class="codebox__what">{html.escape(caption)}</span>' if caption else ""
+    return (
+        f'<details class="codebox"><summary>'
+        f'<span class="codebox__f">{html.escape(relpath)}</span>'
+        f'<span class="codebox__s">{sym}</span>'
+        f'<span class="codebox__n">{nlines} lines</span>{cap}</summary>'
+        f'<div class="codebox__b">'
+        f'<div class="code"><div class="code__bar">'
+        f'<span class="code__file">{html.escape(relpath)}</span>{count}{what}</div>'
+        f"<pre><code>{body}</code></pre></div>"
+        + explain_block(f"{relpath}|{selector}")
+        + "</div></details>"
+    )
 
 
 def term_block(spec: str) -> str:
