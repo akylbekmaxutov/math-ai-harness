@@ -145,6 +145,4 @@ Three design commitments the code is built to make checkable:
    not expose becomes `status: "unsupported"` and a hole in the grid, never a substituted
    default wearing the wrong label.
 
-## Licence
 
-Code MIT. Workshop materials CC BY 4.0.
