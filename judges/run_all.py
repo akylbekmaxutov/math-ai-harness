@@ -42,7 +42,7 @@ def candidates() -> list[dict]:
     it is skipped here and shown as a hole on the website, not as a zero.
     """
     return [r for r in storage.load_solver_runs()
-            if r.get("status") in ("ok", "no_answer_marked") and (r.get("response") or {}).get("text")]
+            if r.get("status") in ("ok", "no_answer_marked", "truncated") and (r.get("response") or {}).get("text")]
 
 
 def main(argv=None) -> int:
@@ -60,6 +60,16 @@ def main(argv=None) -> int:
 
     env.load_dotenv()          # keys come from .env, never from a flag
     env.canonicalise()
+
+    # Same guard as the solver: a rehearsal must not overwrite paid-for verdicts.
+    if a.mock and not a.force:
+        real = [p for p in storage.JUDGE_DIR.rglob("*.json")
+                if not storage.read_record(p).get("simulated", False)]
+        if real:
+            print(f"\n  REFUSING: {len(real)} REAL verdict file(s) already exist in "
+                  f"{storage.JUDGE_DIR.relative_to(storage.ROOT)}/.")
+            print("  Move them aside first, or pass --force if you really mean it.\n")
+            return 1
 
     jmodes = a.judge_mode or list(DEFAULT_JUDGE_MODES)
     cands = candidates()

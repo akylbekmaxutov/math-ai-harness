@@ -2,33 +2,33 @@
 Solver matrix: 3 problems x 3 models x 3 modes = 27 cells
   24 will call an API, 3 are unsupported cells
   --mock: offline simulator. Nothing here is a measurement.
-  OK   algebra_01     gpt-5.6-terra     low     wrong      766 tok   0.12s $0.00497
-  OK   algebra_01     gpt-5.6-terra     medium  correct   1249 tok   0.16s $0.01054
-  OK   algebra_01     gpt-5.6-terra     high    correct   2683 tok   0.53s $0.02477
-  OK   algebra_01     gemini-3.8-flash  low     wrong      588 tok   0.04s $0.00106
-  OK   algebra_01     gemini-3.8-flash  medium  correct   1219 tok   0.24s $0.00244
-  OK   algebra_01     gemini-3.8-flash  high    correct   2582 tok   0.11s $0.00585
-  OK   algebra_01     grok-4.6          low     correct    952 tok   0.13s $0.00724
-  --   algebra_01     grok-4.6          medium 
-  OK   algebra_01     grok-4.6          high    correct   2298 tok   0.16s $0.02074
-  OK   reasoning_02   gpt-5.6-terra     low     wrong     1135 tok   0.12s $0.00860
-  OK   reasoning_02   gpt-5.6-terra     medium  correct   1074 tok   0.33s $0.00838
-  skip  reasoning_02   gpt-5.6-terra     high    (exists)
-  OK   reasoning_02   gemini-3.8-flash  low     wrong      932 tok   0.04s $0.00164
-  OK   reasoning_02   gemini-3.8-flash  medium  correct   1819 tok   0.33s $0.00411
-  OK   reasoning_02   gemini-3.8-flash  high    wrong     2976 tok   0.61s $0.00693
-  OK   reasoning_02   grok-4.6          low     wrong      813 tok   0.12s $0.00647
-  --   reasoning_02   grok-4.6          medium 
-  OK   reasoning_02   grok-4.6          high    correct   2120 tok   0.58s $0.01974
-  OK   multistep_03   gpt-5.6-terra     low     wrong      955 tok   0.20s $0.00675
-  OK   multistep_03   gpt-5.6-terra     medium  correct   1090 tok   0.09s $0.00905
-  OK   multistep_03   gpt-5.6-terra     high    correct   3223 tok   0.64s $0.03041
-  OK   multistep_03   gemini-3.8-flash  low     wrong      812 tok   0.13s $0.00155
-  OK   multistep_03   gemini-3.8-flash  medium  correct   1547 tok   0.19s $0.00330
-  OK   multistep_03   gemini-3.8-flash  high    correct   2138 tok   0.66s $0.00479
-  OK   multistep_03   grok-4.6          low     wrong      941 tok   0.23s $0.00724
-  --   multistep_03   grok-4.6          medium 
-  OK   multistep_03   grok-4.6          high    correct   1786 tok   0.37s $0.01638
+  OK   aime2026_01    gpt-5.6-terra     low     wrong      791 tok   0.26s $0.00586
+  OK   aime2026_01    gpt-5.6-terra     medium  correct   1202 tok   0.42s $0.01030
+  OK   aime2026_01    gpt-5.6-terra     high    correct   2766 tok   0.29s $0.02512
+  OK   aime2026_01    gemini-3.8-flash  low     correct   1078 tok   0.17s $0.00201
+  OK   aime2026_01    gemini-3.8-flash  medium  correct    913 tok   0.09s $0.00175
+  OK   aime2026_01    gemini-3.8-flash  high    correct   1697 tok   0.32s $0.00367
+  OK   aime2026_01    grok-4.6          low     wrong      877 tok   0.09s $0.00682
+  --   aime2026_01    grok-4.6          medium 
+  OK   aime2026_01    grok-4.6          high    correct   1857 tok   0.58s $0.01671
+  OK   aime2026_08    gpt-5.6-terra     low     wrong     1057 tok   0.08s $0.00899
+  OK   aime2026_08    gpt-5.6-terra     medium  correct   1586 tok   0.36s $0.01319
+  skip  aime2026_08    gpt-5.6-terra     high    (exists)
+  OK   aime2026_08    gemini-3.8-flash  low     wrong      757 tok   0.14s $0.00136
+  OK   aime2026_08    gemini-3.8-flash  medium  correct   1845 tok   0.40s $0.00394
+  OK   aime2026_08    gemini-3.8-flash  high    correct   3240 tok   0.48s $0.00742
+  OK   aime2026_08    grok-4.6          low     correct    965 tok   0.23s $0.00731
+  --   aime2026_08    grok-4.6          medium 
+  OK   aime2026_08    grok-4.6          high    correct   3204 tok   0.61s $0.03032
+  OK   aime2026_15    gpt-5.6-terra     low     wrong     1053 tok   0.18s $0.00783
+  OK   aime2026_15    gpt-5.6-terra     medium  correct    990 tok   0.36s $0.00718
+  OK   aime2026_15    gpt-5.6-terra     high    correct   3291 tok   0.61s $0.03020
+  OK   aime2026_15    gemini-3.8-flash  low     wrong      811 tok   0.13s $0.00158
+  OK   aime2026_15    gemini-3.8-flash  medium  correct   1582 tok   0.38s $0.00349
+  OK   aime2026_15    gemini-3.8-flash  high    correct   1732 tok   0.53s $0.00367
+  OK   aime2026_15    grok-4.6          low     correct    955 tok   0.18s $0.00717
+  --   aime2026_15    grok-4.6          medium 
+  OK   aime2026_15    grok-4.6          high    correct   2371 tok   0.48s $0.02207
 
   ok=23  unsupported=3  skipped=1
   results in results/solver/

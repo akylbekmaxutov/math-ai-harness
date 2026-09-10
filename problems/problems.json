@@ -1,65 +1,71 @@
 {
   "schema_version": "1.0",
-  "problem_set_version": "2026-09-08",
-  "note": "Three problems chosen so that reasoning quality can differ even when the final answer agrees. Each carries a stable id, an exact expected answer, and the trap a plausible-but-wrong route falls into.",
+  "problem_set_version": "MathArena/aime_2026@3:1-8-15",
+  "note": "Fetched from MathArena, never retyped. Re-run python3 -m harness.sync_problems to reproduce this file.",
+  "dataset": {
+    "name": "AIME 2026 (via MathArena)",
+    "size": 3,
+    "origin": "MathArena/aime_2026",
+    "public_benchmark": true,
+    "homepage": "https://huggingface.co/datasets/MathArena/aime_2026",
+    "licence": "CC BY-NC-SA 4.0 — cite MathArena when reporting results.",
+    "summary": "The American Invitational Mathematics Examination, 2026. Every answer is an integer from 0 to 999, which makes the deterministic check trivial and throws the entire question of solution quality onto Part II: a model can land on a three-digit integer for reasons that do not survive inspection.",
+    "selection_criteria": [
+      "Taken from a real competition, not written for this workshop.",
+      "Problems 1, 8 and 15 of AIME 2026 I — AIME orders by intended difficulty, so the three span the contest's own easy / middle / hard range.",
+      "The rule was fixed before any model was run, so the selection is not a choice about which problems make the results look interesting.",
+      "Answers are official contest answers, taken from the dataset verbatim."
+    ],
+    "verification": "The answers are the official AIME answers as published in the MathArena dataset. They are NOT independently re-derived here, and this workshop does not claim to have checked them — the sync command asserts only that each is an integer in 0-999, the form AIME guarantees.",
+    "answer_format": "Every AIME answer is an integer from 0 to 999. The grader normalises presentation (LaTeX, $, thousands separators) and compares exactly.",
+    "contamination": "AIME 2026 was held in early 2026 and published immediately, and the models under test were released afterwards. Whether these problems and their solutions were in their training data is NOT KNOWN, and cannot be established from this side of the API. Treat the accuracy column as possibly optimistic; it is one reason the reasoning scores matter more than the pass/fail count.",
+    "swapping_it_out": "python3 -m harness.sync_problems --indices 3,11,14 rewrites this file with different problems. Everything downstream reads problem ids from it."
+  },
   "problems": [
     {
-      "problem_id": "algebra_01",
-      "title": "Two pipes and a leak",
-      "kind": "algebra",
-      "difficulty": "short derivation",
-      "question": "Pipe A alone fills a tank in 6 hours. Pipe B alone fills the same tank in 4 hours. A drain at the bottom empties a full tank in 9 hours. All three are opened at once on an empty tank. How many hours does it take to fill the tank? Give the answer as a fraction in lowest terms.",
-      "expected_answer": "36/11",
+      "problem_id": "aime2026_01",
+      "title": "AIME 2026 · Problem 1",
+      "kind": "AIME competition problem",
+      "difficulty": "AIME 2026 I, problem 1. AIME orders its problems by intended difficulty, so this is the opening problem of that contest.",
+      "question": "Patrick started walking at a constant rate along a straight road from school to the park. One hour after Patrick left, Tanya started running along the same road from school to the park. One hour after Tanya left, Jose started bicycling along the same road from school to the park. Tanya ran at a constant rate of $2$ miles per hour faster than Patrick walked, Jose bicycled at a constant rate of $7$ miles per hour faster than Tanya ran, and all three arrived at the park at the same time. The distance from the school to the park is $\\frac{m}{n}$ miles, where $m$ and $n$ are relatively prime positive integers. Find $m + n$.",
+      "expected_answer": "277",
       "answer_aliases": [
-        "36/11",
-        "\\frac{36}{11}",
-        "3 3/11"
-      ],
-      "answer_kind": "rational",
-      "why_this_problem": "One clean derivation: the net rate is 1/6 + 1/4 - 1/9 = 11/36 of a tank per hour, so the time is the reciprocal. The common wrong route adds and subtracts the TIMES (6 + 4 - 9) instead of the rates. A model can also invert only at the very end and still narrate the reciprocal step incorrectly, which is a reasoning fault the final answer alone would never reveal."
-    },
-    {
-      "problem_id": "reasoning_02",
-      "title": "The second-largest divisor",
-      "kind": "logical/mathematical reasoning",
-      "difficulty": "trap",
-      "question": "A positive integer n has exactly 8 positive divisors. The second-largest divisor of n is 21. Find n.",
-      "expected_answer": "42",
-      "answer_aliases": [
-        "42"
+        "277"
       ],
       "answer_kind": "integer",
-      "why_this_problem": "The second-largest divisor of n is n/p where p is the smallest prime factor, so n = 21p. Only p = 2 keeps 21 as the second-largest and gives 8 divisors, so n = 42. A model that simply guesses 42 because 42 = 21 x 2 lands on the right number without establishing why p = 2 or checking the divisor count. Correct answer, unjustified reasoning - which is the whole point of Part II."
+      "source": "MathArena/aime_2026",
+      "source_problem_idx": 1,
+      "why_this_problem": "AIME 2026 I, problem 1. AIME orders its problems by intended difficulty, so this is the opening problem of that contest."
     },
     {
-      "problem_id": "multistep_03",
-      "title": "Lattice points under a line",
-      "kind": "multi-step",
-      "difficulty": "several intermediate steps",
-      "question": "Let S be the set of ordered pairs of integers (x, y) with 1 <= x <= 20 and 1 <= y <= 20 such that 3x + 4y is divisible by 7. How many pairs are in S?",
-      "expected_answer": "58",
+      "problem_id": "aime2026_08",
+      "title": "AIME 2026 · Problem 8",
+      "kind": "AIME competition problem",
+      "difficulty": "AIME 2026 I, problem 8. AIME orders its problems by intended difficulty, so this is problem 8 of 15 of that contest.",
+      "question": "Let $N$ be the number of positive integer divisors of $17017^{17}$ that leave a remainder of $5$ when divided by $12$. Find the remainder when $N$ is divided by $1000$.",
+      "expected_answer": "244",
       "answer_aliases": [
-        "58"
+        "244"
       ],
       "answer_kind": "integer",
-      "why_this_problem": "Reduce 3x + 4y = 0 (mod 7) to x = y (mod 7), then count. The range 1..20 is NOT a multiple of 7: residues 1..6 occur three times but residue 0 occurs only twice, so the count is 6*3^2 + 2^2 = 58, not 7*3^2 = 63. The near-miss 63 is exactly what careless counting produces, so judges have something real to disagree about."
+      "source": "MathArena/aime_2026",
+      "source_problem_idx": 8,
+      "why_this_problem": "AIME 2026 I, problem 8. AIME orders its problems by intended difficulty, so this is problem 8 of 15 of that contest."
+    },
+    {
+      "problem_id": "aime2026_15",
+      "title": "AIME 2026 · Problem 15",
+      "kind": "AIME competition problem",
+      "difficulty": "AIME 2026 I, problem 15. AIME orders its problems by intended difficulty, so this is the final and hardest problem of that contest.",
+      "question": "Let $a, b,$ and $n$ be positive integers with both $a$ and $b$ greater than or equal to $2$ and less than or equal to $2n$. Define an $a \\times b$ cell loop in a $2n \\times 2n$ grid of cells to be the $2a + 2b - 4$ cells that surround an $(a - 2) \\times (b - 2)$ (possibly empty) rectangle of cells in the grid. For example, the following diagram shows a way to partition a $6 \\times 6$ grid of cells into $4$ cell loops.\n\n| P   P P   P | Y   Y |\n| P | R R | P | Y | Y |\n| P | R R | P | Y | Y |\n| P   P P   P | Y | Y |\n| G   G G   G | Y | Y |\n| G   G G   G | Y   Y |\n\nFind the number of ways to partition a $10 \\times 10$ grid of cells into $5$ cell loops so that every cell of the grid belongs to exactly one cell loop.",
+      "expected_answer": "83",
+      "answer_aliases": [
+        "83"
+      ],
+      "answer_kind": "integer",
+      "source": "MathArena/aime_2026",
+      "source_problem_idx": 15,
+      "why_this_problem": "AIME 2026 I, problem 15. AIME orders its problems by intended difficulty, so this is the final and hardest problem of that contest."
     }
-  ],
-  "dataset": {
-    "name": "AI-Math Workshop Problem Set",
-    "version": "2026-09-08",
-    "size": 3,
-    "origin": "written for this workshop",
-    "public_benchmark": false,
-    "summary": "Three problems written for this workshop. Deliberately NOT a public benchmark: a competition set that predates the models is contaminated, and one that postdates them is a moving target that cannot be re-run next year. These three are fixed, versioned, and chosen so that a model can reach the right answer by an invalid route — which is the whole point of Part II.",
-    "selection_criteria": [
-      "Not arithmetic. Each needs a derivation a judge can score as valid or not.",
-      "Each has a specific plausible-but-wrong route that lands on a near-miss or, worse, on the right answer.",
-      "Solvable in a workshop without specialised mathematics.",
-      "Exact answers — a fraction or an integer, never a decimal approximation."
-    ],
-    "verification": "Every answer was verified by brute force in Python before anything was built on it. Two of the three answers were WRONG in the first draft and the brute-force check caught both. That check is reproduced on this page.",
-    "answer_format": "Each problem declares an exact expected answer plus the alternative spellings that mean the same value. The grader normalises presentation (LaTeX, $, thousands separators) and compares exact rationals — it never accepts a decimal approximation of a fraction.",
-    "swapping_it_out": "Replace problems/problems.json with the same shape and everything downstream follows: the loader, the matrix, the judge rotation and the website all read problem ids from that one file."
-  }
+  ]
 }

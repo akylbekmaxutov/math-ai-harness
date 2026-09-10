@@ -114,20 +114,20 @@
     </div>
     <div>
       <div class="fig" style="margin:0">
-        <p class="fig__cap"><b>Two solutions, one answer</b> · problem <span class="mono">reasoning_02</span></p>
+        <p class="fig__cap"><b>Two solutions, one answer</b> · illustration</p>
         <div class="grid" style="gap:10px">
           <div class="card" style="border-left:3px solid var(--pass);box-shadow:none">
-            <span class="card__k">Solution A — answer 42</span>
-            <p style="font-family:var(--mono);font-size:11.5px;line-height:1.6">If <i>p</i> is the smallest prime factor of <i>n</i>, the second-largest divisor is <i>n/p</i>. So <i>n</i> = 21<i>p</i>. Only <i>p</i> = 2 keeps 21 second-largest, and 42 = 2·3·7 has exactly 8 divisors. ✓</p>
+            <span class="card__k">Solution A — answer 244</span>
+            <p style="font-size:12.3px;line-height:1.6">Factorises the modulus condition, counts the divisor classes that satisfy it, and reduces the total mod 1000 — each step following from the last.</p>
             <p style="margin-top:8px"><span class="tag tag--pass">valid derivation</span></p>
           </div>
           <div class="card" style="border-left:3px solid var(--fail);box-shadow:none">
-            <span class="card__k">Solution B — answer 42</span>
-            <p style="font-family:var(--mono);font-size:11.5px;line-height:1.6">The second-largest divisor is 21, so <i>n</i> is a small multiple of 21. Doubling gives 42. 42 feels right for a divisor-counting problem.</p>
-            <p style="margin-top:8px"><span class="tag tag--fail">right answer, no argument</span></p>
+            <span class="card__k">Solution B — answer 244</span>
+            <p style="font-size:12.3px;line-height:1.6">Computes a divisor count, asserts without argument that the remainder condition removes exactly three quarters of them, and reduces mod 1000. The arithmetic is right; the removed fraction was never established.</p>
+            <p style="margin-top:8px"><span class="tag tag--fail">right answer, unsupported step</span></p>
           </div>
         </div>
-        <p class="fig__note">Exact-answer scoring gives these two the same mark. Everything in Part II exists because of this figure.</p>
+        <p class="fig__note">A constructed illustration, not a stored run &mdash; the real ones are in the Results section. Exact-answer scoring gives these two the same mark, and AIME answers being integers 0&ndash;999 makes the coincidence cheaper still. Everything in Part II exists because of this figure.</p>
       </div>
     </div>
   </div>
@@ -146,17 +146,17 @@
 <section class="part part--rule" id="dataset">
   <p class="partno"><b>03</b> The dataset</p>
   <h2>What the models were actually asked.</h2>
-  <p class="lede">Three problems, written for this workshop. Every claim on this page is a claim about these three questions, so they get a section rather than a footnote.</p>
+  <p class="lede">Three real competition problems, fetched from MathArena and never retyped. Every claim on this page is a claim about these three questions, so they get a section rather than a footnote.</p>
   <div class="grid g4" id="datasetfacts" style="margin-top:18px"></div>
 
   <div class="pair" style="margin-top:20px">
     <div>
       <div class="why">
-        <h3>Why not a public benchmark?</h3>
+        <h3>What this set is</h3>
         <p id="dsSummary"></p>
       </div>
       <div class="why">
-        <h3>How the answers were checked</h3>
+        <h3>Where the answers come from</h3>
         <p id="dsVerify"></p>
       </div>
       <div class="why">
@@ -171,25 +171,18 @@
     <div>
       <h3 style="margin-bottom:10px">Selection criteria</h3>
       <ol class="cl" id="dsCriteria"></ol>
-      <div class="good" style="margin-top:16px">
-        <span class="lbl">The check that caught two errors</span>
-        <p>Two of the three answers were wrong in the first draft. The brute force below found both before a single API call was made — which is the cheapest bug in the entire project to have fixed.</p>
+      <div class="why">
+        <h3>Contamination — stated, not resolved</h3>
+        <p id="dsContam"></p>
       </div>
       <div class="fig" style="margin:0">
-        <p class="fig__cap"><b>Verification</b> · run it yourself</p>
-        <pre class="sol" style="max-height:none">from fractions import Fraction as F
+        <p class="fig__cap"><b>Provenance</b> · fetched, never retyped</p>
+        <pre class="sol" style="max-height:none"># problems/problems.json is generated, not hand-written.
+# Re-run this and the file is reproduced byte for byte.
 
-# algebra_01 — rates add, times do not
-1 / (F(1,6) + F(1,4) - F(1,9))          # -> 36/11
-
-# reasoning_02 — the only n under 5000 that fits
-[n for n in range(2, 5000)
- if len([i for i in range(1, n+1) if n % i == 0]) == 8
- and sorted(i for i in range(1, n+1) if n % i == 0)[-2] == 21]   # -> [42]
-
-# multistep_03 — count, do not estimate
-sum(1 for x in range(1, 21) for y in range(1, 21)
-    if (3*x + 4*y) % 7 == 0)            # -> 58</pre>
+python3 -m harness.sync_problems
+python3 -m harness.sync_problems --indices 3,11,14   # a different three</pre>
+        <p class="fig__note">A competition problem transcribed by hand is a different problem. The text and the answers come from the dataset; this repository never retypes them. <span id="dsCite"></span></p>
       </div>
     </div>
   </div>
@@ -198,7 +191,7 @@ sum(1 for x in range(1, 21) for y in range(1, 21)
 <section class="sub" id="problem-set">
   <p class="eyebrow">3.1</p>
   <h2>The three problems, in full.</h2>
-  <p class="lede" style="margin-bottom:16px">Each one is shown exactly as the model receives it, with the answer key and the wrong route it is designed to expose.</p>
+  <p class="lede" style="margin-bottom:16px">Each one exactly as the model receives it, with the official answer and where it sits in the contest.</p>
   <div id="problemfull"></div>
 </section>
 
@@ -326,7 +319,7 @@ sum(1 for x in range(1, 21) for y in range(1, 21)
       <p>Two things earn their place here.</p>
       <div class="why">
         <h3>Stable ids</h3>
-        <p>A result written on Monday has to join a judge verdict written on Friday. Matching on the question text works right up until someone fixes a typo, and then silently stops. <span class="mono">algebra_01</span> never changes.</p>
+        <p>A result written on Monday has to join a judge verdict written on Friday. Matching on the question text works right up until someone fixes a typo, and then silently stops. <span class="mono">aime2026_08</span> never changes.</p>
       </div>
       <div class="why">
         <h3>Expected answers, kept out of reach</h3>
@@ -334,12 +327,13 @@ sum(1 for x in range(1, 21) for y in range(1, 21)
       </div>
       <div class="fig" style="margin-top:16px">
         <p class="fig__cap"><b>One entry</b></p>
-        <pre class="sol" style="max-height:none">problem_id:       algebra_01
-question:         Pipe A alone fills a tank in 6 hours...
-expected_answer:  36/11
-answer_aliases:   ["36/11", "\frac{36}{11}", "3 3/11"]
-why_this_problem: the common wrong route adds the TIMES
-                  instead of the rates</pre>
+        <pre class="sol" style="max-height:none">problem_id:         aime2026_08
+question:           Let $N$ be the number of positive integer
+                    divisors of $17017^{17}$ that leave a
+                    remainder of $5$ when divided by $12$...
+expected_answer:    244
+source:             MathArena/aime_2026
+source_problem_idx: 8</pre>
       </div>
     </div>
     <div>
@@ -349,7 +343,7 @@ why_this_problem: the common wrong route adds the TIMES
   </div>
 
   <h3 style="margin-top:8px;margin-bottom:10px">The three problems</h3>
-  <p style="font-size:13.6px;color:var(--ink-2);max-width:78ch">Chosen so that reasoning quality can genuinely differ — none is arithmetic, and each has a specific wrong route that produces a plausible number. All three answers were verified by brute force before anything was built on them.</p>
+  <p style="font-size:13.6px;color:var(--ink-2);max-width:78ch">Real competition problems, fetched from MathArena and never retyped. Problems 1, 8 and 15 of AIME 2026 I &mdash; the contest orders by intended difficulty, so the three span its own easy, middle and hard range. The rule was fixed before any model was run.</p>
   <div class="grid g3" id="problemcards"></div>
 </section>
 
@@ -630,17 +624,17 @@ is a separate field, not an assumption.</pre>
         <p class="fig__cap"><b>The layout is the join key, made visible</b></p>
         <pre class="sol" style="max-height:none">results/
 ├── solver/
-│   ├── algebra_01/
+│   ├── aime2026_01/
 │   │   ├── gpt-5.6-terra__low.json
 │   │   ├── gpt-5.6-terra__medium.json
 │   │   ├── gpt-5.6-terra__high.json
 │   │   ├── gemini-3.8-flash__low.json
 │   │   ├── ...
 │   │   └── grok-4.6__medium.json      <- status: unsupported
-│   ├── reasoning_02/
-│   └── multistep_03/
+│   ├── aime2026_08/
+│   └── aime2026_15/
 ├── judges/
-│   └── algebra_01/
+│   └── aime2026_01/
 │       └── gpt-5.6-terra__high__by__grok-4.6__low.json
 └── workshop_results.json              <- what this page reads</pre>
       </div>
@@ -662,7 +656,7 @@ is a separate field, not an assumption.</pre>
   <div class="fig">
     <p class="fig__cap"><b>Diagram 4</b> · the matrix for one problem</p>
     <div class="fan">
-      <div class="fan__top"><div class="nd nd--in"><b>Problem 1 · algebra_01</b><span>one question, sent nine times</span></div></div>
+      <div class="fan__top"><div class="nd nd--in"><b>Problem 1 · aime2026_01</b><span>one question, sent nine times</span></div></div>
       <div class="fan__bar"></div>
       <div class="fan__legs">
         <div class="fan__leg">
@@ -723,7 +717,7 @@ is a separate field, not an assumption.</pre>
   <p class="lede" style="margin-bottom:16px">Watch the harness do exactly one cell. Step through it — each stage highlights the block of the architecture doing the work.</p>
 
   <div class="fig">
-    <p class="fig__cap"><b>Walkthrough</b> · <span id="walkq">problem algebra_01 → GPT-5.6-Terra → high</span></p>
+    <p class="fig__cap"><b>Walkthrough</b> · <span id="walkq">one cell</span></p>
     <div id="walkstage" class="grid" style="gap:0"></div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap">
       <button class="railbtn" id="walkprev" type="button" style="border-color:var(--rule);color:var(--ink)">Back</button>
@@ -734,7 +728,7 @@ is a separate field, not an assumption.</pre>
   </div>
 
   <p style="margin-top:18px">And the same run, as the command actually prints it:</p>
-  {{TERM|deck/term/run_one.txt|python3 -m harness.run --problem reasoning_02 --model gpt-5.6-terra --reasoning high --mock}}
+  {{TERM|deck/term/run_one.txt|python3 -m harness.run --problem aime2026_08 --model gpt-5.6-terra --reasoning high --mock}}
 </section>
 
 <section class="sub" id="commands">
@@ -762,7 +756,7 @@ is a separate field, not an assumption.</pre>
     <div>
       <div class="cmdgroup">
         <h4>4 · One real cell</h4>
-        {{CMD|python3 -m harness.run --problem algebra_01 --model gpt-5.6-terra --reasoning high|a single execution}}
+        {{CMD|python3 -m harness.run --problem aime2026_08 --model gpt-5.6-terra --reasoning high|a single execution}}
       </div>
       <div class="cmdgroup">
         <h4>5 · The real study</h4>
@@ -1215,8 +1209,38 @@ is a separate field, not an assumption.</pre>
   <div id="judgepanel"></div>
 </section>
 
-<section class="sub" id="all-runs">
+<section class="sub" id="failures">
   <p class="eyebrow">9.3</p>
+  <h2>What went wrong.</h2>
+  <p class="lede" style="margin-bottom:16px">Reported as prominently as the accuracy, because these are the things a replication will actually hit. A write-up that shows only the cells that worked is describing a study nobody ran.</p>
+
+  <div class="grid g4" id="failtiles" style="margin-bottom:18px"></div>
+
+  <div class="fig">
+    <p class="fig__cap"><b>Solver failures</b> · the apparatus, not the model being wrong</p>
+    <div id="failsolver"></div>
+  </div>
+
+  <div class="fig" style="border-color:var(--amber)">
+    <p class="fig__cap fig__cap--judge"><b>Judge failures</b> · calls made, paid for, and unusable</p>
+    <div id="failjudge"></div>
+  </div>
+
+  <div class="fig">
+    <p class="fig__cap"><b>Wrong answers</b> · the model finished, and was wrong</p>
+    <div class="scroll"><table id="failwrong"></table></div>
+    <p class="fig__note">These are the only rows on this page where the model itself is at fault. Everything above is the apparatus, the budget, or the provider &mdash; and conflating the two is how an evaluation ends up measuring your infrastructure and calling it a model comparison.</p>
+  </div>
+
+  <div class="fig" id="failearlybox">
+    <p class="fig__cap"><b>Stopped early</b> · an answer arrived, but generation was cut off</p>
+    <div class="scroll"><table id="failearly"></table></div>
+    <p class="fig__note">Not failures &mdash; the answer was found before the cut. Worth seeing beside the cost, because a run that was still writing when the budget ran out got its answer by luck of ordering.</p>
+  </div>
+</section>
+
+<section class="sub" id="all-runs">
+  <p class="eyebrow">9.4</p>
   <h2>Every run, every trace.</h2>
   <p class="lede" style="margin-bottom:14px">All 27 cells. The complete response text and whatever reasoning information the API exposed, for every one &mdash; nothing summarised, nothing omitted.</p>
 
@@ -1231,7 +1255,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="all-verdicts">
-  <p class="eyebrow eyebrow--judge">9.4</p>
+  <p class="eyebrow eyebrow--judge">9.5</p>
   <h2>Every judge verdict.</h2>
   <p class="lede" style="margin-bottom:14px">All 96 verdicts, with the rubric scores, the written justification and the judge&rsquo;s raw reply exactly as it came back.</p>
 
@@ -1240,6 +1264,7 @@ is a separate field, not an assumption.</pre>
     <div><label for="vfCand">Candidate model</label><select id="vfCand"></select></div>
     <div><label for="vfJudge">Judge model</label><select id="vfJudge"></select></div>
     <div><label for="vfVerdict">Verdict</label><select id="vfVerdict"></select></div>
+    <div><label for="vfCand2">Candidate answer</label><select id="vfCand2"></select></div>
     <p class="picker__hint" id="verdictsCount"></p>
   </div>
   <div class="tallscroll"><table id="allverdicts"></table></div>
@@ -1247,7 +1272,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="dashboard">
-  <p class="eyebrow">9.5</p>
+  <p class="eyebrow">9.6</p>
   <h2>Model Comparison</h2>
   <p class="lede" style="margin-bottom:16px">Six measures, six charts. Never two scales on one axis — if two things are worth comparing they are worth two pictures.</p>
 
@@ -1274,7 +1299,7 @@ is a separate field, not an assumption.</pre>
 </section>
 
 <section class="sub" id="dimensions">
-  <p class="eyebrow">9.6</p>
+  <p class="eyebrow">9.7</p>
   <h2>What we are actually measuring.</h2>
   <div class="fig">
     <p class="fig__cap"><b>Four dimensions, not one number</b></p>
@@ -1667,7 +1692,9 @@ $("#headline").innerHTML = [
    "Solver runs executed<br>" + C.solver_unsupported + " unsupported · " + C.solver_error + " errored"],
   ['<div class="tile__n">' + C.verdicts_ok + "</div>",
    "Judge verdicts usable<br>" +
-   (C.verdicts_parse_failed || 0) + " malformed · " + (C.verdicts_truncated || 0) + " truncated" +
+   (C.verdicts_parse_failed || 0) + " malformed · " + (C.verdicts_truncated || 0) + " truncated · " +
+   (C.verdicts_error || 0) + " errored" +
+   ((C.verdicts_without_key_points || 0) ? "<br>" + C.verdicts_without_key_points + " returned no key points" : "") +
    (C.verdicts_latex_repaired ? "<br>" + C.verdicts_latex_repaired + " recovered by the LaTeX-escape repair" : "")],
   ['<div class="tile__n">' + usd(COST.total_usd).replace("$", "$") + "</div>",
    "Total cost<br>solver " + usd(COST.solver_usd) + " · judges " + usd(COST.judge_usd)],
@@ -1755,6 +1782,22 @@ function renderRun() {
     (r.simulated ? '<span class="tag" style="color:var(--st-warn);border-color:var(--st-warn)">simulated</span>' : "") +
     '<span class="tag ' + (r.status === "ok" ? "tag--blue" : "tag--fail") + '">' + esc(r.status) + "</span></div>";
 
+  if (r.status === "error") {
+    var e = r.error || {};
+    host.innerHTML = head + '<div class="panel__b">' +
+      '<div class="bad"><span class="lbl">the apparatus failed — not the model being wrong</span><p>' +
+      esc(e.message || "") + "</p></div>" +
+      '<div class="kv">' +
+        "<div><b>Error type</b><span style=\"font-size:11.5px\">" + esc(e.type || "—") + "</span></div>" +
+        "<div><b>Cause</b><span style=\"font-size:11.5px\">" + esc(e.cause || "not recorded") + "</span></div>" +
+        "<div><b>Attempts</b><span>" + r.attempts + "</span></div>" +
+        "<div><b>Time spent failing</b><span>" + num(r.timing && r.timing.latency_seconds, 2) + "s</span></div>" +
+      "</div>" +
+      '<p class="note">A provider fault is a HARNESS failure, not a wrong answer. It is counted separately ' +
+      'everywhere on this page, and never as an incorrect result.</p></div></div>';
+    $("#judgepanel").innerHTML = '<div class="panel"><div class="panel__b"><p>Nothing to judge: this cell produced no solution.</p></div></div>';
+    return;
+  }
   if (r.status === "unsupported") {
     host.innerHTML = head + '<div class="panel__b">' +
       '<div class="bad"><span class="lbl">This combination does not exist</span><p>' + esc(r.error.message) +
@@ -1779,7 +1822,8 @@ function renderRun() {
       "<div><b>Total tokens</b><span>" + num(u.total_tokens) + "</span></div>" +
       "<div><b>Latency</b><span>" + num(r.timing && r.timing.latency_seconds, 2) + "s</span></div>" +
       "<div><b>Estimated cost</b><span>" + usd(c.estimated_usd) + "</span></div>" +
-      "<div><b>Reasoning request</b><span style=\"font-size:10.5px\">" + esc(JSON.stringify(r.reasoning_request)) + "</span></div>" +
+      '<div class="kv__wide"><b>Reasoning control actually sent on the wire</b><span style="font-size:11.5px">' +
+        esc(JSON.stringify(r.reasoning_request)) + "</span></div>" +
       "<div><b>Prompt hash</b><span style=\"font-size:11px\">" + esc(r.system_prompt_sha) + "</span></div>" +
       "<div><b>Prices</b><span style=\"font-size:11px\">" + esc(c.pricing_version) + "</span></div>" +
     "</div>" +
@@ -1842,6 +1886,10 @@ function jcol(v, which) {
       "<div><b>Latency</b><span>" + num(v.timing && v.timing.latency_seconds, 2) + "s</span></div>" +
       "<div><b>Cost</b><span>" + usd(v.cost && v.cost.estimated_usd) + "</span></div>" +
     "</div>" +
+    (v.key_points && v.key_points.length
+      ? '<div class="keypts"><b>What this judge recorded</b><ol>' +
+        v.key_points.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ol></div>"
+      : '<p class="note" style="margin-top:10px">This judge returned no key points.</p>') +
     '<p class="jcol__x">' + esc(v.explanation) + "</p></div>";
 }
 
@@ -1906,7 +1954,8 @@ renderRun();
    WALKTHROUGH — one complete run, stage by stage
    ====================================================================== */
 (function () {
-  var r = findRun("algebra_01", "gpt-5.6-terra", "high") || DATA.runs.filter(function (x) { return x.status === "ok"; })[0];
+  var r = DATA.runs.filter(function (x) { return x.status === "ok" && x.reasoning_mode === "high"; })[0]
+          || DATA.runs.filter(function (x) { return x.status === "ok"; })[0];
   if (!r) return;
   var p = DATA.problems.filter(function (x) { return x.problem_id === r.problem_id; })[0];
   var u = r.usage || {}, c = r.cost || {};
@@ -1966,9 +2015,11 @@ renderRun();
   var D = DATA.dataset || {};
   $("#datasetfacts").innerHTML = [
     [D.size, "problems in the set"],
-    [esc(D.version), "problem-set version<br>stamped into every stored run"],
-    [D.public_benchmark ? "public" : "purpose-written", "origin<br>" + esc(D.origin || "")],
-    ["100%", "answers brute-force verified<br>before any API call"]
+    ["AIME 2026", "problems " + DATA.problems.map(function (x) { return x.source_problem_idx; })
+       .filter(Boolean).join(", ") + " of contest I"],
+    [D.public_benchmark ? "public" : "purpose-written",
+     "source<br>" + esc(D.origin || "")],
+    ["0–999", "every AIME answer is an integer<br>the deterministic check is trivial"]
   ].map(function (t) {
     return '<div class="tile"><div class="tile__n" style="font-size:clamp(18px,2vw,26px)">' +
       t[0] + '</div><div class="tile__l">' + t[1] + "</div></div>";
@@ -1977,6 +2028,12 @@ renderRun();
   $("#dsVerify").textContent = D.verification || "";
   $("#dsAnswerFormat").textContent = D.answer_format || "";
   $("#dsSwap").textContent = D.swapping_it_out || "";
+  var contam = $("#dsContam"); if (contam) contam.textContent = D.contamination || "";
+  var cite = $("#dsCite");
+  if (cite && D.homepage) {
+    cite.innerHTML = "Licence: " + esc(D.licence || "") +
+      ' <a href="' + esc(D.homepage) + '">' + esc(D.origin) + "</a>";
+  }
   $("#dsCriteria").innerHTML = (D.selection_criteria || []).map(function (c) {
     return "<li>" + esc(c) + "</li>";
   }).join("");
@@ -1986,7 +2043,7 @@ renderRun();
     var runs = DATA.runs.filter(function (r) { return r.problem_id === p.problem_id && r.status === "ok"; });
     var solved = runs.filter(function (r) { return r.correct; }).length;
     return '<div class="panel"><div class="panel__h">' +
-      "<h3>Problem " + (i + 1) + " · " + esc(p.title) + "</h3>" +
+      "<h3>" + esc(p.title) + "</h3>" +
       '<span class="tag tag--blue">' + esc(p.problem_id) + "</span>" +
       '<span class="tag">' + esc(p.kind) + "</span>" +
       '<span class="tag ' + (solved ? "tag--pass" : "tag--fail") + '">solved by ' + solved + " of " + runs.length + " runs</span>" +
@@ -1995,10 +2052,11 @@ renderRun();
       '<div class="sol" style="max-height:none;white-space:pre-wrap">' + esc(p.question) + "</div>" +
       '<div class="kv" style="margin-top:12px">' +
         "<div><b>Expected answer</b><span>" + esc(p.expected_answer) + "</span></div>" +
-        "<div><b>Answer kind</b><span style=\"font-size:11.5px\">" + esc(p.kind) + "</span></div>" +
-        "<div><b>Set version</b><span style=\"font-size:11.5px\">" + esc(p.set_version) + "</span></div>" +
+        "<div><b>Kind</b><span style=\"font-size:11.5px\">" + esc(p.kind) + "</span></div>" +
+        (p.source ? "<div><b>Source</b><span style=\"font-size:11.5px\">" + esc(p.source) +
+          " #" + esc(p.source_problem_idx) + "</span></div>" : "") +
       "</div>" +
-      '<div class="why" style="margin-top:14px"><h3>The wrong route it is designed to expose</h3><p>' +
+      '<div class="why" style="margin-top:14px"><h3>Where this sits in the contest</h3><p>' +
       esc(p.why_this_problem) + "</p></div>" +
       "</div></div>";
   }).join("");
@@ -2058,6 +2116,78 @@ renderRun();
 })();
 
 /* ======================================================================
+   WHAT WENT WRONG
+   ====================================================================== */
+(function () {
+  var F = (S && S.failures) || {};
+  var C2 = S.counts || {};
+  var host = $("#failtiles");
+  if (!host) return;
+
+  host.innerHTML = [
+    [(C2.solver_cells - C2.solver_ok) || 0, "solver cells produced no answer<br>" +
+      (C2.solver_unsupported || 0) + " unsupported · " + (C2.solver_error || 0) + " errored · " +
+      (C2.solver_truncated || 0) + " truncated"],
+    [(F.wrong_answers || []).length, "wrong answers<br>the model finished, and was wrong"],
+    [F.judge_verdicts_lost || 0, "judge verdicts unusable<br>called, billed, and discarded"],
+    [usd(S.cost && S.cost.total_usd), "total spend<br>including everything that failed"]
+  ].map(function (t, i) {
+    return '<div class="tile' + (i === 2 ? " tile--judge" : "") + '">' +
+      '<div class="tile__n" style="font-size:clamp(20px,2.4vw,30px)">' + t[0] +
+      "</div><div class=\"tile__l\">" + t[1] + "</div></div>";
+  }).join("");
+
+  function groups(list, empty) {
+    if (!list || !list.length) return '<p class="note">' + empty + "</p>";
+    return list.map(function (g) {
+      return '<div class="failgrp"><div class="failgrp__h">' +
+        '<span class="verdictpill verdictpill--fail">' + esc(g.status) + "</span>" +
+        '<b>' + esc(g.type || "") + "</b>" +
+        '<span class="failgrp__n">' + g.count + " cell" + (g.count === 1 ? "" : "s") + "</span></div>" +
+        '<p class="failgrp__m">' + esc(g.message || g.cells[0] || "") + "</p>" +
+        "<ul>" + g.cells.map(function (c) { return "<li>" + esc(c) + "</li>"; }).join("") + "</ul></div>";
+    }).join("");
+  }
+  /* the grouping key IS the message; carry it onto the object for display */
+  (F.solver || []).concat(F.judge || []).forEach(function (g) {
+    if (!g.message) g.message = "";
+  });
+  $("#failsolver").innerHTML = groups(F.solver, "No solver failures in this run.");
+  $("#failjudge").innerHTML = groups(F.judge, "No judge failures in this run.");
+
+  var w = F.wrong_answers || [];
+  $("#failwrong").innerHTML = w.length
+    ? "<thead><tr><th>Problem</th><th>Model</th><th>Effort</th><th>Answered</th><th>Expected</th>" +
+      "<th class='num'>Tokens</th><th class='num'>Cost</th></tr></thead><tbody>" +
+      w.map(function (r) {
+        return "<tr><td>" + esc(r.problem_id) + "</td><td>" + esc(r.display) +
+          '</td><td class="mono">' + esc(r.reasoning_mode) +
+          '</td><td class="mono" style="color:var(--fail)">' + esc(r.answered) +
+          '</td><td class="mono">' + esc(r.expected) + '</td><td class="num">' + num(r.tokens) +
+          '</td><td class="num">' + usd(r.usd) + "</td></tr>";
+      }).join("") + "</tbody>"
+    : "<tbody><tr><td>Every completed run answered correctly.</td></tr></tbody>";
+
+  var e = F.stopped_early || [];
+  if (!e.length) {
+    $("#failearlybox").innerHTML = '<p class="fig__cap"><b>Stopped early</b></p>' +
+      '<p class="note">Not recorded for this run — the provider stop-signal was added after these ' +
+      'results were produced. It populates on the next run.</p>';
+  } else {
+    $("#failearly").innerHTML =
+      "<thead><tr><th>Problem</th><th>Model</th><th>Effort</th><th>Correct?</th>" +
+      "<th class='num'>Tokens</th><th class='num'>Cap</th></tr></thead><tbody>" +
+      e.map(function (r) {
+        return "<tr><td>" + esc(r.problem_id) + "</td><td>" + esc(r.display) +
+          '</td><td class="mono">' + esc(r.reasoning_mode) + "</td><td>" +
+          (r.correct ? '<span class="verdictpill verdictpill--pass">yes</span>'
+                     : '<span class="verdictpill verdictpill--fail">no</span>') +
+          '</td><td class="num">' + num(r.tokens) + '</td><td class="num">' + num(r.cap) + "</td></tr>";
+      }).join("") + "</tbody>";
+  }
+})();
+
+/* ======================================================================
    EVERY RUN & TRACE
    ====================================================================== */
 (function () {
@@ -2067,7 +2197,7 @@ renderRun();
   opts(fM, [ALL].concat(MODELS.map(function (m) { return { v: m.key, t: m.display }; })));
   opts(fR, [ALL].concat(MODE_ORDER.map(function (m) { return { v: m, t: m }; })));
   opts(fO, [ALL, { v: "correct", t: "correct only" }, { v: "wrong", t: "wrong only" },
-            { v: "unsupported", t: "unsupported cells" }]);
+            { v: "unsupported", t: "unsupported cells" }, { v: "error", t: "errored cells" }]);
 
   function match(r) {
     if (fP.value !== "*" && r.problem_id !== fP.value) return false;
@@ -2076,7 +2206,44 @@ renderRun();
     if (fO.value === "correct") return r.correct === true;
     if (fO.value === "wrong") return r.status !== "unsupported" && r.correct === false;
     if (fO.value === "unsupported") return r.status === "unsupported";
+    if (fO.value === "error") return r.status === "error";
     return true;
+  }
+
+  function errorPanel(r) {
+    var e = r.error || {};
+    var tries = (e.attempts || []).map(function (a) {
+      return "<tr><td class=\"num\">" + a.attempt + '</td><td class="mono">' + esc(a.type) +
+        '</td><td class="mono">' + esc(a.cause || "—") + '</td><td class="num">' +
+        num(a.elapsed_seconds, 2) + '</td><td style="font-size:11.5px">' + esc(a.message) + "</td></tr>";
+    }).join("");
+    return '<details class="more"><summary>' +
+      '<span style="min-width:0;overflow:hidden;text-overflow:ellipsis">' +
+      esc(r.problem_id + " · " + r.display + " · " + r.reasoning_mode) + "</span>" +
+      '<span style="margin-left:auto;display:flex;gap:9px;align-items:center">' +
+      '<span class="verdictpill verdictpill--fail">error</span>' +
+      '<span class="mono" style="font-size:10px;color:var(--meta)">' + esc(e.type || "") +
+      " · " + r.attempts + " attempt(s) · " + num(r.timing && r.timing.latency_seconds, 1) +
+      "s</span></span></summary><div class=\"inner\">" +
+      '<div class="bad"><span class="lbl">the apparatus failed — this is not the model being wrong</span>' +
+      "<p>" + esc(e.message || "") + "</p></div>" +
+      '<div class="kv" style="margin-bottom:12px">' +
+        "<div><b>Error type</b><span style=\"font-size:11.5px\">" + esc(e.type || "—") + "</span></div>" +
+        "<div><b>Underlying cause</b><span style=\"font-size:11.5px\">" + esc(e.cause || "not recorded") + "</span></div>" +
+        "<div><b>Attempts</b><span>" + r.attempts + "</span></div>" +
+        "<div><b>Time spent failing</b><span>" + num(r.timing && r.timing.latency_seconds, 2) + "s</span></div>" +
+        "<div><b>Token cap in force</b><span>" + num(r.max_output_tokens) + "</span></div>" +
+        "<div><b>Timestamp</b><span style=\"font-size:10.5px\">" + esc(r.timestamp) + "</span></div>" +
+      "</div>" +
+      (tries ? '<h4 style="margin:10px 0 6px">Every attempt</h4><div class="scroll"><table>' +
+        "<thead><tr><th class=\"num\">#</th><th>Type</th><th>Cause</th><th class=\"num\">Seconds</th><th>Message</th></tr></thead><tbody>" +
+        tries + "</tbody></table></div>"
+        : '<p class="note">This record predates per-attempt logging, so only the final error was kept.</p>') +
+      '<p class="note">No tokens, latency or cost are recorded for a failed call, because none were measured. ' +
+      'The cell is stored rather than dropped so the grid still has 27 entries and the failure is visible ' +
+      'rather than inferred from a gap. Re-run just this one with ' +
+      '<span class="mono">python3 -m harness.run_all --retry-failed</span>.</p>' +
+      "</div></details>";
   }
 
   function draw() {
@@ -2091,6 +2258,7 @@ renderRun();
           '<div class="bad"><span class="lbl">not executed</span><p>' + esc(r.error.message) +
           ". No call was made, so there is no trace to show. The cell is recorded rather than omitted.</p></div></div></details>";
       }
+      if (r.status === "error") return errorPanel(r);
       var u = r.usage || {};
       var badge = r.correct
         ? '<span class="verdictpill verdictpill--pass">correct</span>'
@@ -2145,13 +2313,26 @@ renderRun();
   opts(fC, [ALL].concat(MODELS.map(function (m) { return { v: m.key, t: m.display }; })));
   opts(fJ, [ALL].concat(MODELS.map(function (m) { return { v: m.key, t: m.display }; })));
   opts(fV, [ALL, { v: "pass", t: "pass" }, { v: "fail", t: "fail" },
-            { v: "parse_failed", t: "unparseable" }]);
+            { v: "notok", t: "not usable (any failure)" },
+            { v: "parse_failed", t: "unparseable" },
+            { v: "truncated", t: "truncated" },
+            { v: "error", t: "errored / unsupported" },
+            { v: "nopoints", t: "missing key points" }]);
+  var fC2 = $("#vfCand2");
+  opts(fC2, [ALL, { v: "wrong", t: "candidate answered WRONG" },
+             { v: "correct", t: "candidate answered right" }]);
 
   function match(e) {
     if (fP.value !== "*" && e.run.problem_id !== fP.value) return false;
     if (fC.value !== "*" && e.run.model_key !== fC.value) return false;
     if (fJ.value !== "*" && e.v.judge_key !== fJ.value) return false;
+    if (fC2.value === "wrong" && e.run.correct !== false) return false;
+    if (fC2.value === "correct" && e.run.correct !== true) return false;
+    if (fV.value === "notok") return e.v.status !== "ok";
+    if (fV.value === "error") return ["error", "unsupported"].indexOf(e.v.status) >= 0;
     if (fV.value === "parse_failed") return e.v.status === "parse_failed";
+    if (fV.value === "truncated") return e.v.status === "truncated";
+    if (fV.value === "nopoints") return e.v.status === "ok" && e.v.key_points_missing;
     if (fV.value !== "*") return e.v.verdict === fV.value;
     return true;
   }
@@ -2170,7 +2351,8 @@ renderRun();
         return '<tr class="vrow" data-i="' + i + '" style="cursor:pointer"><td>' + esc(e.run.problem_id) +
           "</td><td>" + esc(e.run.display) + '</td><td class="mono">' + esc(e.run.reasoning_mode) +
           "</td><td>" + esc(v.display) + '</td><td class="mono">' + esc(v.reasoning_mode) +
-          '</td><td colspan="9" style="color:var(--fail)">' + esc(v.status) + "</td></tr>";
+          '</td><td colspan="9" style="color:var(--fail)"><span class="verdictpill verdictpill--fail">' +
+          esc(v.status) + "</span> " + esc((v.error && v.error.message) || "") + "</td></tr>";
       }
       return '<tr class="vrow" data-i="' + i + '" style="cursor:pointer"><td>' + esc(e.run.problem_id) +
         "</td><td>" + esc(e.run.display) + '</td><td class="mono">' + esc(e.run.reasoning_mode) +
@@ -2211,10 +2393,19 @@ renderRun();
             "<div><b>Latency</b><span>" + num(v.timing && v.timing.latency_seconds, 2) + "s</span></div>" +
             "<div><b>Cost</b><span>" + usd(v.cost && v.cost.estimated_usd) + "</span></div>" +
           "</div>" +
-          '<h4 style="margin:0 0 6px">Justification</h4><p style="font-size:13px;color:var(--ink-2)">' +
+          (v.key_points && v.key_points.length
+            ? '<h4 style="margin:0 0 6px">The three points this judge recorded</h4>' +
+              '<div class="keypts"><ol>' + v.key_points.map(function (t) {
+                return "<li>" + esc(t) + "</li>"; }).join("") + "</ol></div>"
+            : '<p class="note">This judge returned no key points, which the rubric requires. ' +
+              'Counted on this page rather than ignored.</p>') +
+          '<h4 style="margin:12px 0 6px">Justification</h4><p style="font-size:13px;color:var(--ink-2)">' +
           esc(v.explanation) + "</p>"
-        : '<div class="bad"><span class="lbl">' + esc(v.status) + "</span><p>" +
-          esc(v.error ? v.error.message : "") + "</p></div>") +
+        : '<div class="bad"><span class="lbl">' + esc(v.status) +
+          " — no usable verdict</span><p>" + esc(v.error ? v.error.message : "") +
+          "</p></div><p class=\"note\">The judge was called and paid for; what came back could not be " +
+          "used. It is stored and counted rather than dropped, because a pipeline that silently " +
+          "discards these reports the agreement rate of the cases its judges found easy to format.</p>") +
       '<h4 style="margin:12px 0 6px">The judge&rsquo;s raw reply</h4>' +
       '<div class="sol" style="max-height:280px">' + esc(v.raw_text || "(not stored)") + "</div>" +
       '<h4 style="margin:12px 0 6px">The solution it was judging</h4>' +
@@ -2222,7 +2413,7 @@ renderRun();
       "</div></div>";
     $("#verdictdetail").scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
-  [fP, fC, fJ, fV].forEach(function (el) { el.addEventListener("change", draw); });
+  [fP, fC, fJ, fV, fC2].forEach(function (el) { el.addEventListener("change", draw); });
   draw();
 })();
 

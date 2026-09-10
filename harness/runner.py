@@ -42,12 +42,13 @@ SYSTEM_PROMPT = (
     "Give the answer in exact form (a fraction rather than a decimal where applicable)."
 )
 
-# Reasoning tokens are charged against this cap, so it has to cover the thinking
-# AND the written solution. Measured on the first real study: the largest run was
-# Grok at high effort, 3182 output tokens of which 2930 were reasoning — 78% of a
-# 4096 cap. A harder problem would have truncated. Sized with real headroom
-# instead: a cap costs nothing unless the tokens are actually generated.
-DEFAULTS = {"max_output_tokens": 16384, "max_attempts": 2}
+# Reasoning tokens are charged against this cap on providers that count them
+# there, so it has to cover the thinking AND the written solution. Set well
+# above anything observed: the largest run in the first real study was Grok at
+# high effort, 3182 output tokens of which 2930 were reasoning. A cap costs
+# nothing unless the tokens are actually generated, so the only thing a
+# generous one buys is not truncating a hard problem.
+DEFAULTS = {"max_output_tokens": 32768, "max_attempts": 2}
 
 
 def prompt_sha(text: str) -> str:
@@ -126,6 +127,10 @@ def run_one(problem: Problem, config: ExperimentConfig) -> dict:
 
     adapter = models.build_adapter(config.model_key, mock=config.mock)
     last_error = None
+    # One entry per failed attempt. "It timed out" and "it timed out twice,
+    # after 180 seconds each" are different facts, and the second one is the
+    # one that tells you whether to raise the timeout or look elsewhere.
+    attempt_log: list[dict] = []
     for attempt in range(1, config.max_attempts + 1):
         record["attempts"] = attempt
         try:
@@ -145,9 +150,29 @@ def run_one(problem: Problem, config: ExperimentConfig) -> dict:
             return record
         except (ProviderTimeout, ProviderError) as e:
             last_error = e
+            attempt_log.append({
+                "attempt": attempt,
+                "type": type(e).__name__,
+                # The SDK's own exception class, which says far more than our
+                # wrapper does: RateLimitError and APITimeoutError need
+                # different responses and both arrive as ProviderError.
+                "cause": type(e.__cause__).__name__ if e.__cause__ else None,
+                "message": str(e)[:600],
+                "elapsed_seconds": clock["latency_seconds"],
+            })
             continue                       # a transport fault is worth one retry
     else:
-        record["error"] = {"type": type(last_error).__name__, "message": str(last_error)}
+        record["error"] = {
+            "type": type(last_error).__name__,
+            "cause": type(last_error.__cause__).__name__ if last_error.__cause__ else None,
+            "message": str(last_error)[:600],
+            "attempts": attempt_log,
+        }
+        # How long the failure took is itself a measurement: a call that died
+        # after 180 seconds and one that was refused instantly are different
+        # problems with different fixes.
+        record["timing"] = {"latency_seconds": sum(
+            a["elapsed_seconds"] or 0 for a in attempt_log)}
         return record
 
     final = extract_final_answer(response.text)
@@ -166,10 +191,42 @@ def run_one(problem: Problem, config: ExperimentConfig) -> dict:
     # being read as a measurement — the page banners every simulated row.
     record["cost"] = metrics.cost_block(config.model_key, response)
     record["correct"] = is_correct(final, problem.expected_answer, problem.answer_aliases)
-    # A response with no marked answer is a formatting failure, not a wrong
-    # answer, and the two are counted separately on the results page.
-    record["status"] = "ok" if final is not None else "no_answer_marked"
+    # Three different things, and they need three different fixes:
+    #   ok                 an answer was marked
+    #   truncated          generation ran out of budget before the answer —
+    #                      raise the cap, do not blame the model
+    #   no_answer_marked   it finished writing and never marked an answer —
+    #                      a formatting failure, not a wrong answer
+    # Counting truncation as a wrong answer would make a cap setting look like
+    # a property of the model. Gemini hit this on AIME problem 15 at a 32768
+    # cap, twice, at two different efforts, for the same 33084 tokens.
+    # Ask the provider whether it stopped early. Its own signal beats a token
+    # comparison, which is unreliable: Gemini counts thinking tokens OUTSIDE
+    # max_output_tokens, so a run can report 46419 output tokens against a
+    # 32768 cap and still have finished normally with the right answer.
+    meta = response.raw_meta or {}
+    signals = (str(meta.get("finish_reason") or ""), str(meta.get("incomplete_reason") or ""))
+    hit_cap = any("MAX_TOKENS" in x.upper() or "max_output_tokens" in x for x in signals)
+    if not any(signals):                       # provider said nothing; fall back
+        hit_cap = response.output_tokens >= config.max_output_tokens - 8
+    if final is not None:
+        record["status"] = "ok"
+    elif hit_cap:
+        record["status"] = "truncated"
+        record["error"] = {
+            "type": "Truncated",
+            "message": (f"generation stopped at the {config.max_output_tokens}-token cap "
+                        f"({response.output_tokens} used, "
+                        f"{response.reasoning_tokens} of them reasoning) "
+                        f"before any final answer was written"),
+        }
+    else:
+        record["status"] = "no_answer_marked"
     record["provider_meta"] = response.raw_meta
+    # An answer was found AND the provider says generation was cut off. Not a
+    # failure — the answer arrived before the cut — but the run was still
+    # writing when the budget ran out, which is worth seeing next to its cost.
+    record["stopped_early"] = bool(hit_cap)
     return record
 
 

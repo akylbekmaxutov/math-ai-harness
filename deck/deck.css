@@ -318,7 +318,8 @@ em{font-style:italic}
 .card--judge{border-left:3px solid var(--amber)}
 
 .tile{background:var(--surface);border:1px solid var(--rule-soft);padding:15px 17px;box-shadow:var(--shadow)}
-.tile__n{font-size:clamp(24px,2.9vw,35px);font-weight:600;line-height:1;color:var(--blue);letter-spacing:-.02em}
+.tile__n{font-size:clamp(24px,2.9vw,35px);font-weight:600;line-height:1.05;color:var(--blue);
+  letter-spacing:-.02em;overflow-wrap:anywhere;min-width:0}
 .tile__l{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--meta);margin-top:7px;line-height:1.55}
 .tile--judge .tile__n{color:var(--amber)}
 
@@ -548,6 +549,14 @@ details.more .inner>.explain:last-child{margin-bottom:0}
 .chart__tbl[open] summary::before{content:"▾ "}
 .chart__tbl table{margin-top:9px;font-size:12px}
 
+.failgrp{border:1px solid var(--rule);background:var(--surface);padding:12px 14px;margin:0 0 10px}
+.failgrp__h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:7px}
+.failgrp__h b{font-family:var(--mono);font-size:11px;color:var(--ink)}
+.failgrp__n{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--meta)}
+.failgrp__m{font-family:var(--mono);font-size:11.5px;color:var(--fail);margin:0 0 8px;overflow-wrap:anywhere;max-width:none}
+.failgrp ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;border-top:1px dashed var(--rule);padding-top:8px}
+.failgrp li{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+
 /* ==========================================================================
    RESULTS INTERFACE
    ========================================================================== */
@@ -586,6 +595,9 @@ details.more .inner>.explain:last-child{margin-bottom:0}
 
 .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:0;border:1px solid var(--rule-soft)}
 .kv>div{padding:10px 12px;border-right:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft)}
+/* A row whose value is a long literal (a JSON request body) needs the whole
+   width; in a 128px auto-fit cell it stacks one token per line. */
+.kv__wide{grid-column:1/-1}
 .kv b{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--meta);margin-bottom:4px}
 .kv span{font-family:var(--mono);font-size:13.5px;color:var(--ink);font-variant-numeric:tabular-nums;
   display:block;overflow-wrap:anywhere;line-height:1.4}
@@ -622,6 +634,11 @@ details.more .inner>.explain:last-child{margin-bottom:0}
 .jcol__h{display:flex;align-items:baseline;gap:9px;margin:0 0 11px;flex-wrap:wrap}
 .jcol__h b{font-size:13.5px;color:var(--ink)}
 .jcol__h span{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--meta)}
+.keypts{margin:0 0 10px;border-left:3px solid var(--amber);padding:2px 0 2px 13px}
+.keypts>b{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+.keypts ol{margin:0;padding-left:17px;display:grid;gap:5px}
+.keypts li{font-size:12.4px;line-height:1.5;color:var(--ink-2)}
+.keypts li::marker{color:var(--amber);font-family:var(--mono);font-size:10px}
 .jcol__x{font-size:12.3px;color:var(--ink-2);line-height:1.55;margin:11px 0 0;border-top:1px dashed var(--rule);padding-top:9px}
 
 /* agreement indicators — status colour ALWAYS with an icon and a word */

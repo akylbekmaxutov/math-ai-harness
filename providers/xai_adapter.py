@@ -82,5 +82,6 @@ class XAIAdapter(BaseAdapter):
             output_tokens=completion,      # reasoning included, per the convention
             reasoning_tokens=int(rtok) if rtok is not None else None,
             reasoning_request=req,
-            raw_meta={"response_id": getattr(r, "id", None), "api": "chat_completions"},
+            raw_meta={"response_id": getattr(r, "id", None), "api": "chat_completions",
+                      "finish_reason": getattr(r.choices[0], "finish_reason", None)},
         )

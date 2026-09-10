@@ -343,11 +343,27 @@ C = {
     "<code>None</code> rather than an empty string when there were none &mdash; so \"the provider "
     "gave us nothing\" stays distinguishable from \"the provider gave us an empty summary\".",
 
-"providers/gemini_adapter.py::THINKING_BUDGET":
+"providers/gemini_adapter.py::THINKING_BUDGET · THINKING_SHARE":
     "Gemini takes no named effort at all; it takes a token budget. This dict is a WORKSHOP DECISION, "
     "documented as one: <code>HIGH</code> means \"effort=high\" on OpenAI and \"16k thinking tokens "
     "allowed\" here, and those are not the same physical quantity. The harness makes the arms "
-    "comparable by naming them consistently; it cannot make them identical.",
+    "comparable by naming them consistently; it cannot make them identical. "
+    "<code>effective_budget</code> then clamps that budget so at least 30% of the output cap is "
+    "left for an answer. At the caps in force today it does not bind &mdash; HIGH gets its full "
+    "16384 with as much again left over. It exists because at smaller caps it did: when the judge "
+    "cap was 1024, a 16k thinking budget let the model think past the ceiling and return nothing "
+    "parseable, and five of the six truncated verdicts on the first real run were Gemini at high "
+    "effort. A guard that is inactive at the current settings is the point of a guard.",
+
+"providers/gemini_adapter.py::effective_budget":
+    "The thinking budget actually sent: the level's budget, clamped so at least 30% of the output "
+    "cap survives for the answer. It is the fix for a failure the first real run produced &mdash; "
+    "five of the six truncated verdicts were Gemini at high effort, where a 16384-token thinking "
+    "budget against what was then a 1024-token cap let the model think past the ceiling and return "
+    "no parseable JSON. It does not bind at today's 32768 caps, which is what a safety net should "
+    "look like once the underlying setting is right. "
+    "The clamped value travels into the trace as <code>reasoning_request</code>, so the number on "
+    "the wire is what the record shows.",
 
 "providers/gemini_adapter.py::GeminiAdapter":
     "The most interesting translation of the three. Note the token normalisation: google-genai "
@@ -387,19 +403,26 @@ C = {
     "sleeps, so the latency the stopwatch records is a latency that actually elapsed rather than a "
     "number written into a field.",
 
-"providers/mock_adapter.py::SOLUTIONS":
-    "Three canned solutions per problem: one sound derivation, one that reaches the RIGHT answer by "
-    "an invalid route, and one that is simply wrong. Those three cases are exactly what Part II needs "
-    "on screen, and a random generator will not produce them.",
+"providers/mock_adapter.py::QUALITY_TEXT":
+    "Three shapes of simulated solution &mdash; a sound derivation, one that reaches the RIGHT "
+    "answer by an invalid route, and one that is simply wrong. Those three are exactly what Part II "
+    "needs on screen, and a random generator will not produce them. Written as templates rather "
+    "than canned per problem, so a rehearsal works on whatever set is loaded, including a "
+    "competition set nobody could canned-solve in advance.",
+
+"providers/mock_adapter.py::_expected_answer":
+    "The simulator LOOKS THE ANSWER UP, by matching the question text back to the loaded problem "
+    "set. Deliberately reaching for something no real provider could ever see. The simulator is "
+    "the one component allowed to, because it is not a measurement and every record it writes says "
+    "so &mdash; and it is what lets an offline rehearsal show a realistic mix of outcomes.",
+
+"providers/mock_adapter.py::_wrong_answer":
+    "A plausible near miss: the same shape as the real answer, a few units away. A wrong answer that "
+    "looked nothing like a candidate answer would make the judge's job artificially easy.",
 
 "providers/mock_adapter.py::_solution":
     "Picks one, weighted by effort so that higher effort draws the sound solution more often. A "
     "simulated tendency, not an observed one &mdash; and the page says so wherever the figure appears.",
-
-"providers/mock_adapter.py::_mentions":
-    "Identifies which canned problem is in the prompt by a distinctive phrase, because the solver "
-    "prompt never carries the problem id &mdash; the simulator is subject to the same blinding as a "
-    "real provider.",
 
 "providers/mock_adapter.py::QUALITY_MARKERS · QUALITY_PROFILE":
     "How the simulated judge recognises its own canned solutions, and what it scores them. The jitter "
@@ -418,7 +441,7 @@ C = {
 # ======================================================================
 # judges/
 # ======================================================================
-"judges/prompts.py::CRITERIA · ERROR_SEVERITY · VERDICTS · SYSTEM":
+"judges/prompts.py::CRITERIA · ERROR_SEVERITY · VERDICTS · KEY_POINTS · SYSTEM":
     "The rubric, and the part that matters is the written anchors: 5, 3 and 1 are described, so a 3 "
     "means the same thing to two different judges. <code>ERROR_SEVERITY</code> is ordered worst-last, "
     "which makes \"at least major\" a comparison rather than a set-membership test. The system prompt "
@@ -583,6 +606,16 @@ C = {
     "attached to their solver run along with the agreement summary. The <code>simulated</code> flag is "
     "true if ANY row came from the simulator, because a mixed set is not a study and the page banners "
     "the whole section rather than individual rows.",
+
+"analysis/build_results.py::failure_report":
+    "Every way the study failed, grouped by cause and reported as prominently as the accuracy. "
+    "These are what a replication actually hits: a provider with no credit left, a request that "
+    "never came back, a capability the model does not have, a generation that ran out of budget "
+    "mid-sentence. Grouping collapses on the leading sentence, so ten identical 429s are one row "
+    "with ten cells listed under it rather than ten rows. Note that <code>wrong_answers</code> is "
+    "kept separate from everything else: it is the only category where the MODEL is at fault, and "
+    "conflating it with the rest is how an evaluation ends up measuring your infrastructure and "
+    "calling it a model comparison.",
 
 "analysis/build_results.py::summarise":
     "The comparison dashboard, computed once, here &mdash; not in the browser. Note the cost block: it "

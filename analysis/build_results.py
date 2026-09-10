@@ -59,6 +59,8 @@ def slim_verdict(v: dict) -> dict:
         "verdict": v.get("verdict"),
         "error_severity": v.get("error_severity"),
         "explanation": v.get("explanation"),
+        "key_points": v.get("key_points") or [],
+        "key_points_missing": v.get("key_points_missing", True),
         "usage": v.get("usage"),
         "timing": v.get("timing"),
         "cost": v.get("cost"),
@@ -155,6 +157,9 @@ def build() -> dict:
             "model": s["model"],
             "reasoning_mode": s["reasoning_mode"],
             "reasoning_request": s.get("reasoning_request"),
+            "max_output_tokens": s.get("max_output_tokens"),
+            "stopped_early": r.get("stopped_early", False),
+            "provider_meta": r.get("provider_meta") or {},
             "system_prompt_sha": s.get("system_prompt_sha"),
             "status": r["status"],
             "attempts": r.get("attempts"),
@@ -203,7 +208,8 @@ def build() -> dict:
         "problems": [
             {"problem_id": p.problem_id, "title": p.title, "kind": p.kind,
              "question": p.question, "expected_answer": p.expected_answer,
-             "why_this_problem": p.why_this_problem, "set_version": p.set_version}
+             "why_this_problem": p.why_this_problem, "set_version": p.set_version,
+             "source": p.source, "source_problem_idx": p.source_problem_idx}
             for p in problems.load_problems().values()
         ],
         "runs": runs,
@@ -211,9 +217,63 @@ def build() -> dict:
     }
 
 
+def failure_report(runs: list[dict], judge_runs: list[dict]) -> dict:
+    """Every way this study failed, grouped by cause.
+
+    Reported as prominently as the accuracy, because these are the things a
+    replication will actually hit: a provider with no credit left, a request
+    that never came back, a capability the model does not have, a generation
+    that ran out of budget mid-sentence. An evaluation write-up that shows only
+    the cells that worked is describing a study nobody ran.
+    """
+    def group(rows, kind):
+        out = {}
+        for r in rows:
+            if r["status"] == "ok":
+                continue
+            e = r.get("error") or {}
+            msg = (e.get("message") or "").strip()
+            # Collapse on the leading sentence so ten identical 429s are one row.
+            key = msg.split(". ")[0][:120] or r["status"]
+            slot = out.setdefault(key, {"status": r["status"], "type": e.get("type"),
+                                        "message": msg, "count": 0, "cells": [], "kind": kind})
+            slot["count"] += 1
+            if kind == "solver":
+                slot["cells"].append(f'{r["problem_id"]} · {r["display"]} · {r["reasoning_mode"]}')
+            else:
+                c = r["candidate"]
+                slot["cells"].append(
+                    f'{c["problem_id"]} · {c["display"]}/{c["reasoning_mode"]}'
+                    f' judged by {r["judge"]["display"]}/{r["judge"]["reasoning_mode"]}')
+        return sorted(out.values(), key=lambda d: -d["count"])
+
+    solver_rows = [{"status": r["status"], "error": r.get("error"), "problem_id": r["problem_id"],
+                    "display": r["display"], "reasoning_mode": r["reasoning_mode"]} for r in runs]
+    graded = [r for r in runs if r["status"] in ("ok", "no_answer_marked", "truncated")]
+    return {
+        "solver": group(solver_rows, "solver"),
+        "judge": group(judge_runs, "judge"),
+        "wrong_answers": [
+            {"problem_id": r["problem_id"], "display": r["display"],
+             "reasoning_mode": r["reasoning_mode"], "answered": r["final_answer"],
+             "expected": r["expected_answer"], "tokens": (r["usage"] or {}).get("total_tokens"),
+             "usd": (r["cost"] or {}).get("estimated_usd")}
+            for r in graded if r.get("correct") is False],
+        "stopped_early": [
+            {"problem_id": r["problem_id"], "display": r["display"],
+             "reasoning_mode": r["reasoning_mode"], "correct": r.get("correct"),
+             "tokens": (r["usage"] or {}).get("total_tokens"),
+             "cap": r.get("max_output_tokens")}
+            for r in runs if r.get("stopped_early")],
+        "judge_verdicts_lost": sum(1 for v in judge_runs if v["status"] != "ok"),
+        "judge_verdicts_never_attempted": max(
+            0, len(graded) * 4 - len(judge_runs)),
+    }
+
+
 def summarise(runs: list[dict], judge_runs: list[dict]) -> dict:
     """The comparison dashboard, computed once, here."""
-    graded = [r for r in runs if r["status"] in ("ok", "no_answer_marked")]
+    graded = [r for r in runs if r["status"] in ("ok", "no_answer_marked", "truncated")]
 
     def cell(rows):
         if not rows:
@@ -261,6 +321,7 @@ def summarise(runs: list[dict], judge_runs: list[dict]) -> dict:
         "by_model": {k: cell(v) for k, v in by_model.items()},
         "by_mode": {k: cell(v) for k, v in by_mode.items()},
         "by_problem": {k: cell(v) for k, v in by_problem.items()},
+        "failures": failure_report(runs, judge_runs),
         "judge_vs_ground_truth": agreement.judge_vs_ground_truth(judge_runs),
         "judge_severity_profile": agreement.severity_profile(judge_runs),
         "counts": {
@@ -268,6 +329,8 @@ def summarise(runs: list[dict], judge_runs: list[dict]) -> dict:
             "solver_ok": len(graded),
             "solver_unsupported": sum(1 for r in runs if r["status"] == "unsupported"),
             "solver_error": sum(1 for r in runs if r["status"] == "error"),
+            "solver_truncated": sum(1 for r in runs if r["status"] == "truncated"),
+            "solver_no_answer": sum(1 for r in runs if r["status"] == "no_answer_marked"),
             "verdicts": len(judge_runs),
             "verdicts_ok": len(ok_v),
             "verdicts_parse_failed": sum(1 for v in judge_runs if v["status"] == "parse_failed"),
@@ -275,6 +338,10 @@ def summarise(runs: list[dict], judge_runs: list[dict]) -> dict:
             # fix the parser — so they are counted apart.
             "verdicts_truncated": sum(1 for v in judge_runs if v["status"] == "truncated"),
             "verdicts_latex_repaired": sum(1 for v in judge_runs if v.get("latex_repaired")),
+            "verdicts_error": sum(1 for v in judge_runs
+                                  if v["status"] not in ("ok", "parse_failed", "truncated")),
+            "verdicts_without_key_points": sum(1 for v in judge_runs
+                                               if v["status"] == "ok" and v.get("key_points_missing")),
         },
         "cost": {
             # The number people forget: evaluating cost money too, and with two

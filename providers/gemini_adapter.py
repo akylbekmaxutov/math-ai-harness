@@ -30,6 +30,20 @@ THINKING_BUDGET = {
     ReasoningMode.HIGH: 16384,
 }
 
+#: The largest share of the output cap thinking may claim, so an answer always
+#: has room. Without it, HIGH's 16384-token budget equals the solver cap exactly
+#: and exceeds the judge cap outright, and the model can think until it hits the
+#: ceiling and return a truncated answer or none at all. That is not
+#: hypothetical: five of the six truncated verdicts on the first real run were
+#: Gemini at high effort.
+THINKING_SHARE = 0.7
+
+
+def effective_budget(mode: ReasoningMode, max_output_tokens: int) -> int:
+    """The thinking budget actually sent: the level's budget, clamped so at
+    least 30% of the cap is left for the answer."""
+    return max(256, min(THINKING_BUDGET[mode], int(max_output_tokens * THINKING_SHARE)))
+
 
 class GeminiAdapter(BaseAdapter):
     name = "gemini"
@@ -49,7 +63,7 @@ class GeminiAdapter(BaseAdapter):
 
     def generate(self, prompt, *, system, reasoning_mode, max_output_tokens=4096):
         self.require_supported(reasoning_mode)
-        budget = THINKING_BUDGET[reasoning_mode]
+        budget = effective_budget(reasoning_mode, max_output_tokens)
         req = {"thinking_budget": budget, "include_thoughts": True}
         cfg = {
             "system_instruction": system,

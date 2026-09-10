@@ -29,6 +29,10 @@ class Problem:
     answer_kind: str
     why_this_problem: str
     set_version: str
+    #: Where the problem came from. Empty for a problem with no external source,
+    #: which is itself a fact the website reports rather than hides.
+    source: str = ""
+    source_problem_idx: int | None = None
 
     def for_solver(self) -> str:
         """Everything the solver is allowed to see. The key is not in here."""
@@ -72,6 +76,8 @@ def load_problems(path: Path | None = None) -> dict[str, Problem]:
             answer_kind=p.get("answer_kind", "string"),
             why_this_problem=p.get("why_this_problem", ""),
             set_version=version,
+            source=p.get("source", ""),
+            source_problem_idx=p.get("source_problem_idx"),
         )
     return out
 

@@ -11,10 +11,10 @@
     PASS  XAI_API_KEY      xai      set (84 chars)
 
   PROBLEMS
-    PASS  algebra_01     algebra                          expected 36/11
-    PASS  reasoning_02   logical/mathematical reasoning   expected 42
-    PASS  multistep_03   multi-step                       expected 58
-          set version 2026-09-08
+    PASS  aime2026_01    AIME competition problem         expected 277
+    PASS  aime2026_08    AIME competition problem         expected 244
+    PASS  aime2026_15    AIME competition problem         expected 83
+          set version MathArena/aime_2026@3:1-8-15
 
   PRICING
     PASS  gpt-5.6-terra     in $1.25/M  out $10.0/M  checked 2026-09-08

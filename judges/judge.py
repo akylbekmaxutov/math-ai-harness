@@ -85,11 +85,11 @@ class JudgeConfig:
     judge_key: str
     reasoning_mode: ReasoningMode
     # Reasoning tokens are charged against this cap. At high effort a judge can
-    # spend well over a thousand of them thinking, so a 1024 cap leaves nothing
-    # for the JSON and the verdict comes back truncated mid-object: six were
-    # lost that way on the first real run, and 18 of 96 replies ran right up to
-    # the limit. Sized to clear the largest reply observed by a wide margin.
-    max_output_tokens: int = 8192
+    # spend thousands of them thinking, and on the first real run a 1024 cap
+    # truncated six verdicts mid-object while 18 of 96 replies ran right up to
+    # the limit. Matched to the solver cap so neither side of the study is the
+    # one that gets cut off.
+    max_output_tokens: int = 32768
     max_attempts: int = 2
     mock: bool = False
 
@@ -160,8 +160,27 @@ def parse_verdict(text: str) -> dict:
     if verdict not in prompts.VERDICTS:
         raise VerdictParseError(f"verdict={verdict!r} is not one of {prompts.VERDICTS}")
 
+    # Exactly N short strings, or nothing. A judge that returns two points, or
+    # one long paragraph in a list, has not done what the rubric asked — but an
+    # ABSENT list is tolerated and flagged rather than rejected, so that verdicts
+    # recorded before key points existed can still be re-parsed from their
+    # stored replies instead of being destroyed by a schema change.
+    raw_points = blob.get("key_points")
+    points, points_missing = [], True
+    if raw_points is not None:
+        if not isinstance(raw_points, list):
+            raise VerdictParseError(f"key_points must be a list, got {type(raw_points).__name__}")
+        cleaned = [str(x).strip() for x in raw_points if str(x).strip()]
+        if len(cleaned) != prompts.KEY_POINTS:
+            raise VerdictParseError(
+                f"key_points must have exactly {prompts.KEY_POINTS} non-empty entries, "
+                f"got {len(cleaned)}")
+        points, points_missing = cleaned, False
+
     return {
         "latex_repaired": repaired,
+        "key_points": points,
+        "key_points_missing": points_missing,
         "scores": scores,
         "error_severity": sev,
         "verdict": verdict,

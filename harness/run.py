@@ -1,6 +1,6 @@
 """`python3 -m harness.run` — one cell of the experiment matrix.
 
-    python3 -m harness.run --problem algebra_01 --model gpt-5.6-terra --reasoning high
+    python3 -m harness.run --problem aime2026_08 --model gpt-5.6-terra --reasoning high
 
 The smallest unit the study is made of. Run it alone to demonstrate one
 execution live; `harness.run_all` is a loop over exactly this.
@@ -25,7 +25,7 @@ def summarise(record: dict, path) -> None:
     print(f"  model     {s['display']}  [{s['provider']}/{s['model']}]")
     print(f"  reasoning {s['reasoning_mode']}   requested: {s['reasoning_request'] or '—'}")
     print(f"  status    {record['status']}")
-    if record["status"] in ("ok", "no_answer_marked"):
+    if record["status"] in ("ok", "no_answer_marked", "truncated"):
         exp = record["problem"]["expected_answer"]
         mark = "CORRECT" if record["correct"] else "INCORRECT"
         print(f"  answer    {record['response']['final_answer']}   expected {exp}   -> {mark}")
@@ -65,7 +65,7 @@ def main(argv=None) -> int:
     print()
     summarise(record, path.relative_to(storage.ROOT))
     print()
-    return 0 if record["status"] in ("ok", "unsupported", "no_answer_marked") else 1
+    return 0 if record["status"] in ("ok", "unsupported", "no_answer_marked", "truncated") else 1
 
 
 if __name__ == "__main__":

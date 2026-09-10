@@ -33,6 +33,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="harness.run_all", description=__doc__.splitlines()[0])
     ap.add_argument("--mock", action="store_true", help="offline simulator")
     ap.add_argument("--force", action="store_true", help="re-run cells that already exist")
+    ap.add_argument("--retry-failed", action="store_true",
+                    help="re-run ONLY cells whose stored status is an error")
     ap.add_argument("--dry-run", action="store_true", help="print the plan and stop")
     ap.add_argument("--max-tokens", type=int, default=None,
                     help="override the solver output cap (default 16384)")
@@ -42,6 +44,26 @@ def main(argv=None) -> int:
 
     env.load_dotenv()          # keys come from .env, never from a flag
     env.canonicalise()
+
+    # A simulated run must never destroy a real one. Rehearsing with --mock over
+    # a corpus that contains real measurements silently replaces paid-for results
+    # with invented ones, and a study still running alongside it then SKIPS those
+    # cells because the files now exist. That happened once; it does not need to
+    # be possible.
+    if a.mock and not a.force:
+        real = [p for p in storage.SOLVER_DIR.rglob("*.json")
+                if not storage.read_record(p).get("simulated", False)]
+        if real:
+            print(f"\n  REFUSING: {len(real)} REAL result file(s) are already in "
+                  f"{storage.SOLVER_DIR.relative_to(storage.ROOT)}/.")
+            print("  A --mock run would overwrite measurements with simulated data.")
+            print("  Move them aside first, or pass --force if you really mean it:")
+            for p in real[:5]:
+                print(f"      {p.relative_to(storage.ROOT)}")
+            if len(real) > 5:
+                print(f"      ... and {len(real) - 5} more")
+            print()
+            return 1
 
     probs = problems.load_problems()
     pids = a.problem or list(probs)
@@ -66,18 +88,28 @@ def main(argv=None) -> int:
     for pid, mkey, mode in cells:
         path = storage.solver_path(pid, mkey, mode)
         if path.exists() and not a.force:
-            counts["skipped"] += 1
-            print(f"  skip  {pid:14s} {mkey:17s} {mode:7s} (exists)")
-            continue
+            # Resumption skips by existence, so without this a cell that failed
+            # stays failed forever: re-running the command steps straight over
+            # it. --retry-failed re-runs exactly the broken ones.
+            stored = None
+            if a.retry_failed:
+                try:
+                    stored = storage.read_record(path).get("status")
+                except (OSError, ValueError):
+                    stored = "error"
+            if not a.retry_failed or stored != "error":
+                counts["skipped"] += 1
+                print(f"  skip  {pid:14s} {mkey:17s} {mode:7s} (exists)")
+                continue
         cfg = ExperimentConfig(model_key=mkey, reasoning_mode=ReasoningMode.parse(mode),
                                mock=a.mock,
                                **({"max_output_tokens": a.max_tokens} if a.max_tokens else {}))
         rec, _ = run_and_store(probs[pid], cfg)
         counts[rec["status"]] = counts.get(rec["status"], 0) + 1
         mark = {"ok": "OK ", "unsupported": "-- ", "error": "ERR",
-                "no_answer_marked": "?? "}.get(rec["status"], "?? ")
+                "truncated": "CAP", "no_answer_marked": "?? "}.get(rec["status"], "?? ")
         extra = ""
-        if rec["status"] in ("ok", "no_answer_marked"):
+        if rec["status"] in ("ok", "no_answer_marked", "truncated"):
             extra = (f" {'correct' if rec['correct'] else 'wrong  '}"
                      f" {rec['usage']['total_tokens']:>6} tok"
                      f" {rec['timing']['latency_seconds']:>6.2f}s"

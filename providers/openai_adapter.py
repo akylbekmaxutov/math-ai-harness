@@ -79,6 +79,10 @@ class OpenAIAdapter(BaseAdapter):
             reasoning_request={"reasoning": req},
             raw_meta={"response_id": getattr(r, "id", None),
                       "status": getattr(r, "status", None),
+                      # "incomplete" plus reason "max_output_tokens" is the
+                      # authoritative truncation signal here, not a token count.
+                      "incomplete_reason": getattr(
+                          getattr(r, "incomplete_details", None), "reason", None),
                       "api": "responses"},
         )
 

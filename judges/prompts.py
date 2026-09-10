@@ -63,6 +63,11 @@ ERROR_SEVERITY = ("none", "minor", "major", "incorrect_conclusion")
 
 VERDICTS = ("pass", "fail")
 
+#: How many key points a judge must record. Three is enough to force the judge
+#: to commit to specific observations rather than one hedged sentence, and few
+#: enough that two judges' lists can be read side by side on a slide.
+KEY_POINTS = 3
+
 SYSTEM = (
     "You are evaluating a written mathematical solution against a fixed rubric.\n"
     "You are NOT told the correct answer. Judge correctness by doing the "
@@ -88,6 +93,12 @@ def rubric_block() -> str:
         "verdict — 'pass' if the solution both reaches the right answer AND "
         "justifies it; otherwise 'fail'.",
         "explanation — two sentences. Quote the specific step you scored on.",
+        "",
+        f"key_points — EXACTLY {KEY_POINTS} short strings, the observations your scores rest on.",
+        "  Each must name a specific step, value or omission in THIS solution.",
+        "  State what you found, not how you feel: 'divisor count 8 is verified' rather",
+        "  than 'the reasoning is good'. If the solution is flawed, at least one point",
+        "  must say where.",
     ]
     return "\n".join(lines)
 
@@ -100,7 +111,8 @@ def output_block() -> str:
         '{"correctness": 1-5, "reasoning": 1-5, "completeness": 1-5, '
         '"efficiency": 1-5, "clarity": 1-5, '
         '"error_severity": "none|minor|major|incorrect_conclusion", '
-        '"verdict": "pass|fail", "explanation": "..."}'
+        '"verdict": "pass|fail", "explanation": "...", '
+        f'"key_points": [{", ".join(chr(34) + "..." + chr(34) for _ in range(KEY_POINTS))}]}}'
     )
 
 

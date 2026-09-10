@@ -50,6 +50,7 @@ OUTLINE = [
     ("results", "Results", [
         ("explorer", "Run Explorer"),
         ("judge-compare", "Judge Comparison"),
+        ("failures", "What Went Wrong"),
         ("all-runs", "Every Run & Trace"),
         ("all-verdicts", "Every Judge Verdict"),
         ("dashboard", "Model Comparison"),

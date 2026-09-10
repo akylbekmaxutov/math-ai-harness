@@ -90,75 +90,81 @@ class MockAdapter(BaseAdapter):
 
 
 # --------------------------------------------------------------------------
-# The three canned solutions. Each problem gets one sound derivation, one that
-# reaches the RIGHT answer by an invalid route, and one that is simply wrong —
-# because those three cases are exactly what Part II needs on screen.
+# Simulated solutions.
+#
+# The simulator LOOKS THE ANSWER UP. It is a trace generator, not a model: it
+# is not solving anything, it is not blind, and nothing it produces is evidence
+# about any real system. Reading the key is what lets an offline rehearsal show
+# a realistic mix of outcomes on whatever problem set is loaded — including a
+# competition set nobody could canned-solve in advance.
+#
+# Three classes are produced, because those three are exactly what Part II needs
+# on screen: a sound derivation, one that reaches the RIGHT answer by an invalid
+# route, and one that is simply wrong.
 # --------------------------------------------------------------------------
-SOLUTIONS = {
-    "36/11": (
-        ("sound",
-         "Rates add. A fills 1/6 of the tank per hour, B fills 1/4, the drain removes 1/9.\n"
-         "Net rate = 1/6 + 1/4 - 1/9 = 6/36 + 9/36 - 4/36 = 11/36 tank per hour.\n"
-         "Time = 1 / (11/36) = 36/11 hours.\n\nFINAL ANSWER: \\boxed{36/11}"),
-        ("right answer, invalid route",
-         "Combine the times directly: 6 + 4 - 9 = 1, so the tank fills in about 1 hour.\n"
-         "That seems too fast, so scale by the number of inputs: 36/11 hours.\n"
-         "\nFINAL ANSWER: \\boxed{36/11}"),
-        ("wrong",
-         "Net rate = 1/6 + 1/4 + 1/9 = 19/36 (the drain also moves water).\n"
-         "Time = 36/19 hours.\n\nFINAL ANSWER: \\boxed{36/19}"),
+QUALITY_TEXT = {
+    "sound": (
+        "Set up the standard reduction for this problem and carry it through.\n"
+        "Each step follows from the previous one, and the boundary cases are checked.\n"
+        "The derivation closes and gives the value below.\n"
+        "\nFINAL ANSWER: \\boxed{{{answer}}}"
     ),
-    "42": (
-        ("sound",
-         "If p is the smallest prime factor of n, the second-largest divisor is n/p.\n"
-         "So n/p = 21, i.e. n = 21p. For 21 to be the second-largest divisor, p must be\n"
-         "the smallest prime factor of n, forcing p = 2 (p = 3 or 7 would make 3 | n with a\n"
-         "smaller cofactor). n = 42 = 2 x 3 x 7 has (1+1)^3 = 8 divisors. Checks out.\n"
-         "\nFINAL ANSWER: \\boxed{42}"),
-        ("right answer, unjustified",
-         "The second-largest divisor is 21, so n is a small multiple of 21. Doubling gives 42.\n"
-         "42 feels right for a divisor-counting problem.\n\nFINAL ANSWER: \\boxed{42}"),
-        ("wrong",
-         "n must be 21 x 3 = 63 so that 21 is the second-largest divisor.\n"
-         "63 = 3^2 x 7 has 6 divisors, close enough to 8.\n\nFINAL ANSWER: \\boxed{63}"),
+    "unjustified": (
+        "The setup suggests the usual reduction. Assuming the standard proportion\n"
+        "carries over here without checking it, the count follows directly.\n"
+        "That assumption feels right for a problem of this shape.\n"
+        "\nFINAL ANSWER: \\boxed{{{answer}}}"
     ),
-    "58": (
-        ("sound",
-         "3x + 4y = 0 (mod 7). Since 4 = -3 (mod 7), this is 3x - 3y = 0, and 3 is invertible\n"
-         "mod 7, so x = y (mod 7).\nAmong 1..20 the residues 1..6 each occur 3 times and\n"
-         "residue 0 occurs twice (7 and 14). Pairs = 6 x 3^2 + 1 x 2^2 = 54 + 4 = 58.\n"
-         "\nFINAL ANSWER: \\boxed{58}"),
-        ("right answer, hand-waved count",
-         "The condition reduces to x = y mod 7. Roughly one in seven pairs qualifies,\n"
-         "so 400/7 is about 57, and rounding up gives 58.\n\nFINAL ANSWER: \\boxed{58}"),
-        ("wrong",
-         "x = y (mod 7). Each of the 7 residues holds 3 values of x in 1..20,\n"
-         "so the count is 7 x 3^2 = 63.\n\nFINAL ANSWER: \\boxed{63}"),
+    "wrong": (
+        "Apply the reduction, but treat the excluded cases as though they were\n"
+        "included; the correction term is dropped as negligible.\n"
+        "\nFINAL ANSWER: \\boxed{{{answer}}}"
     ),
 }
 
 
+def _expected_answer(prompt: str) -> str | None:
+    """The key, looked up by matching the question text.
+
+    Deliberately reaching for something a real provider could never see. The
+    simulator is the one component allowed to, because it is not a measurement
+    and every record it writes says so.
+    """
+    try:
+        from harness.problems import load_problems
+    except Exception:  # noqa: BLE001 — the simulator must never break a rehearsal
+        return None
+    for prob in load_problems().values():
+        head = " ".join(prob.question.split())[:100]
+        if head and head in " ".join(prompt.split()):
+            return prob.expected_answer
+    return None
+
+
+def _wrong_answer(answer: str, seed: str) -> str:
+    """A plausible near miss: same shape, different value."""
+    if answer.isdigit():
+        n = int(answer)
+        off = _rng_int(seed + "w", 1, 9)
+        return str(max(0, n + (off if n + off <= 999 else -off)))
+    return "0"
+
+
 def _solution(prompt: str, mode: ReasoningMode, seed: str) -> tuple[str, str]:
-    """Pick a canned solution. Higher effort draws the sound one more often —
+    """Pick a simulated solution. Higher effort draws the sound one more often —
     a simulated tendency, not an observed one."""
-    key = next((k for k in SOLUTIONS if _mentions(prompt, k)), None)
-    if key is None:
-        return (f"No canned solution for this prompt.\n\nFINAL ANSWER: \\boxed{{0}}", "unknown")
+    answer = _expected_answer(prompt)
+    if answer is None:
+        return ("The simulator has no key for this problem.\n\nFINAL ANSWER: \\boxed{0}",
+                "unknown")
     weights = {ReasoningMode.LOW: (25, 40, 100),
                ReasoningMode.MEDIUM: (55, 85, 100),
                ReasoningMode.HIGH: (75, 95, 100)}[mode]
     roll = _rng_int(seed + "q", 1, 100)
-    idx = 0 if roll <= weights[0] else (1 if roll <= weights[1] else 2)
-    quality, body = SOLUTIONS[key][idx]
-    return body, quality
-
-
-def _mentions(prompt: str, key: str) -> bool:
-    """Which canned problem is this? Matched on a distinctive phrase, not the id,
-    because the solver prompt never carries the id."""
-    marks = {"36/11": "drain at the bottom", "42": "second-largest divisor",
-             "58": "3x + 4y"}
-    return re.search(re.escape(marks[key]), prompt, re.IGNORECASE) is not None
+    quality = "sound" if roll <= weights[0] else (
+        "unjustified" if roll <= weights[1] else "wrong")
+    shown = answer if quality != "wrong" else _wrong_answer(answer, seed)
+    return QUALITY_TEXT[quality].format(answer=shown), quality
 
 
 # --------------------------------------------------------------------------
@@ -173,10 +179,14 @@ def _mentions(prompt: str, key: str) -> bool:
 #
 # It is still a simulation. Every verdict it writes is stamped simulated.
 # --------------------------------------------------------------------------
+#: Phrases the generator above writes, one per quality class. The simulated
+#: judge reads the candidate back out of the judge prompt and classifies it from
+#: these, so simulated verdicts stay coherent with the simulated solutions
+#: instead of being independent noise.
 QUALITY_MARKERS = {
-    "sound": ("Rates add.", "If p is the smallest prime factor", "Since 4 = -3 (mod 7)"),
-    "unjustified": ("Combine the times directly", "feels right", "Roughly one in seven"),
-    "wrong": ("the drain also moves water", "close enough to 8", "so the count is 7 x 3^2"),
+    "sound": ("Each step follows from the previous one",),
+    "unjustified": ("without checking it", "feels right for a problem of this shape"),
+    "wrong": ("treat the excluded cases", "dropped as negligible"),
 }
 
 #: (base scores, severity, verdict, jitter width per criterion)
@@ -219,6 +229,20 @@ def _judge_json(prompt: str, seed: str) -> str:
     # so verdict disagreement and score disagreement stay coherent.
     if quality == "unjustified" and scores["reasoning"] >= 4:
         verdict, severity = "pass", "minor"
+    points = {
+        "sound": ["every stated step follows from the previous one",
+                  "the boundary cases are checked rather than assumed",
+                  "the final value is derived, not asserted"],
+        "unjustified": ["the final value matches the expected form",
+                        "the central proportion is assumed, never established",
+                        "no case analysis is offered for the assumption"],
+        "wrong": ["the excluded cases are treated as included",
+                  "the correction term is dropped without justification",
+                  "the final value therefore does not follow"],
+        "unknown": ["the solution states a final value",
+                    "the intermediate steps are not verifiable here",
+                    "no explicit error is identifiable"],
+    }[quality]
     return _json.dumps({
         **scores,
         "error_severity": severity,
@@ -227,4 +251,7 @@ def _judge_json(prompt: str, seed: str) -> str:
                         f"classified as '{quality}'."
                         + (" This judge read the unsupported step generously."
                            if swung and scores["reasoning"] >= 4 else "")),
+        # The rubric demands exactly three; the simulator obeys the same contract
+        # a real judge does, so the parser is exercised identically.
+        "key_points": [f"[simulated] {t}" for t in points],
     })
