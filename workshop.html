@@ -60,7 +60,7 @@
   --eff-low:#86B6EF; --eff-med:#3987E5; --eff-high:#184F95;
 
   /* --- chrome --- */
-  --rule:#BDD0E8; --rule-soft:#DBE5F2; --grid:#E3EBF6;
+  --rule:#BDD0E8; --rule-soft:#DBE5F2; --grid:#E3EBF6; --flow:#5A7192;
   --code-bg:#0B1729; --code-fg:#D6E3F3; --code-dim:#6D8CB0;
   --code-kw:#93BCF5; --code-str:#E5AC7E; --code-com:#65809F;
   --code-def:#7ED6B8; --code-num:#D9AEEA;
@@ -83,7 +83,7 @@
      the more prominent mark. Same three steps, re-stepped for the dark band and
      validated against #131E30 (monotone L, gaps >= 0.06, light end 2.06:1). */
   --eff-low:#184F95; --eff-med:#2A78D6; --eff-high:#86B6EF;
-    --rule:#2A3E5C; --rule-soft:#1E2E47; --grid:#1C2B42;
+    --rule:#2A3E5C; --rule-soft:#1E2E47; --grid:#1C2B42; --flow:#93A8C4;
     --code-bg:#08111F; --code-fg:#D6E3F3;
     --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 24px rgba(0,0,0,.35);
   }
@@ -100,7 +100,7 @@
      the more prominent mark. Same three steps, re-stepped for the dark band and
      validated against #131E30 (monotone L, gaps >= 0.06, light end 2.06:1). */
   --eff-low:#184F95; --eff-med:#2A78D6; --eff-high:#86B6EF;
-  --rule:#2A3E5C; --rule-soft:#1E2E47; --grid:#1C2B42;
+  --rule:#2A3E5C; --rule-soft:#1E2E47; --grid:#1C2B42; --flow:#93A8C4;
   --code-bg:#08111F; --code-fg:#D6E3F3;
   --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 24px rgba(0,0,0,.35);
 }
@@ -123,9 +123,8 @@ img,svg{max-width:100%}
    CONFERENCE CHROME — the identity band, top and bottom
    ========================================================================== */
 .band{background:var(--blue-deep);color:#EAF2FD;width:100%}
-:root[data-theme="dark"] .band,
-:root:not([data-theme="light"]) .band{background:#0B1A31}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .band{background:#0D366B}}
+:root[data-theme="dark"] .band{background:#0B1A31}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .band{background:#0B1A31}}
 .band--top{position:sticky;top:0;z-index:60;box-shadow:0 1px 0 rgba(0,0,0,.22)}
 .band__in{
   max-width:1560px;margin:0 auto;padding:13px clamp(14px,2.6vw,30px);
@@ -263,7 +262,8 @@ body[data-rail="closed"] .rail{margin-left:calc(-1 * var(--rail));opacity:0;poin
 .partno b{
   font-size:12.8px;color:#FFF;background:var(--blue);padding:3px 9px;font-weight:600;letter-spacing:.1em;
 }
-:root[data-theme="dark"] .partno b,:root:not([data-theme="light"]) .partno b{color:#0A1220}
+:root[data-theme="dark"] .partno b{color:#0A1220}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .partno b{color:#0A1220}}
 .partno::after{content:"";flex:1;height:1px;background:var(--rule)}
 .partno--judge{color:var(--amber)}
 .partno--judge b{background:var(--amber)}
@@ -454,7 +454,8 @@ details.more .inner>.explain:last-child{margin-bottom:0}
 .nd--core b{color:var(--blue)}
 .nd--model{border-color:var(--blue);background:var(--blue);color:#FFF}
 .nd--model b,.nd--model span{color:#FFF}
-:root[data-theme="dark"] .nd--model,:root:not([data-theme="light"]) .nd--model{background:var(--blue-2)}
+:root[data-theme="dark"] .nd--model{background:var(--blue-2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .nd--model{background:var(--blue-2)}}
 .nd--judge{border-color:var(--amber);background:var(--amber-soft)}
 .nd--judge b{color:var(--amber)}
 .nd--out{border-color:var(--pass);background:var(--pass-soft)}
@@ -467,21 +468,21 @@ details.more .inner>.explain:last-child{margin-bottom:0}
 /* vertical stack with arrows */
 .stackfig{display:grid;justify-items:center;gap:0}
 .stackfig .nd{width:min(100%,330px)}
-.dn{width:1px;height:16px;background:var(--rule);position:relative}
+.dn{width:2px;height:18px;background:var(--flow);position:relative}
 .dn::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-  border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--rule)}
+  border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--flow)}
 
 /* horizontal row with arrows */
 .rowfig{display:flex;align-items:stretch;gap:0;min-width:0;overflow-x:auto;padding-bottom:4px}
 .rowfig .nd{flex:1 1 0;min-width:118px}
-.rt{flex:0 0 22px;display:flex;align-items:center;justify-content:center;color:var(--rule);font-size:17.1px}
+.rt{flex:0 0 22px;display:flex;align-items:center;justify-content:center;color:var(--flow);font-weight:600;font-size:17.1px}
 
 /* fan-out: one parent, N children */
 .fan{display:grid;gap:0;justify-items:center}
 .fan__top{width:min(100%,340px)}
 .fan__bar{width:100%;height:22px;position:relative}
-.fan__bar::before{content:"";position:absolute;top:0;left:50%;width:1px;height:11px;background:var(--rule)}
-.fan__bar::after{content:"";position:absolute;top:11px;left:12.5%;right:12.5%;height:1px;background:var(--rule)}
+.fan__bar::before{content:"";position:absolute;top:0;left:50%;width:2px;height:11px;background:var(--flow)}
+.fan__bar::after{content:"";position:absolute;top:11px;left:12.5%;right:12.5%;height:2px;background:var(--flow)}
 .fan__legs{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.4vw,16px);width:100%}
 .fan__legs--2{grid-template-columns:repeat(2,1fr);max-width:640px}
 .fan__leg{display:grid;justify-items:stretch;gap:0}
@@ -494,13 +495,13 @@ details.more .inner>.explain:last-child{margin-bottom:0}
 .arch__row--3{grid-template-columns:repeat(3,1fr)}
 .arch__row--1{max-width:380px}
 .arch__split{width:100%;height:26px;position:relative}
-.arch__split::before{content:"";position:absolute;top:0;left:50%;width:1px;height:12px;background:var(--rule)}
-.arch__split::after{content:"";position:absolute;top:12px;left:16.6%;right:16.6%;height:1px;background:var(--rule)}
+.arch__split::before{content:"";position:absolute;top:0;left:50%;width:2px;height:12px;background:var(--flow)}
+.arch__split::after{content:"";position:absolute;top:12px;left:16.6%;right:16.6%;height:2px;background:var(--flow)}
 .arch__legs{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.2vw,14px);width:100%}
 .arch__legs .dn{justify-self:center}
 .arch__merge{width:100%;height:26px;position:relative}
-.arch__merge::before{content:"";position:absolute;top:0;left:16.6%;right:16.6%;height:1px;background:var(--rule)}
-.arch__merge::after{content:"";position:absolute;top:0;left:50%;width:1px;height:26px;background:var(--rule)}
+.arch__merge::before{content:"";position:absolute;top:0;left:16.6%;right:16.6%;height:2px;background:var(--flow)}
+.arch__merge::after{content:"";position:absolute;top:0;left:50%;width:2px;height:26px;background:var(--flow)}
 @media(max-width:700px){
   .arch__row--3,.arch__legs{grid-template-columns:1fr}
   .arch__split,.arch__merge{height:14px}
@@ -726,7 +727,8 @@ details.more .inner>.explain:last-child{margin-bottom:0}
 @media(max-width:900px){.comp{grid-template-columns:1fr}}
 .comp__h{grid-column:1/-1;display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:7px 13px;background:var(--sunk);border-bottom:1px solid var(--rule)}
 .comp__kind{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#FFF;background:var(--blue);padding:2px 7px}
-:root[data-theme="dark"] .comp__kind,:root:not([data-theme="light"]) .comp__kind{color:#0A1220}
+:root[data-theme="dark"] .comp__kind{color:#0A1220}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .comp__kind{color:#0A1220}}
 .comp--class .comp__kind{background:var(--amber)}
 .comp--const .comp__kind,.comp--imports .comp__kind,.comp--docstring .comp__kind,
 .comp--bootstrap .comp__kind,.comp--main .comp__kind,.comp--file .comp__kind{background:var(--meta)}
@@ -5863,7 +5865,7 @@ OUT = storage.RESULTS / <span class="s">&quot;workshop_results.json&quot;</span>
 
 <footer class="band band--bot">
   <div class="band__in">
-    <svg class="logo" style="width:78px;height:29px;opacity:.85" role="img" aria-label="ISSAI"><use href="#issai"></use></svg>
+    <svg class="logo" style="width:132px;height:48px;opacity:.95" role="img" aria-label="ISSAI"><use href="#issai"></use></svg>
     <div class="foot__cols">
       <div class="fcol"><b>Conference</b><span>1st International Conference and Workshop on Mathematics and Artificial Intelligence</span></div>
       <div class="fcol"><b>Dates</b><span>September 9–11, 2026</span></div>
